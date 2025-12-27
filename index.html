@@ -6,26 +6,44 @@
     <title>Vultrex Pro</title>
     
     <link rel="apple-touch-icon" href="https://img.icons8.com/ios-filled/512/3b82f6/v.png">
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     
     <style>
+        /* Echte Minecraft Schriftart */
         @font-face {
             font-family: 'Minecraftia';
             src: url('https://db.onlinewebfonts.com/t/6ab539bc72105e7e2e92518450144f8b.woff2') format('woff2');
         }
+
+        .mc-font { 
+            font-family: 'Minecraftia', 'Courier New', monospace; 
+            line-height: 1.6;
+            letter-spacing: 0.5px;
+        }
+
+        /* Minecraft MOTD Styling */
+        .motd-container {
+            background-color: #000;
+            border: 3px solid #555;
+            padding: 15px;
+            border-radius: 4px;
+            image-rendering: pixelated;
+        }
+
+        /* Verhindert das Umbrechen von Minecraft-Farbcodes im HTML */
+        .motd-container span {
+            display: inline-block;
+            white-space: pre-wrap;
+        }
+
+        .v-logo-box { background: #3b82f6; color: white; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-weight: 900; font-size: 22px; }
         .sidebar-transition { transition: transform 0.3s ease; }
         .page-hidden { display: none; }
-        .v-logo-box { background: #3b82f6; color: white; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-weight: 900; font-size: 22px; }
-        .mc-font { font-family: 'Minecraftia', monospace; line-height: 1.5; }
-        .progress-bar { height: 4px; background: #3b82f6; border-radius: 10px; width: 0%; transition: width 0.3s; }
-        @keyframes loading { 0% { width: 0%; } 50% { width: 70%; } 100% { width: 100%; } }
-        .animate-load { animation: loading 2s infinite; }
     </style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen font-sans">
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen">
 
     <div id="sidebar" class="fixed inset-y-0 left-0 w-72 bg-white dark:bg-slate-900 z-[60] shadow-2xl border-r border-slate-200 dark:border-slate-800 sidebar-transition -translate-x-full">
         <div class="p-8 flex flex-col h-full">
@@ -36,9 +54,8 @@
             <nav class="space-y-2 flex-1">
                 <button onclick="ui.switchPage('dashboard')" class="w-full text-left p-4 rounded-2xl hover:bg-blue-600/10 font-bold flex items-center gap-4">📊 Dashboard</button>
                 <button onclick="ui.switchPage('monitor')" class="w-full text-left p-4 rounded-2xl hover:bg-blue-600/10 font-bold flex items-center gap-4">🎮 Server Monitor</button>
-                <button onclick="ui.openAdminPin()" class="w-full text-left p-4 rounded-2xl hover:bg-blue-600/10 font-bold flex items-center gap-4">🔒 Admin Panel</button>
             </nav>
-            <button onclick="auth.logout()" class="w-full p-4 rounded-2xl text-rose-500 font-black uppercase text-xs bg-rose-500/5">Logout</button>
+            <button onclick="location.reload()" class="w-full p-4 rounded-2xl text-rose-500 font-black uppercase text-xs bg-rose-500/5">Logout</button>
         </div>
     </div>
     <div id="sidebar-overlay" onclick="ui.toggleSidebar()" class="fixed inset-0 bg-black/50 z-[55] hidden backdrop-blur-sm"></div>
@@ -59,8 +76,8 @@
                     <p class="text-[10px] text-slate-400 font-black uppercase">Balance</p>
                     <p id="balance" class="text-4xl font-black text-blue-600">0.00 €</p>
                 </div>
-                <div class="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-800">
-                    <p class="text-[10px] text-rose-500 font-black uppercase">Monthly Costs</p>
+                <div class="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <p class="text-[10px] text-rose-500 font-black uppercase">Monthly</p>
                     <p id="monthly-stats" class="text-3xl font-black text-rose-500">0.00 €</p>
                 </div>
             </div>
@@ -76,49 +93,33 @@
 
         <div id="page-monitor" class="page-hidden">
             <div class="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 mb-8">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="font-black uppercase italic text-blue-600">Server Monitor</h3>
-                    <div class="flex items-center gap-2">
-                        <span class="text-[9px] font-black text-slate-400">AUTO</span>
-                        <input type="checkbox" id="refresh-toggle" class="w-4 h-4 accent-blue-600">
-                    </div>
-                </div>
+                <h3 class="font-black uppercase italic text-blue-600 mb-6">Server Tracking</h3>
                 <div class="flex gap-3">
-                    <input type="text" id="mc-ip" placeholder="Server IP..." class="flex-1 bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl outline-none font-bold">
+                    <input type="text" id="mc-ip" placeholder="hypixel.net" class="flex-1 bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl outline-none font-bold">
                     <button onclick="monitor.check()" class="bg-blue-600 text-white px-8 rounded-2xl font-black uppercase">Scan</button>
                 </div>
             </div>
             <div id="mc-result" class="hidden"></div>
         </div>
-
-        <div id="page-admin" class="page-hidden space-y-4"></div>
     </div>
 
     <div id="modal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 z-[100]">
         <div class="bg-white dark:bg-slate-900 w-full max-w-md p-8 rounded-[3rem] border border-slate-200 dark:border-slate-800">
             <div id="ui-manual" class="hidden text-center space-y-4">
-                <h3 class="text-xl font-black text-blue-600 uppercase italic">Manual Entry</h3>
                 <input type="text" id="m-desc" placeholder="Service" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl outline-none font-bold">
                 <input type="number" id="m-amt" placeholder="Amount" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl outline-none font-bold">
                 <select id="m-type" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl font-bold">
                     <option value="once">One-Time</option>
-                    <option value="monthly">Monthly Subscription</option>
+                    <option value="monthly">Monthly</option>
                     <option value="income">Income</option>
                 </select>
-                <button onclick="logic.saveManual()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase">Confirm</button>
+                <button onclick="logic.saveManual()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase">Add</button>
             </div>
-
             <div id="ui-import" class="hidden text-center space-y-4">
-                <h3 class="text-xl font-black text-blue-600 uppercase italic">Smart Scan (PDF)</h3>
-                <input type="file" id="pdf-file" accept=".pdf" class="w-full text-xs font-bold text-slate-400">
-                <div id="scan-progress-container" class="hidden">
-                    <div class="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1 overflow-hidden">
-                        <div class="progress-bar animate-load" style="width: 100%"></div>
-                    </div>
-                </div>
-                <button id="scan-btn" onclick="logic.processPDF()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase">Analyze File</button>
+                <input type="file" id="pdf-file" accept=".pdf" class="w-full text-xs font-bold">
+                <button onclick="logic.processPDF()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase">Analyze PDF</button>
             </div>
-            <button onclick="ui.closeModal()" class="w-full text-slate-400 py-4 font-bold text-[10px] uppercase mt-2">Close</button>
+            <button onclick="ui.closeModal()" class="w-full text-slate-400 py-4 font-bold text-[10px] uppercase">Close</button>
         </div>
     </div>
 
@@ -132,11 +133,9 @@
                 document.getElementById('sidebar').classList.toggle('-translate-x-full');
                 document.getElementById('sidebar-overlay').classList.toggle('hidden');
             },
-            toggleTheme() {
-                document.documentElement.classList.toggle('dark');
-            },
+            toggleTheme() { document.documentElement.classList.toggle('dark'); },
             switchPage(id) {
-                ['dashboard', 'monitor', 'admin'].forEach(p => document.getElementById('page-'+p).classList.add('page-hidden'));
+                ['dashboard', 'monitor'].forEach(p => document.getElementById('page-'+p).classList.add('page-hidden'));
                 document.getElementById('page-'+id).classList.remove('page-hidden');
                 this.toggleSidebar();
             },
@@ -150,20 +149,27 @@
                 let bal = 0, mon = 0;
                 const list = document.getElementById('transaction-list');
                 list.innerHTML = '';
-                state.history.forEach((t, i) => {
+                state.history.forEach(t => {
                     bal += t.amount;
                     if(t.type === 'monthly' && t.amount < 0) mon += t.amount;
-                    list.innerHTML = `<div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 flex justify-between items-center">
+                    list.innerHTML = `<div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 flex justify-between items-center mb-2">
                         <div><p class="font-bold text-sm">${t.desc}</p><p class="text-[8px] font-black text-slate-400 uppercase">${t.date}</p></div>
                         <p class="font-black ${t.amount < 0 ? 'text-rose-500' : 'text-emerald-500'}">${t.amount.toFixed(2)} €</p>
                     </div>` + list.innerHTML;
                 });
                 document.getElementById('balance').innerText = bal.toFixed(2) + " €";
                 document.getElementById('monthly-stats').innerText = Math.abs(mon).toFixed(2) + " €";
-                this.renderChart();
+                this.initChart();
             },
-            renderChart() {
-                if(!chart) return;
+            initChart() {
+                if(!chart) {
+                    const ctx = document.getElementById('financeChart').getContext('2d');
+                    chart = new Chart(ctx, {
+                        type: 'line',
+                        data: { labels: [], datasets: [{ data: [], borderColor: '#3b82f6', tension: 0.4, fill: true, backgroundColor: 'rgba(59, 130, 246, 0.05)', borderWidth: 3, pointRadius: 0 }] },
+                        options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
+                    });
+                }
                 const points = state.history.map((t, i) => state.history.slice(0, i+1).reduce((a, b) => a + b.amount, 0));
                 chart.data.labels = state.history.map(t => t.date);
                 chart.data.datasets[0].data = points;
@@ -178,15 +184,12 @@
                 const type = document.getElementById('m-type').value;
                 if(type !== 'income') amt = -amt;
                 state.history.push({ id: Date.now(), desc, amount: amt, type, date: new Date().toLocaleDateString('de-DE') });
-                this.save();
-                ui.closeModal();
-                ui.updateDashboard();
+                localStorage.setItem('v_data', JSON.stringify(state));
+                ui.closeModal(); ui.updateDashboard();
             },
             async processPDF() {
                 const file = document.getElementById('pdf-file').files[0];
-                if(!file) return alert("Wähle eine PDF!");
-                document.getElementById('scan-progress-container').classList.remove('hidden');
-                
+                if(!file) return;
                 const reader = new FileReader();
                 reader.onload = async (e) => {
                     const pdf = await pdfjsLib.getDocument({data: new Uint8Array(e.target.result)}).promise;
@@ -197,16 +200,13 @@
                         text += content.items.map(item => item.str).join(" ");
                     }
                     const match = text.match(/(\d+,\d{2})/);
-                    const val = match ? parseFloat(match[0].replace(',', '.')) : 10.00;
-                    state.history.push({ id: Date.now(), desc: 'PDF Scan', amount: -val, type: 'once', date: new Date().toLocaleDateString('de-DE') });
-                    this.save();
-                    document.getElementById('scan-progress-container').classList.add('hidden');
-                    ui.closeModal();
-                    ui.updateDashboard();
+                    const val = match ? parseFloat(match[0].replace(',', '.')) : 0;
+                    state.history.push({ id: Date.now(), desc: 'PDF Import', amount: -val, type: 'once', date: new Date().toLocaleDateString('de-DE') });
+                    localStorage.setItem('v_data', JSON.stringify(state));
+                    ui.closeModal(); ui.updateDashboard();
                 };
                 reader.readAsArrayBuffer(file);
-            },
-            save() { localStorage.setItem('v_data', JSON.stringify(state)); }
+            }
         };
 
         const monitor = {
@@ -214,49 +214,63 @@
                 const ip = document.getElementById('mc-ip').value;
                 if(!ip) return;
                 const resDiv = document.getElementById('mc-result');
-                resDiv.innerHTML = "<p class='text-center p-10 animate-pulse font-black'>SCANNING...</p>";
+                resDiv.innerHTML = "<p class='text-center p-10 animate-pulse font-black'>SCANNING SERVER...</p>";
                 resDiv.classList.remove('hidden');
+
                 try {
                     const res = await fetch(`https://api.mcstatus.io/v2/status/java/${ip}`);
                     const data = await res.json();
+                    
                     if(data.online) {
-                        const players = (data.players.list || []).filter(p => p.name);
+                        // Spielerliste-Logik (Fallback falls keine Liste gesendet wird)
+                        let players = data.players.list || [];
+                        let playerHtml = players.length > 0 
+                            ? players.filter(p => p.name).map(p => `
+                                <div class="bg-slate-100 dark:bg-slate-800 p-2 rounded-lg text-center">
+                                    <img src="https://mc-heads.net/avatar/${p.name}/32" class="w-8 h-8 mx-auto mb-1">
+                                    <p class="text-[7px] font-black truncate">${p.name}</p>
+                                </div>`).join('')
+                            : `<p class="col-span-full text-center text-slate-500 text-[10px] font-bold py-4">SERVER HIDDEN PLAYER LIST</p>`;
+
                         resDiv.innerHTML = `
                             <div class="bg-white dark:bg-slate-900 p-8 rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-xl">
                                 <div class="flex items-center gap-4 mb-6">
                                     <img src="${data.icon || 'https://i.imgur.com/vH977y0.png'}" class="w-16 h-16 rounded-xl">
-                                    <h4 class="text-xl font-black text-blue-600">${ip}</h4>
+                                    <div>
+                                        <h4 class="text-xl font-black text-blue-600">${ip}</h4>
+                                        <p class="text-[10px] font-black text-emerald-500 uppercase tracking-tighter">● Online - Ping: ${data.debug?.ping || '??'}ms</p>
+                                    </div>
                                 </div>
-                                <div class="bg-black p-6 rounded-2xl mb-6 mc-font text-[#ccc] text-sm overflow-hidden border border-slate-800">
+                                
+                                <div class="motd-container mc-font text-sm mb-6">
                                     ${data.motd.html}
                                 </div>
-                                <div class="grid grid-cols-2 gap-4 mb-6">
-                                    <div class="bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl text-center"><p class="text-[8px] font-black uppercase">Players</p><p class="font-black">${data.players.online}/${data.players.max}</p></div>
-                                    <div class="bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl text-center"><p class="text-[8px] font-black uppercase">Version</p><p class="text-[10px] font-black truncate">${data.version.name_clean}</p></div>
+
+                                <div class="grid grid-cols-2 gap-4 mb-6 text-center">
+                                    <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl">
+                                        <p class="text-[8px] font-black uppercase text-slate-400">Players</p>
+                                        <p class="text-lg font-black">${data.players.online} / ${data.players.max}</p>
+                                    </div>
+                                    <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl">
+                                        <p class="text-[8px] font-black uppercase text-slate-400">Version</p>
+                                        <p class="text-xs font-black truncate">${data.version.name_clean}</p>
+                                    </div>
                                 </div>
+
                                 <div class="grid grid-cols-4 sm:grid-cols-6 gap-2">
-                                    ${players.map(p => `
-                                        <div class="bg-slate-50 dark:bg-slate-800 p-2 rounded-lg text-center">
-                                            <img src="https://mc-heads.net/avatar/${p.name}/32" class="w-8 h-8 mx-auto mb-1">
-                                            <p class="text-[7px] font-black truncate">${p.name}</p>
-                                        </div>
-                                    `).join('')}
+                                    ${playerHtml}
                                 </div>
                             </div>`;
-                    } else { resDiv.innerHTML = "<p class='text-center p-10 text-rose-500 font-black'>OFFLINE</p>"; }
-                } catch(e) { resDiv.innerHTML = "<p class='text-center p-10 text-rose-500 font-black'>ERROR</p>"; }
+                    } else {
+                        resDiv.innerHTML = "<p class='text-center p-10 text-rose-500 font-black'>SERVER OFFLINE</p>";
+                    }
+                } catch(e) {
+                    resDiv.innerHTML = "<p class='text-center p-10 text-rose-500 font-black'>CONNECTION ERROR</p>";
+                }
             }
         };
 
-        window.onload = () => {
-            const ctx = document.getElementById('financeChart').getContext('2d');
-            chart = new Chart(ctx, {
-                type: 'line',
-                data: { labels: [], datasets: [{ data: [], borderColor: '#3b82f6', tension: 0.4, fill: true, backgroundColor: 'rgba(59, 130, 246, 0.05)', borderWidth: 3, pointRadius: 0 }] },
-                options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
-            });
-            ui.updateDashboard();
-        };
+        window.onload = () => { ui.updateDashboard(); };
     </script>
 </body>
 </html>
