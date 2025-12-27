@@ -81,7 +81,6 @@
             text-transform: uppercase;
             color: white;
             z-index: 10;
-            transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
         }
 
         .toggle-label {
@@ -104,6 +103,7 @@
             color: var(--text) !important;
             border: 1px solid var(--glass-border) !important;
             outline: none;
+            appearance: none;
         }
         
         #pdf-file { opacity: 0; position: absolute; inset: 0; cursor: pointer; }
@@ -121,7 +121,7 @@
             transform: translate(-50%, 0);
         }
 
-        /* SWIPE STYLES */
+        /* SWIPE DELETE STYLES */
         .transaction-wrapper {
             position: relative;
             overflow: hidden;
@@ -135,7 +135,7 @@
             inset: 0;
             background: var(--delete-red);
             border-radius: 2.5rem;
-            opacity: 0; /* Graduelles Einblenden */
+            opacity: 0; /* Wird beim Wischen graduell sichtbar */
             z-index: 0;
             display: flex;
             align-items: center;
@@ -260,7 +260,7 @@
                     <div class="toggle-label">Expense</div>
                     <div class="toggle-label">Income</div>
                 </div>
-                <select id="manual-prefab" onchange="ui.handlePrefabChange(this)" class="w-full p-5 rounded-2xl font-bold text-xs text-center appearance-none cursor-pointer"></select>
+                <select id="manual-prefab" onchange="ui.handlePrefabChange(this)" class="w-full p-5 rounded-2xl font-bold text-xs text-center cursor-pointer"></select>
                 <input type="text" id="manual-desc" placeholder="Label" class="w-full p-5 rounded-2xl font-bold text-center">
                 <input type="number" id="manual-amount" placeholder="0.00" class="w-full p-5 rounded-2xl font-bold text-center text-2xl">
                 <div class="toggle-container" id="freq-toggle">
@@ -378,7 +378,7 @@
                 `).join('');
             },
 
-            // SWIPE LOGIC (Von Rechts nach Links + Graduelles Rot)
+            // SWIPE DELETE SYSTEM
             handleSwipeStart(e) {
                 touchStartX = e.touches[0].clientX;
                 currentSwipeElem = e.currentTarget;
@@ -388,8 +388,7 @@
             handleSwipeMove(e) {
                 if (!currentSwipeElem) return;
                 const diff = e.touches[0].clientX - touchStartX;
-                
-                if (diff < 0) { // Nur nach Links wischen
+                if (diff < 0) { // Nur nach LINKS
                     const move = Math.max(diff, -150);
                     currentSwipeElem.style.transform = `translateX(${move}px)`;
                     
@@ -397,8 +396,8 @@
                     const bg = wrap.querySelector('.delete-background');
                     const ind = wrap.querySelector('.delete-indicator');
                     
-                    // Graduelles Einblenden der Deckkraft (Opacity)
-                    const progress = Math.abs(move) / 100; // Bei 100px voll rot
+                    // Dynamisches Rot-Einblenden
+                    const progress = Math.abs(move) / 100;
                     bg.style.opacity = Math.min(progress, 1);
                     ind.style.opacity = Math.min(progress, 1);
                     ind.style.transform = `scale(${0.8 + (Math.min(progress, 1) * 0.4)})`;
@@ -409,10 +408,9 @@
                 if (!currentSwipeElem) return;
                 const diff = e.changedTouches[0].clientX - touchStartX;
                 const wrap = currentSwipeElem.parentElement;
-                
                 currentSwipeElem.style.transition = 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
                 
-                if (diff < -100) { // Schwellenwert
+                if (diff < -100) {
                     currentSwipeElem.style.transform = 'translateX(-150%)';
                     setTimeout(() => logic.deleteEntry(currentSwipeElem.getAttribute('data-id')), 300);
                 } else {
@@ -459,7 +457,12 @@
             saveManual() {
                 let a = parseFloat(document.getElementById('manual-amount').value);
                 if(isNaN(a)) return;
-                state.history.push({ id: Date.now(), desc: document.getElementById('manual-desc').value || "Entry", amount: entryMode === 'Expense' ? -a : a, date: new Date().toLocaleDateString('de-DE') });
+                state.history.push({ 
+                    id: Date.now(), 
+                    desc: document.getElementById('manual-desc').value || "Entry", 
+                    amount: entryMode === 'Expense' ? -a : a, 
+                    date: new Date().toLocaleDateString('de-DE') 
+                });
                 this.save(); ui.closeModal(); ui.updateDashboard();
                 document.getElementById('manual-amount').value = "";
             },
@@ -507,6 +510,7 @@
             if(state.auth) {
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('app-content').classList.remove('hidden');
+                document.getElementById('menu-user-name').innerText = state.auth.user;
                 chart = new Chart(document.getElementById('financeChart'), {
                     type: 'line',
                     data: { labels: [], datasets: [{ data: [], tension: 0.4, fill: true, borderColor: '#007AFF', backgroundColor: 'rgba(0,122,255,0.05)', pointRadius: 0 }] },
