@@ -46,7 +46,6 @@
             box-shadow: 0 8px 32px 0 var(--shadow);
         }
 
-        /* TOGGLE SYSTEM */
         .toggle-container {
             position: relative;
             width: 100%;
@@ -123,7 +122,7 @@
 
     <div id="sidebar" class="fixed inset-y-0 left-0 w-72 crystal-glass z-[150] sidebar-transition -translate-x-full rounded-r-[3rem]">
         <div class="p-10 flex flex-col h-full">
-            <h2 class="text-3xl font-black mb-12 italic">Vultrex</h2>
+            <h2 class="text-3xl font-black mb-12 italic text-white">Vultrex</h2>
             <nav class="space-y-4 flex-1">
                 <button onclick="ui.switchPage('dashboard')" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold transition-all">Analytics</button>
                 <button onclick="ui.switchPage('monitor')" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold transition-all">Node</button>
@@ -137,7 +136,7 @@
 
     <div id="app-content" class="hidden p-6 max-w-xl mx-auto h-screen overflow-y-auto">
         <header class="flex justify-between items-center mb-10 pt-4">
-            <button onclick="ui.toggleSidebar()" class="w-12 h-12 crystal-glass rounded-full flex items-center justify-center text-xl">≡</button>
+            <button onclick="ui.toggleSidebar()" class="w-12 h-12 crystal-glass rounded-full flex items-center justify-center text-xl text-white">≡</button>
             <div id="avatar" class="w-12 h-12 bg-blue-600 rounded-full border-2 border-white/20 shadow-lg"></div>
         </header>
 
@@ -177,7 +176,10 @@
             </div>
             <div id="mc-result" class="hidden grid grid-cols-2 gap-4"></div>
         </div>
-        <div id="page-admin" class="page-hidden space-y-4"><div id="admin-user-list" class="space-y-2"></div></div>
+
+        <div id="page-admin" class="page-hidden space-y-4">
+            <div id="admin-user-list" class="space-y-2"></div>
+        </div>
     </div>
 
     <div id="modal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-3xl z-[200] flex items-center justify-center p-6">
@@ -189,7 +191,7 @@
                     <div class="toggle-label">Income</div>
                 </div>
                 <select id="manual-prefab" onchange="ui.handlePrefabChange(this)" class="w-full p-5 rounded-2xl outline-none font-bold text-xs text-center appearance-none"></select>
-                <input type="text" id="manual-desc" placeholder="Label" class="w-full p-5 rounded-2xl outline-none font-bold text-center">
+                <input type="text" id="manual-desc" placeholder="Label / Purpose" class="w-full p-5 rounded-2xl outline-none font-bold text-center">
                 <input type="number" id="manual-amount" placeholder="0.00" class="w-full p-5 rounded-2xl outline-none font-bold text-center">
                 <div class="toggle-container" id="freq-toggle">
                     <div class="toggle-knob" id="knob-freq">Once</div>
@@ -242,49 +244,33 @@
                     callback(labels[idx]);
                 };
 
-                // Klick-Handler
-                labelEls.forEach((el, idx) => {
-                    el.onclick = (e) => {
-                        e.stopPropagation();
-                        updateUI(idx);
-                    };
-                });
+                labelEls.forEach((el, idx) => { el.onclick = (e) => { e.stopPropagation(); updateUI(idx); }; });
 
-                // Drag-Handler
                 const onStart = (e) => {
                     isDragging = true;
                     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                    const rect = box.getBoundingClientRect();
-                    startX = clientX - (rect.left + currentX);
+                    startX = clientX - (box.getBoundingClientRect().left + currentX);
                     knob.style.transition = 'none';
                 };
 
                 const onMove = (e) => {
                     if (!isDragging) return;
-                    e.preventDefault();
                     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                    const rect = box.getBoundingClientRect();
                     const max = box.offsetWidth / 2 - 4;
-                    currentX = Math.max(0, Math.min(clientX - rect.left - startX, max));
+                    currentX = Math.max(0, Math.min(clientX - box.getBoundingClientRect().left - startX, max));
                     knob.style.transform = `translateX(${currentX}px)`;
                 };
 
-                const onEnd = () => {
-                    if (!isDragging) return;
-                    isDragging = false;
-                    const max = box.offsetWidth / 2 - 4;
-                    updateUI(currentX > max / 2 ? 1 : 0);
-                };
+                const onEnd = () => { if (isDragging) { isDragging = false; updateUI(currentX > (box.offsetWidth / 4) ? 1 : 0); } };
 
                 box.onmousedown = box.ontouchstart = onStart;
-                window.addEventListener('mousemove', onMove, {passive: false});
+                window.addEventListener('mousemove', onMove);
                 window.addEventListener('touchmove', onMove, {passive: false});
                 window.addEventListener('mouseup', onEnd);
                 window.addEventListener('touchend', onEnd);
 
-                // Initialisierung
-                const initialIdx = labels.indexOf(initialVal) !== -1 ? labels.indexOf(initialVal) : 0;
-                setTimeout(() => updateUI(initialIdx, false), 10);
+                const initIdx = labels.indexOf(initialVal) !== -1 ? labels.indexOf(initialVal) : 0;
+                setTimeout(() => updateUI(initIdx, false), 10);
             },
 
             applyTheme(theme) {
@@ -292,8 +278,7 @@
                 document.body.className = theme === 'light' ? 'light-mode' : 'dark-mode';
                 if(chart) {
                     const color = theme === 'light' ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.3)';
-                    chart.options.scales.x.ticks.color = color;
-                    chart.options.scales.y.ticks.color = color;
+                    chart.options.scales.x.ticks.color = chart.options.scales.y.ticks.color = color;
                     chart.update();
                 }
                 logic.save();
@@ -305,46 +290,86 @@
                 sb.style.transform = open ? 'translateX(-100%)' : 'translateX(0px)';
                 ov.classList.toggle('hidden');
             },
+
             switchPage(id) {
-                ['dashboard', 'monitor', 'admin', 'settings'].forEach(p => document.getElementById('page-' + p).classList.add('page-hidden'));
+                ['dashboard', 'monitor', 'admin', 'settings'].forEach(p => {
+                    const el = document.getElementById('page-' + p);
+                    if(el) el.classList.add('page-hidden');
+                });
                 document.getElementById('page-' + id).classList.remove('page-hidden');
                 this.toggleSidebar();
             },
+
             openModal(type) {
                 document.getElementById('modal').classList.remove('hidden');
                 document.getElementById('ui-manual').classList.toggle('hidden', type !== 'manual');
                 document.getElementById('ui-import').classList.toggle('hidden', type !== 'import');
                 if(type === 'manual') {
                     this.updatePrefabs();
-                    // Toggles beim Öffnen sauber aufsetzen
                     this.setupLiquidToggle('type-toggle', 'knob-type', ['Expense', 'Income'], (v) => { entryMode = v; ui.updatePrefabs(); }, entryMode);
                     this.setupLiquidToggle('freq-toggle', 'knob-freq', ['Once', 'Monthly'], (v) => { freqMode = v; }, freqMode);
                 }
             },
+
             closeModal() { document.getElementById('modal').classList.add('hidden'); },
+
             updatePrefabs() {
-                const list = { Expense: ['Server', 'Staff', 'Other'], Income: ['Donation', 'Salary'] };
-                document.getElementById('manual-prefab').innerHTML = list[entryMode].map(x => `<option value="${x}">${x}</option>`).join('');
-                this.handlePrefabChange(document.getElementById('manual-prefab'));
+                const list = { 
+                    Expense: [
+                        'Server Cost', 
+                        'Plugins/Mods', 
+                        'Staff Payment', 
+                        'Marketing/Ads', 
+                        'Domain/Web', 
+                        'Hardware/Upgrade', 
+                        'Sponsorships', 
+                        'Others (Custom)'
+                    ], 
+                    Income: [
+                        'Ranks', 
+                        'Donations', 
+                        'Coins', 
+                        'Partnerships', 
+                        'Investors', 
+                        'Merchandise', 
+                        'Ad Revenue', 
+                        'Others (Custom)'
+                    ] 
+                };
+                const select = document.getElementById('manual-prefab');
+                select.innerHTML = list[entryMode].map(x => `<option value="${x}">${x}</option>`).join('');
+                this.handlePrefabChange(select);
             },
-            handlePrefabChange(s) { document.getElementById('manual-desc').value = s.value; },
+
+            handlePrefabChange(s) {
+                const descInput = document.getElementById('manual-desc');
+                if(s.value.includes('Others')) {
+                    descInput.value = "";
+                    descInput.placeholder = "Enter custom label...";
+                    descInput.focus();
+                } else {
+                    descInput.value = s.value;
+                }
+            },
+
             handleFileSelect(i) { if(i.files[0]) document.getElementById('file-display-name').innerText = i.files[0].name; },
             openAdminPin() { if(prompt("Terminal PIN:") === "1234") this.switchPage('admin'); },
+
             updateDashboard() {
                 let total = 0;
                 const list = document.getElementById('transaction-list');
                 list.innerHTML = '';
                 state.history.forEach(t => total += t.amount);
                 [...state.history].reverse().forEach(t => {
-                    list.innerHTML += `
-                        <div class="crystal-glass p-6 rounded-[2.5rem] flex justify-between items-center">
-                            <div><p class="font-bold text-sm tracking-tight">${t.desc}</p><p class="text-[9px] opacity-20 font-black">${t.date}</p></div>
-                            <p class="font-black ${t.amount < 0 ? 'text-rose-500' : 'text-emerald-500'}">${t.amount.toFixed(2)} €</p>
-                        </div>`;
+                    list.innerHTML += `<div class="crystal-glass p-6 rounded-[2.5rem] flex justify-between items-center">
+                        <div><p class="font-bold text-sm tracking-tight">${t.desc}</p><p class="text-[9px] opacity-20 font-black">${t.date}</p></div>
+                        <p class="font-black ${t.amount < 0 ? 'text-rose-500' : 'text-emerald-500'}">${t.amount.toFixed(2)} €</p>
+                    </div>`;
                 });
                 document.getElementById('balance').innerText = total.toFixed(2) + " €";
                 this.updateChart();
             },
+
             updateChart() {
                 if(!chart) return;
                 const sorted = [...state.history].sort((a,b) => a.id - b.id);
@@ -360,8 +385,10 @@
                 let amt = parseFloat(document.getElementById('manual-amount').value);
                 if(isNaN(amt)) return;
                 amt = entryMode === 'Expense' ? -Math.abs(amt) : Math.abs(amt);
-                state.history.push({ id: Date.now(), desc: document.getElementById('manual-desc').value, amount: amt, type: freqMode, date: new Date().toLocaleDateString('de-DE') });
+                const desc = document.getElementById('manual-desc').value || "Unnamed";
+                state.history.push({ id: Date.now(), desc: desc, amount: amt, type: freqMode, date: new Date().toLocaleDateString('de-DE') });
                 this.save(); ui.closeModal(); ui.updateDashboard();
+                document.getElementById('manual-amount').value = "";
             },
             save() { localStorage.setItem('v_data', JSON.stringify(state)); },
             async processImport() {
@@ -369,14 +396,16 @@
                 if(file) {
                     const reader = new FileReader();
                     reader.onload = async (e) => {
-                        const pdf = await pdfjsLib.getDocument({data: new Uint8Array(e.target.result)}).promise;
-                        const page = await pdf.getPage(1);
-                        const content = await page.getTextContent();
-                        const text = content.items.map(s => s.str).join(" ");
-                        const match = text.match(/(\d+[\.,]\d{2})/);
-                        let val = match ? parseFloat(match[0].replace(',', '.')) : 10.0;
-                        state.history.push({ id: Date.now(), desc: "AI Scan", amount: -val, type: 'Once', date: new Date().toLocaleDateString('de-DE') });
-                        this.save(); ui.closeModal(); ui.updateDashboard();
+                        try {
+                            const pdf = await pdfjsLib.getDocument({data: new Uint8Array(e.target.result)}).promise;
+                            const page = await pdf.getPage(1);
+                            const content = await page.getTextContent();
+                            const text = content.items.map(s => s.str).join(" ");
+                            const match = text.match(/(\d+[\.,]\d{2})/);
+                            let val = match ? parseFloat(match[0].replace(',', '.')) : 10.0;
+                            state.history.push({ id: Date.now(), desc: "AI Scan: " + file.name, amount: -val, type: 'Once', date: new Date().toLocaleDateString('de-DE') });
+                            this.save(); ui.closeModal(); ui.updateDashboard();
+                        } catch(err) { alert("PDF Processing failed."); }
                     };
                     reader.readAsArrayBuffer(file);
                 }
@@ -386,15 +415,15 @@
         const monitor = {
             async check() {
                 const ip = document.getElementById('mc-ip').value, res = document.getElementById('mc-result');
-                res.innerHTML = "<p class='col-span-2 text-center opacity-30 text-[10px] font-black'>Polling...</p>";
+                res.innerHTML = "<p class='col-span-2 text-center opacity-30 text-[10px] font-black'>Polling Node...</p>";
                 res.classList.remove('hidden');
                 try {
                     const r = await fetch(`https://api.mcstatus.io/v2/status/java/${ip}`);
                     const d = await r.json();
                     if(d.online) {
-                        res.innerHTML = `<div class="crystal-glass p-6 rounded-3xl text-center"><p class="text-[8px] opacity-30 font-black">Status</p><p class="text-emerald-500 font-bold">ONLINE</p></div><div class="crystal-glass p-6 rounded-3xl text-center"><p class="text-[8px] opacity-30 font-black">Players</p><p class="font-bold">${d.players.online}</p></div>`;
+                        res.innerHTML = `<div class="crystal-glass p-6 rounded-3xl text-center"><p class="text-[8px] opacity-30 font-black">Status</p><p class="text-emerald-500 font-bold">ONLINE</p></div><div class="crystal-glass p-6 rounded-3xl text-center"><p class="text-[8px] opacity-30 font-black">Players</p><p class="font-bold text-xl">${d.players.online}</p></div>`;
                     } else { res.innerHTML = "<p class='col-span-2 text-rose-500 text-center font-bold'>OFFLINE</p>"; }
-                } catch(e) { res.innerHTML = "Error"; }
+                } catch(e) { res.innerHTML = "<p class='col-span-2 text-center'>Error</p>"; }
             }
         };
 
@@ -402,29 +431,17 @@
             if(state.auth) {
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('app-content').classList.remove('hidden');
-                
                 chart = new Chart(document.getElementById('financeChart'), {
                     type: 'line',
                     data: { labels: [], datasets: [{ data: [], borderColor: '#007AFF', tension: 0.4, fill: true, backgroundColor: 'rgba(0,122,255,0.05)', pointRadius: 4, pointBackgroundColor: '#007AFF', borderWidth: 3 }] },
                     options: { 
-                        responsive: true, 
-                        maintainAspectRatio: false, 
-                        plugins: { legend: { display: false } }, 
+                        responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, 
                         scales: { 
-                            x: { 
-                                display: true, 
-                                grid: { display: false }, 
-                                ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 10 } } 
-                            }, 
-                            y: { 
-                                display: true, 
-                                grid: { color: 'rgba(255,255,255,0.05)' }, 
-                                ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 10 }, callback: v => v + '€' } 
-                            } 
+                            x: { display: true, grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 10 } } }, 
+                            y: { display: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 10 }, callback: v => v + '€' } } 
                         } 
                     }
                 });
-
                 ui.updateDashboard();
                 ui.applyTheme(state.theme || 'dark');
                 ui.setupLiquidToggle('theme-toggle', 'knob-theme', ['Dark', 'Light'], (v) => ui.applyTheme(v.toLowerCase()), state.theme === 'light' ? 'Light' : 'Dark');
