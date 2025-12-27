@@ -245,14 +245,12 @@
                 };
 
                 labelEls.forEach((el, idx) => { el.onclick = (e) => { e.stopPropagation(); updateUI(idx); }; });
-
                 const onStart = (e) => {
                     isDragging = true;
                     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
                     startX = clientX - (box.getBoundingClientRect().left + currentX);
                     knob.style.transition = 'none';
                 };
-
                 const onMove = (e) => {
                     if (!isDragging) return;
                     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -260,15 +258,12 @@
                     currentX = Math.max(0, Math.min(clientX - box.getBoundingClientRect().left - startX, max));
                     knob.style.transform = `translateX(${currentX}px)`;
                 };
-
                 const onEnd = () => { if (isDragging) { isDragging = false; updateUI(currentX > (box.offsetWidth / 4) ? 1 : 0); } };
-
                 box.onmousedown = box.ontouchstart = onStart;
                 window.addEventListener('mousemove', onMove);
                 window.addEventListener('touchmove', onMove, {passive: false});
                 window.addEventListener('mouseup', onEnd);
                 window.addEventListener('touchend', onEnd);
-
                 const initIdx = labels.indexOf(initialVal) !== -1 ? labels.indexOf(initialVal) : 0;
                 setTimeout(() => updateUI(initIdx, false), 10);
             },
@@ -354,16 +349,32 @@
                 let run = 0;
                 const dataPoints = sorted.map(t => { run += t.amount; return run; });
                 
-                // Dynamische Farbwahl basierend auf dem aktuellen Stand
-                const currentBalance = dataPoints.length > 0 ? dataPoints[dataPoints.length - 1] : 0;
-                const color = currentBalance < 0 ? '#f43f5e' : '#10b981'; // Rose-500 vs Emerald-500
-                const bgGradient = currentBalance < 0 ? 'rgba(244, 63, 94, 0.1)' : 'rgba(16, 185, 129, 0.1)';
+                // Berechnung des Gradients (Verlauf) für die Linie
+                const ctx = document.getElementById('financeChart').getContext('2d');
+                const chartArea = chart.chartArea;
+
+                if (chartArea && dataPoints.length > 0) {
+                    const min = Math.min(...dataPoints, 0);
+                    const max = Math.max(...dataPoints, 0);
+                    const range = max - min;
+                    // Der Punkt, an dem die 0-Linie liegt (Prozentwert von oben)
+                    const zeroPos = range === 0 ? 0.5 : max / range;
+
+                    const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+                    gradient.addColorStop(0, '#10b981'); // Grün oben
+                    gradient.addColorStop(Math.max(0, Math.min(1, zeroPos)), '#10b981'); // Grün bis zur 0
+                    gradient.addColorStop(Math.max(0, Math.min(1, zeroPos)), '#f43f5e'); // Rot ab der 0
+                    gradient.addColorStop(1, '#f43f5e'); // Rot unten
+
+                    chart.data.datasets[0].borderColor = gradient;
+                    chart.data.datasets[0].backgroundColor = gradient.replace ? gradient : 'rgba(16,185,129,0.05)';
+                    
+                    // Individuelle Punktfarben
+                    chart.data.datasets[0].pointBackgroundColor = dataPoints.map(v => v < 0 ? '#f43f5e' : '#10b981');
+                }
 
                 chart.data.labels = sorted.map(t => t.date);
                 chart.data.datasets[0].data = dataPoints;
-                chart.data.datasets[0].borderColor = color;
-                chart.data.datasets[0].pointBackgroundColor = color;
-                chart.data.datasets[0].backgroundColor = bgGradient;
                 chart.update();
             }
         };
