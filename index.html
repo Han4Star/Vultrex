@@ -18,7 +18,7 @@
             --shadow: rgba(0, 0, 0, 0.8);
             --input-bg: rgba(150, 150, 150, 0.1);
             --icon-color: #fff;
-            --delete-red: linear-gradient(90deg, #e11d48 0%, #fb7185 100%);
+            --delete-red: #e11d48;
         }
 
         .light-mode {
@@ -49,7 +49,6 @@
             box-shadow: 0 8px 32px 0 var(--shadow);
         }
 
-        /* Liquid Toggle Design */
         .toggle-container {
             position: relative;
             width: 100%;
@@ -122,35 +121,35 @@
             transform: translate(-50%, 0);
         }
 
-        /* Swipe Delete Styles FIXED */
+        /* Swipe Container */
         .transaction-wrapper {
             position: relative;
             overflow: hidden;
             border-radius: 2.5rem;
-            background: transparent; /* Standardmäßig transparent */
             margin-bottom: 1rem;
+            background: transparent;
         }
 
+        /* Das rote Glas-Element im Hintergrund */
         .delete-background {
             position: absolute;
             inset: 0;
             background: var(--delete-red);
             border-radius: 2.5rem;
-            opacity: 0;
-            transition: opacity 0.2s;
+            opacity: 0; /* Startet bei 0 */
             z-index: 0;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 30px;
         }
 
         .delete-indicator {
-            position: absolute;
-            left: 25px; /* Icon erscheint links beim Swipe nach rechts */
-            top: 50%;
-            transform: translateY(-50%);
             color: white;
-            font-size: 20px;
-            z-index: 1;
+            font-size: 24px;
             opacity: 0;
-            transition: opacity 0.2s;
+            transform: scale(0.5);
+            transition: transform 0.2s;
         }
 
         .transaction-card {
@@ -189,13 +188,10 @@
     <div id="sidebar-overlay" onclick="ui.toggleSidebar()" class="fixed inset-0 bg-black/40 backdrop-blur-md z-[140] hidden"></div>
 
     <div id="app-content" class="hidden p-6 max-w-xl mx-auto h-screen overflow-y-auto">
-        
         <header class="flex justify-between items-center mb-10 pt-4 relative">
             <button id="sidebar-btn" onclick="ui.toggleSidebar()" class="w-12 h-12 crystal-glass rounded-full flex items-center justify-center text-xl font-bold">≡</button>
-            
             <div class="relative">
                 <button onclick="ui.toggleProfileMenu()" id="avatar" class="w-12 h-12 bg-blue-600 rounded-full border-2 border-white/20 shadow-lg flex items-center justify-center font-bold text-white uppercase active:scale-90 transition-transform">?</button>
-                
                 <div id="profile-menu" class="hidden absolute right-0 mt-3 w-48 crystal-glass p-4 rounded-3xl z-[160] border border-white/10 shadow-2xl">
                     <p id="menu-user-name" class="text-[10px] font-black uppercase opacity-40 mb-3 px-2 tracking-widest text-center truncate">User</p>
                     <button onclick="auth.logout()" class="w-full p-3 rounded-xl bg-rose-500/10 text-rose-500 text-xs font-bold uppercase active:bg-rose-500/20 transition-all">Sign Out</button>
@@ -205,10 +201,7 @@
 
         <div id="achievement-toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[300] w-[85%] max-w-sm crystal-glass p-6 rounded-[2.5rem] flex items-center gap-4 pointer-events-none border-emerald-500/30">
             <div class="w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center text-2xl shadow-lg shadow-emerald-500/20">🏆</div>
-            <div>
-                <p class="text-[10px] font-black uppercase opacity-40 tracking-widest">Meilenstein</p>
-                <p class="font-bold">Gute Arbeit! Kontostand > 100€</p>
-            </div>
+            <div><p class="text-[10px] font-black uppercase opacity-40 tracking-widest">Meilenstein</p><p class="font-bold text-xs">Kontostand erreicht > 100€</p></div>
         </div>
 
         <div id="page-dashboard" class="space-y-6">
@@ -216,18 +209,21 @@
                 <p class="text-[10px] opacity-40 uppercase font-black tracking-widest mb-1">Total Balance</p>
                 <h3 id="balance" class="text-5xl font-bold tracking-tighter italic">0.00 €</h3>
             </div>
-
-            <div class="crystal-glass p-6 rounded-[3rem] h-64">
-                <canvas id="financeChart"></canvas>
-            </div>
-
+            <div class="crystal-glass p-6 rounded-[3rem] h-64"><canvas id="financeChart"></canvas></div>
             <div class="grid grid-cols-2 gap-4">
                 <button onclick="ui.openModal('manual')" class="crystal-glass py-7 rounded-[2.5rem] font-bold uppercase text-[10px] tracking-widest active:scale-95 transition-all">Manual</button>
                 <button onclick="ui.openModal('import')" class="bg-blue-600 text-white py-7 rounded-[2.5rem] font-bold uppercase text-[10px] tracking-widest active:scale-95 transition-all">AI Scan</button>
             </div>
+            <div id="transaction-list" class="space-y-4 pb-20"></div>
+        </div>
 
-            <div id="transaction-list" class="space-y-4 pb-20">
+        <div id="page-monitor" class="page-hidden space-y-6">
+            <div class="crystal-glass p-8 rounded-[3rem]">
+                <p class="text-[10px] font-black uppercase opacity-40 mb-4 tracking-widest text-center">Server Status</p>
+                <input type="text" id="mc-ip" placeholder="Node IP" class="w-full p-5 rounded-2xl mb-4 text-center font-bold">
+                <button onclick="monitor.check()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold uppercase tracking-widest text-white active:scale-95 transition-all">Check Node</button>
             </div>
+            <div id="mc-result" class="hidden grid grid-cols-2 gap-4"></div>
         </div>
 
         <div id="page-settings" class="page-hidden space-y-6">
@@ -244,16 +240,6 @@
             </div>
         </div>
 
-        <div id="page-monitor" class="page-hidden space-y-6">
-            <div class="crystal-glass p-8 rounded-[3rem]">
-                <p class="text-[10px] font-black uppercase opacity-40 mb-4 tracking-widest text-center">Server Status</p>
-                <input type="text" id="mc-ip" placeholder="Node IP (e.g. play.vultrex.net)" class="w-full p-5 rounded-2xl mb-4 text-center border border-white/10 font-bold outline-none">
-                <button onclick="monitor.check()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold uppercase tracking-widest text-white active:scale-95 transition-all">Check Node</button>
-            </div>
-            <div id="mc-result" class="hidden grid grid-cols-2 gap-4">
-            </div>
-        </div>
-
         <div id="page-admin" class="page-hidden space-y-4">
             <h2 class="text-2xl font-black italic mb-6">User Database</h2>
             <div id="admin-user-list" class="space-y-2"></div>
@@ -262,28 +248,22 @@
 
     <div id="modal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-3xl z-[200] flex items-center justify-center p-6">
         <div class="crystal-glass w-full max-w-sm p-8 rounded-[4rem]">
-            
             <div id="ui-manual" class="hidden space-y-5">
                 <div class="toggle-container" id="type-toggle">
                     <div class="toggle-knob" id="knob-type">Expense</div>
                     <div class="toggle-label">Expense</div>
                     <div class="toggle-label">Income</div>
                 </div>
-
-                <select id="manual-prefab" onchange="ui.handlePrefabChange(this)" class="w-full p-5 rounded-2xl outline-none font-bold text-xs text-center appearance-none cursor-pointer"></select>
-                
-                <input type="text" id="manual-desc" placeholder="Label / Purpose" class="w-full p-5 rounded-2xl outline-none font-bold text-center">
-                <input type="number" id="manual-amount" placeholder="0.00" class="w-full p-5 rounded-2xl outline-none font-bold text-center text-2xl">
-                
+                <select id="manual-prefab" onchange="ui.handlePrefabChange(this)" class="w-full p-5 rounded-2xl font-bold text-xs text-center appearance-none cursor-pointer"></select>
+                <input type="text" id="manual-desc" placeholder="Label" class="w-full p-5 rounded-2xl font-bold text-center">
+                <input type="number" id="manual-amount" placeholder="0.00" class="w-full p-5 rounded-2xl font-bold text-center text-2xl">
                 <div class="toggle-container" id="freq-toggle">
                     <div class="toggle-knob" id="knob-freq">Once</div>
                     <div class="toggle-label">Once</div>
                     <div class="toggle-label">Monthly</div>
                 </div>
-
-                <button onclick="logic.saveManual()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase tracking-widest text-white shadow-xl active:scale-95 transition-all">Commit Entry</button>
+                <button onclick="logic.saveManual()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase tracking-widest text-white active:scale-95 transition-all">Commit Entry</button>
             </div>
-
             <div id="ui-import" class="hidden space-y-6 text-center">
                 <div class="relative w-full h-40 bg-white/5 rounded-3xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-3">
                     <span id="file-display-name" class="opacity-30 text-[10px] uppercase font-black tracking-widest px-4">Drag & Drop Invoice PDF</span>
@@ -291,7 +271,6 @@
                 </div>
                 <button onclick="logic.processImport()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase tracking-widest text-white active:scale-95 transition-all">Start AI Scan</button>
             </div>
-
             <button onclick="ui.closeModal()" class="w-full text-white/20 font-bold text-[10px] uppercase mt-8 tracking-widest">Return</button>
         </div>
     </div>
@@ -299,45 +278,27 @@
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-        let state = JSON.parse(localStorage.getItem('v_data')) || { 
-            history: [], 
-            auth: null, 
-            allUsers: [], 
-            theme: 'dark' 
-        };
-        let chart = null;
-        let entryMode = 'Expense';
-        let freqMode = 'Once';
-        let touchStartX = 0;
-        let currentSwipeElem = null;
+        let state = JSON.parse(localStorage.getItem('v_data')) || { history: [], auth: null, allUsers: [], theme: 'dark' };
+        let chart = null, entryMode = 'Expense', freqMode = 'Once';
+        let touchStartX = 0, currentSwipeElem = null;
 
         const auth = {
             login() {
-                const u = document.getElementById('login-user').value;
-                const p = document.getElementById('login-pass').value;
+                const u = document.getElementById('login-user').value, p = document.getElementById('login-pass').value;
                 if(u && p) {
                     state.auth = { user: u, pass: p };
-                    if(!state.allUsers.find(x => x.user === u)) {
-                        state.allUsers.push({ user: u, pass: p });
-                    }
-                    logic.save();
-                    location.reload();
+                    if(!state.allUsers.find(x => x.user === u)) state.allUsers.push({ user: u, pass: p });
+                    logic.save(); location.reload();
                 }
             },
-            logout() {
-                state.auth = null;
-                logic.save();
-                location.reload();
-            }
+            logout() { state.auth = null; logic.save(); location.reload(); }
         };
 
         const ui = {
             setupLiquidToggle(boxId, knobId, labels, callback, initialVal) {
-                const box = document.getElementById(boxId);
-                const knob = document.getElementById(knobId);
+                const box = document.getElementById(boxId), knob = document.getElementById(knobId);
                 const labelEls = box.querySelectorAll('.toggle-label');
-                let isDragging = false, startX, currentX = 0;
-
+                let isDragging = false, currentX = 0;
                 const updateUI = (idx, animate = true) => {
                     const max = box.offsetWidth / 2 - 4;
                     currentX = (idx === 0) ? 0 : max;
@@ -347,42 +308,7 @@
                     labelEls.forEach((l, i) => l.classList.toggle('active-label', i === idx));
                     callback(labels[idx]);
                 };
-
-                labelEls.forEach((el, idx) => {
-                    el.onclick = (e) => {
-                        e.stopPropagation();
-                        updateUI(idx);
-                    };
-                });
-
-                const onStart = (e) => {
-                    isDragging = true;
-                    const clX = e.touches ? e.touches[0].clientX : e.clientX;
-                    startX = clX - (box.getBoundingClientRect().left + currentX);
-                    knob.style.transition = 'none';
-                };
-
-                const onMove = (e) => {
-                    if (!isDragging) return;
-                    const clX = e.touches ? e.touches[0].clientX : e.clientX;
-                    const max = box.offsetWidth / 2 - 4;
-                    currentX = Math.max(0, Math.min(clX - box.getBoundingClientRect().left - startX, max));
-                    knob.style.transform = `translateX(${currentX}px)`;
-                };
-
-                const onEnd = () => {
-                    if (isDragging) {
-                        isDragging = false;
-                        updateUI(currentX > (box.offsetWidth / 4) ? 1 : 0);
-                    }
-                };
-
-                box.onmousedown = box.ontouchstart = onStart;
-                window.addEventListener('mousemove', onMove);
-                window.addEventListener('touchmove', onMove, {passive: false});
-                window.addEventListener('mouseup', onEnd);
-                window.addEventListener('touchend', onEnd);
-                
+                labelEls.forEach((el, idx) => el.onclick = () => updateUI(idx));
                 const initIdx = labels.indexOf(initialVal) !== -1 ? labels.indexOf(initialVal) : 0;
                 setTimeout(() => updateUI(initIdx, false), 10);
             },
@@ -390,27 +316,20 @@
             applyTheme(theme) {
                 state.theme = theme;
                 document.body.className = theme === 'light' ? 'light-mode' : 'dark-mode';
-                if(chart) this.updateChart();
                 logic.save();
             },
 
             toggleSidebar() {
-                const sb = document.getElementById('sidebar');
-                const ov = document.getElementById('sidebar-overlay');
+                const sb = document.getElementById('sidebar'), ov = document.getElementById('sidebar-overlay');
                 const open = sb.style.transform === 'translateX(0px)';
                 sb.style.transform = open ? 'translateX(-100%)' : 'translateX(0px)';
                 ov.classList.toggle('hidden');
             },
 
-            toggleProfileMenu() {
-                document.getElementById('profile-menu').classList.toggle('hidden');
-            },
+            toggleProfileMenu() { document.getElementById('profile-menu').classList.toggle('hidden'); },
 
             switchPage(id) {
-                ['dashboard', 'monitor', 'admin', 'settings'].forEach(p => {
-                    const el = document.getElementById('page-' + p);
-                    if(el) el.classList.add('page-hidden');
-                });
+                ['dashboard', 'monitor', 'admin', 'settings'].forEach(p => document.getElementById('page-' + p)?.classList.add('page-hidden'));
                 document.getElementById('page-' + id).classList.remove('page-hidden');
                 this.toggleSidebar();
             },
@@ -421,96 +340,70 @@
                 document.getElementById('ui-import').classList.toggle('hidden', type !== 'import');
                 if(type === 'manual') {
                     this.updatePrefabs();
-                    this.setupLiquidToggle('type-toggle', 'knob-type', ['Expense', 'Income'], (v) => { 
-                        entryMode = v; 
-                        ui.updatePrefabs(); 
-                    }, entryMode);
-                    this.setupLiquidToggle('freq-toggle', 'knob-freq', ['Once', 'Monthly'], (v) => { 
-                        freqMode = v; 
-                    }, freqMode);
+                    this.setupLiquidToggle('type-toggle', 'knob-type', ['Expense', 'Income'], (v) => { entryMode = v; ui.updatePrefabs(); }, entryMode);
+                    this.setupLiquidToggle('freq-toggle', 'knob-freq', ['Once', 'Monthly'], (v) => { freqMode = v; }, freqMode);
                 }
             },
 
-            closeModal() {
-                document.getElementById('modal').classList.add('hidden');
-            },
+            closeModal() { document.getElementById('modal').classList.add('hidden'); },
 
             updatePrefabs() {
-                const list = { 
-                    Expense: ['Server Cost', 'Plugins/Mods', 'Staff Payment', 'Marketing/Ads', 'Domain/Web', 'Hardware/Upgrade', 'Sponsorships', 'Others (Custom)'], 
-                    Income: ['Ranks', 'Donations', 'Coins', 'Partnerships', 'Investors', 'Merchandise', 'Ad Revenue', 'Others (Custom)'] 
-                };
+                const list = { Expense: ['Server Cost', 'Plugins', 'Staff', 'Marketing', 'Others (Custom)'], Income: ['Ranks', 'Donations', 'Coins', 'Others (Custom)'] };
                 const select = document.getElementById('manual-prefab');
                 select.innerHTML = list[entryMode].map(x => `<option value="${x}">${x}</option>`).join('');
                 this.handlePrefabChange(select);
             },
 
             handlePrefabChange(s) {
-                const descInput = document.getElementById('manual-desc');
-                if(s.value.includes('Others')) {
-                    descInput.value = "";
-                    descInput.placeholder = "Enter custom label...";
-                    descInput.focus();
-                } else {
-                    descInput.value = s.value;
-                }
+                const d = document.getElementById('manual-desc');
+                s.value.includes('Others') ? (d.value = "", d.focus()) : d.value = s.value;
             },
 
-            handleFileSelect(i) {
-                if(i.files[0]) document.getElementById('file-display-name').innerText = i.files[0].name;
-            },
+            handleFileSelect(i) { if(i.files[0]) document.getElementById('file-display-name').innerText = i.files[0].name; },
 
-            openAdminPin() {
-                if(prompt("Terminal PIN:") === "1234") this.switchPage('admin');
-            },
+            openAdminPin() { if(prompt("Terminal PIN:") === "1234") this.switchPage('admin'); },
 
+            // SWIPE DELETE LOGIC (Fix: Von Rechts nach Links)
             handleSwipeStart(e) {
                 touchStartX = e.touches[0].clientX;
                 currentSwipeElem = e.currentTarget;
                 currentSwipeElem.style.transition = 'none';
-                
-                // Hintergrund & Icon vorbereiten
-                const wrapper = currentSwipeElem.parentElement;
-                wrapper.querySelector('.delete-background').style.opacity = '1';
-                wrapper.querySelector('.delete-indicator').style.opacity = '0';
             },
 
             handleSwipeMove(e) {
                 if (!currentSwipeElem) return;
-                const touchX = e.touches[0].clientX;
-                const diff = touchX - touchStartX;
+                const diff = e.touches[0].clientX - touchStartX;
                 
-                // Nur nach RECHTS wischen (diff > 0)
-                if (diff > 0) {
-                    const move = Math.min(diff, 150);
+                // Nur nach LINKS wischen erlaubt (diff muss negativ sein)
+                if (diff < 0) {
+                    const move = Math.max(diff, -150); // Begrenzung nach links
                     currentSwipeElem.style.transform = `translateX(${move}px)`;
                     
-                    const indicator = currentSwipeElem.parentElement.querySelector('.delete-indicator');
-                    if(indicator) {
-                        indicator.style.opacity = move > 40 ? (move / 120) : 0;
-                        indicator.style.transform = `translateY(-50%) scale(${Math.min(1.2, move/100)})`;
-                    }
+                    const wrap = currentSwipeElem.parentElement;
+                    const bg = wrap.querySelector('.delete-background');
+                    const ind = wrap.querySelector('.delete-indicator');
+                    
+                    // Dynamisches Einblenden der Farbe (Opacity steigt je weiter man wischt)
+                    const progress = Math.abs(move) / 120;
+                    bg.style.opacity = Math.min(progress, 1);
+                    ind.style.opacity = Math.min(progress, 1);
+                    ind.style.transform = `scale(${Math.min(progress, 1.2)})`;
                 }
             },
 
             handleSwipeEnd(e) {
                 if (!currentSwipeElem) return;
                 const diff = e.changedTouches[0].clientX - touchStartX;
-                const threshold = 120;
-                const wrapper = currentSwipeElem.parentElement;
+                const wrap = currentSwipeElem.parentElement;
                 
                 currentSwipeElem.style.transition = 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
                 
-                if (diff > threshold) {
-                    currentSwipeElem.style.transform = `translateX(100%)`;
-                    const id = currentSwipeElem.getAttribute('data-id');
-                    setTimeout(() => {
-                        logic.deleteEntry(id);
-                    }, 300);
+                if (diff < -110) { // Schwellenwert für Löschen nach links
+                    currentSwipeElem.style.transform = 'translateX(-150%)';
+                    logic.deleteEntry(currentSwipeElem.getAttribute('data-id'));
                 } else {
-                    currentSwipeElem.style.transform = `translateX(0px)`;
-                    wrapper.querySelector('.delete-background').style.opacity = '0';
-                    wrapper.querySelector('.delete-indicator').style.opacity = '0';
+                    currentSwipeElem.style.transform = 'translateX(0px)';
+                    wrap.querySelector('.delete-background').style.opacity = '0';
                 }
                 currentSwipeElem = null;
             },
@@ -519,15 +412,15 @@
                 let total = 0;
                 const list = document.getElementById('transaction-list');
                 list.innerHTML = '';
-                
                 state.history.forEach(t => total += t.amount);
                 
                 [...state.history].reverse().forEach(t => {
                     const wrapper = document.createElement('div');
                     wrapper.className = 'transaction-wrapper';
                     wrapper.innerHTML = `
-                        <div class="delete-background"></div>
-                        <div class="delete-indicator">🗑️</div>
+                        <div class="delete-background">
+                            <span class="delete-indicator">🗑️</span>
+                        </div>
                         <div class="transaction-card crystal-glass p-6 rounded-[2.5rem] flex justify-between items-center" 
                              data-id="${t.id}"
                              ontouchstart="ui.handleSwipeStart(event)" 
@@ -543,20 +436,11 @@
                         </div>`;
                     list.appendChild(wrapper);
                 });
-
                 document.getElementById('balance').innerText = total.toFixed(2) + " €";
-                
-                if(state.auth && state.auth.user) {
-                    document.getElementById('avatar').innerText = state.auth.user.charAt(0);
-                    document.getElementById('menu-user-name').innerText = state.auth.user;
-                }
-
                 if(total >= 100) {
-                    const toast = document.getElementById('achievement-toast');
-                    toast.classList.add('show');
-                    setTimeout(() => toast.classList.remove('show'), 5000);
+                    document.getElementById('achievement-toast').classList.add('show');
+                    setTimeout(() => document.getElementById('achievement-toast').classList.remove('show'), 5000);
                 }
-
                 this.updateChart();
             },
 
@@ -564,56 +448,31 @@
                 if(!chart) return;
                 const sorted = [...state.history].sort((a,b) => a.id - b.id);
                 let run = 0;
-                const dataPoints = sorted.map(t => { run += t.amount; return run; });
-                
-                const ctx = document.getElementById('financeChart').getContext('2d');
-                const area = chart.chartArea;
-
-                if (area && dataPoints.length > 0) {
-                    const min = Math.min(...dataPoints, 0);
-                    const max = Math.max(...dataPoints, 0);
-                    const range = max - min;
-                    const zeroPos = range === 0 ? 0.5 : max / range;
-
-                    const grad = ctx.createLinearGradient(0, area.top, 0, area.bottom);
-                    grad.addColorStop(0, '#10b981');
-                    grad.addColorStop(Math.max(0, Math.min(1, zeroPos)), '#10b981');
-                    grad.addColorStop(Math.max(0, Math.min(1, zeroPos)), '#f43f5e');
-                    grad.addColorStop(1, '#f43f5e');
-
-                    chart.data.datasets[0].borderColor = grad;
-                    chart.data.datasets[0].backgroundColor = (state.theme === 'light') ? 'rgba(0,0,0,0.02)' : 'rgba(255,255,255,0.02)';
-                    chart.data.datasets[0].pointBackgroundColor = dataPoints.map(v => v < 0 ? '#f43f5e' : '#10b981');
-                }
-
+                const data = sorted.map(t => { run += t.amount; return run; });
                 chart.data.labels = sorted.map(t => t.date);
-                chart.data.datasets[0].data = dataPoints;
+                chart.data.datasets[0].data = data;
                 chart.update();
             }
         };
 
         const logic = {
             saveManual() {
-                let amt = parseFloat(document.getElementById('manual-amount').value);
-                if(isNaN(amt)) return;
-                amt = (entryMode === 'Expense') ? -Math.abs(amt) : Math.abs(amt);
+                let a = parseFloat(document.getElementById('manual-amount').value);
+                if(isNaN(a)) return;
                 state.history.push({ 
                     id: Date.now(), 
-                    desc: document.getElementById('manual-desc').value || "Unnamed", 
-                    amount: amt, 
-                    type: freqMode, 
+                    desc: document.getElementById('manual-desc').value || "Entry", 
+                    amount: entryMode === 'Expense' ? -a : a, 
                     date: new Date().toLocaleDateString('de-DE') 
                 });
-                this.save();
-                ui.closeModal();
-                ui.updateDashboard();
+                this.save(); ui.closeModal(); ui.updateDashboard();
                 document.getElementById('manual-amount').value = "";
             },
-            save() { localStorage.setItem('v_data', JSON.stringify(state)); },
             deleteEntry(id) {
-                state.history = state.history.filter(t => t.id != id);
-                this.save();
-                ui.updateDashboard();
+                setTimeout(() => {
+                    state.history = state.history.filter(t => t.id != id);
+                    this.save(); ui.updateDashboard();
+                }, 300);
             },
             async processImport() {
                 const f = document.getElementById('pdf-file').files[0];
@@ -622,50 +481,32 @@
                 reader.onload = async (e) => {
                     try {
                         const pdf = await pdfjsLib.getDocument({data: new Uint8Array(e.target.result)}).promise;
-                        const page = await pdf.getPage(1);
-                        const content = await page.getTextContent();
+                        const page = await pdf.getPage(1), content = await page.getTextContent();
                         const text = content.items.map(s => s.str).join(" ");
                         const match = text.match(/(\d+[\.,]\d{2})/);
                         let v = match ? parseFloat(match[0].replace(',', '.')) : 10.0;
-                        state.history.push({ 
-                            id: Date.now(), 
-                            desc: "Scan: " + f.name, 
-                            amount: -v, 
-                            type: 'Once', 
-                            date: new Date().toLocaleDateString('de-DE') 
-                        });
-                        this.save();
-                        ui.closeModal();
-                        ui.updateDashboard();
+                        state.history.push({ id: Date.now(), desc: "Scan: " + f.name, amount: -v, date: new Date().toLocaleDateString('de-DE') });
+                        this.save(); ui.closeModal(); ui.updateDashboard();
                     } catch(err) { alert("AI Scan failed."); }
                 };
                 reader.readAsArrayBuffer(f);
-            }
+            },
+            save() { localStorage.setItem('v_data', JSON.stringify(state)); }
         };
 
         const monitor = {
             async check() {
-                const ip = document.getElementById('mc-ip').value;
-                const res = document.getElementById('mc-result');
-                res.innerHTML = "<p class='col-span-2 text-center opacity-30 text-[10px] font-black tracking-widest'>Polling API...</p>";
+                const ip = document.getElementById('mc-ip').value, res = document.getElementById('mc-result');
+                res.innerHTML = "<p class='col-span-2 text-center opacity-30 text-[10px] font-black'>Polling Node...</p>";
                 res.classList.remove('hidden');
                 try {
                     const r = await fetch(`https://api.mcstatus.io/v2/status/java/${ip}`);
                     const d = await r.json();
                     if(d.online) {
-                        res.innerHTML = `
-                            <div class="crystal-glass p-6 rounded-3xl text-center">
-                                <p class="text-[8px] opacity-30 font-black uppercase tracking-widest">Status</p>
-                                <p class="text-emerald-500 font-bold">ONLINE</p>
-                            </div>
-                            <div class="crystal-glass p-6 rounded-3xl text-center">
-                                <p class="text-[8px] opacity-30 font-black uppercase tracking-widest">Players</p>
-                                <p class="font-bold text-xl">${d.players.online}</p>
-                            </div>`;
-                    } else {
-                        res.innerHTML = "<p class='col-span-2 text-rose-500 text-center font-bold uppercase'>Node Offline</p>";
-                    }
-                } catch(e) { res.innerHTML = "<p class='col-span-2 text-center text-xs opacity-50'>API Error</p>"; }
+                        res.innerHTML = `<div class="crystal-glass p-6 rounded-3xl text-center"><p class="text-[8px] opacity-30 uppercase font-black">Status</p><p class="text-emerald-500 font-bold">ONLINE</p></div>
+                                         <div class="crystal-glass p-6 rounded-3xl text-center"><p class="text-[8px] opacity-30 uppercase font-black">Players</p><p class="font-bold text-xl">${d.players.online}</p></div>`;
+                    } else { res.innerHTML = "<p class='col-span-2 text-rose-500 text-center font-bold'>OFFLINE</p>"; }
+                } catch(e) { res.innerHTML = "<p class='col-span-2 text-center text-xs opacity-50'>Error</p>"; }
             }
         };
 
@@ -675,19 +516,11 @@
                 document.getElementById('app-content').classList.remove('hidden');
                 chart = new Chart(document.getElementById('financeChart'), {
                     type: 'line',
-                    data: { labels: [], datasets: [{ data: [], tension: 0.4, fill: true, pointRadius: 4, borderWidth: 3 }] },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: {
-                            x: { display: true, grid: { display: false }, ticks: { color: 'rgba(150,150,150,0.3)', font: { size: 10 } } },
-                            y: { display: true, grid: { color: 'rgba(150,150,150,0.05)' }, ticks: { color: 'rgba(150,150,150,0.3)', font: { size: 10 }, callback: v => v + '€' } }
-                        }
-                    }
+                    data: { labels: [], datasets: [{ data: [], tension: 0.4, fill: true, borderColor: '#007AFF', backgroundColor: 'rgba(0,122,255,0.05)' }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
                 });
                 ui.updateDashboard();
-                ui.applyTheme(state.theme || 'dark');
+                ui.applyTheme(state.theme);
                 ui.setupLiquidToggle('theme-toggle', 'knob-theme', ['Dark', 'Light'], (v) => ui.applyTheme(v.toLowerCase()), state.theme === 'light' ? 'Light' : 'Dark');
             }
         };
