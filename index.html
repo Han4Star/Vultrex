@@ -1,392 +1,302 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vultrex</title>
-    
-    <meta name="apple-mobile-web-app-title" content="V">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/7075/7075344.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Vultrex Liquid Full</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script>
-        tailwind.config = { darkMode: 'class' };
-        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-        }
-    </script>
+    
     <style>
-        .sidebar-transition { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .page-hidden { display: none; }
-        
-        @keyframes scan-progress {
-            0% { width: 0%; }
-            50% { width: 70%; }
-            100% { width: 100%; }
-        }
-        .progress-bar {
-            height: 4px;
-            background: #3b82f6;
-            box-shadow: 0 0 10px #3b82f6;
-            border-radius: 10px;
-            animation: scan-progress 2s ease-in-out infinite;
+        :root {
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
         }
 
-        #pdf-file {
-            opacity: 0;
+        body {
+            background: radial-gradient(circle at top left, #1a1a1a, #000);
+            color: #fff;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .liquid-glass {
+            background: var(--glass);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+        }
+
+        .hold-btn {
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+        }
+
+        .hold-btn:active { transform: scale(0.96); }
+
+        .hold-progress {
             position: absolute;
-            inset: 0;
-            width: 100%;
+            bottom: 0;
+            left: 0;
             height: 100%;
-            cursor: pointer;
-            z-index: 10;
+            background: rgba(255, 255, 255, 0.15);
+            width: 0%;
+            transition: width 0.1s linear;
+            pointer-events: none;
         }
 
-        .tab-active { background-color: #2563eb; color: white; }
+        .sidebar-transition { transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        .page-hidden { display: none; }
+        #pdf-file { opacity: 0; position: absolute; inset: 0; cursor: pointer; z-index: 10; }
+        .tab-active { background: #007AFF; color: white; }
     </style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen font-sans overflow-x-hidden">
+<body class="min-h-screen overflow-x-hidden font-sans">
 
-    <div id="login-screen" class="fixed inset-0 z-[100] bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-6">
-        <div class="w-full max-w-sm text-center">
-            <h1 class="text-5xl font-black text-blue-600 mb-12 italic tracking-tighter">Vultrex</h1>
-            <div class="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-slate-800">
-                <input type="text" id="login-user" placeholder="Username" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl mb-4 outline-none border-2 border-transparent focus:border-blue-500 font-bold">
-                <input type="password" id="login-pass" placeholder="Password" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl mb-6 outline-none border-2 border-transparent focus:border-blue-500 font-bold">
-                <button onclick="auth.login()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest active:scale-95 transition-all">Unlock</button>
-                <p id="login-error" class="text-rose-500 text-[10px] mt-4 font-bold uppercase hidden"></p>
+    <div id="login-screen" class="fixed inset-0 z-[200] bg-black flex items-center justify-center p-6">
+        <div class="w-full max-w-sm">
+            <h1 class="text-6xl font-black text-white mb-12 italic text-center">V<span class="text-blue-500">.</span></h1>
+            <div class="liquid-glass p-8 rounded-[3rem]">
+                <input type="text" id="login-user" placeholder="Username" class="w-full bg-white/5 p-5 rounded-2xl mb-4 outline-none border border-white/10 text-center font-bold">
+                <input type="password" id="login-pass" placeholder="Password (Min 7)" class="w-full bg-white/5 p-5 rounded-2xl mb-8 outline-none border border-white/10 text-center font-bold">
+                <button onmousedown="ui.startHold(event, auth.login)" ontouchstart="ui.startHold(event, auth.login)" class="hold-btn w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase tracking-widest">
+                    <span class="relative z-10">Hold to Unlock</span>
+                    <div class="hold-progress"></div>
+                </button>
             </div>
         </div>
     </div>
 
-    <div id="sidebar" class="fixed inset-y-0 left-0 w-72 bg-white dark:bg-slate-900 z-[60] shadow-2xl border-r border-slate-200 dark:border-slate-800 sidebar-transition -translate-x-full">
-        <div class="p-8 flex flex-col h-full">
-            <h2 class="text-3xl font-black text-blue-600 italic mb-12">Vultrex</h2>
-            <nav class="space-y-2 flex-1">
-                <button onclick="ui.switchPage('dashboard')" class="w-full text-left p-4 rounded-2xl hover:bg-blue-600/10 hover:text-blue-600 transition-all font-bold flex items-center gap-4">📊 Dashboard</button>
-                <button onclick="ui.switchPage('monitor')" class="w-full text-left p-4 rounded-2xl hover:bg-blue-600/10 hover:text-blue-600 transition-all font-bold flex items-center gap-4">🎮 Server Monitor</button>
-                <button onclick="ui.openAdminPin()" class="w-full text-left p-4 rounded-2xl hover:bg-blue-600/10 hover:text-blue-600 transition-all font-bold flex items-center gap-4">🔒 Admin Panel</button>
+    <div id="sidebar" class="fixed inset-y-0 left-0 w-80 liquid-glass z-[150] sidebar-transition -translate-x-full rounded-r-[4rem]">
+        <div class="p-10 flex flex-col h-full">
+            <h2 class="text-4xl font-black italic mb-16">V<span class="text-blue-500">.</span></h2>
+            <nav class="space-y-4 flex-1">
+                <button onclick="ui.switchPage('dashboard')" class="w-full text-left p-6 rounded-3xl hover:bg-white/5 font-bold flex items-center gap-4">📊 Dashboard</button>
+                <button onclick="ui.switchPage('monitor')" class="w-full text-left p-6 rounded-3xl hover:bg-white/5 font-bold flex items-center gap-4">🎮 Monitor</button>
+                <button onclick="ui.openAdminPin()" class="w-full text-left p-6 rounded-3xl hover:bg-white/5 font-bold flex items-center gap-4">🔒 Admin</button>
             </nav>
-            <button onclick="auth.logout()" class="w-full p-4 rounded-2xl text-rose-500 font-black uppercase text-xs tracking-widest bg-rose-500/5 hover:bg-rose-500/10 transition-all">Logout</button>
+            <button onclick="auth.logout()" class="p-6 rounded-3xl bg-rose-500/10 text-rose-500 font-bold uppercase text-[10px]">Logout</button>
         </div>
     </div>
-    <div id="sidebar-overlay" onclick="ui.toggleSidebar()" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[55] hidden"></div>
+    <div id="sidebar-overlay" onclick="ui.toggleSidebar()" class="fixed inset-0 bg-black/60 backdrop-blur-md z-[140] hidden"></div>
 
-    <div id="app-content" class="hidden p-6 max-w-5xl mx-auto min-h-screen">
-        <header class="flex justify-between items-center mb-10 mt-4">
-            <button onclick="ui.toggleSidebar()" class="w-12 h-12 flex items-center justify-center bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 text-xl active:scale-90 transition-all">☰</button>
-            <h1 id="page-title-display" class="text-xl font-black uppercase italic tracking-tighter text-blue-600">Vultrex</h1>
-            <button onclick="ui.toggleTheme()" class="w-12 h-12 flex items-center justify-center rounded-2xl bg-slate-200 dark:bg-slate-800 active:scale-90 transition-all">🌓</button>
+    <div id="app-content" class="hidden p-6 max-w-2xl mx-auto min-h-screen">
+        <header class="flex justify-between items-center mb-10 pt-4">
+            <button onclick="ui.toggleSidebar()" class="w-14 h-14 liquid-glass rounded-full flex items-center justify-center text-xl">≡</button>
+            <h1 id="page-title-display" class="text-lg font-bold italic tracking-tight">VULTREX</h1>
+            <div class="w-14 h-14 liquid-glass rounded-full p-1"><div class="w-full h-full bg-blue-600 rounded-full"></div></div>
         </header>
 
-        <div id="page-dashboard">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <div class="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <p class="text-[10px] text-slate-400 uppercase font-black mb-1 tracking-widest">Balance</p>
-                    <p id="balance" class="text-4xl font-black text-blue-600 tracking-tight">0.00 €</p>
-                </div>
-                <div class="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden">
-                    <p class="text-[10px] text-rose-500 uppercase font-black mb-1 tracking-widest">Monthly Costs</p>
-                    <p id="monthly-stats" class="text-3xl font-black text-rose-500 tracking-tight">0.00 €</p>
-                </div>
+        <div id="page-dashboard" class="space-y-6">
+            <div class="liquid-glass p-8 rounded-[3rem]">
+                <p class="text-[10px] uppercase tracking-widest opacity-40 mb-1">Balance</p>
+                <h3 id="balance" class="text-4xl font-bold">0.00 €</h3>
+                <p id="monthly-stats" class="text-rose-500 text-xs font-bold mt-2">Monthly: 0.00 €</p>
             </div>
-            <div class="bg-white dark:bg-slate-900 p-6 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 mb-8">
-                <canvas id="financeChart" height="120"></canvas>
+            <div class="liquid-glass p-6 rounded-[3rem] h-64"><canvas id="financeChart"></canvas></div>
+            <div class="grid grid-cols-2 gap-4">
+                <button onmousedown="ui.startHold(event, () => ui.openModal('manual'))" ontouchstart="ui.startHold(event, () => ui.openModal('manual'))" class="hold-btn liquid-glass py-6 rounded-3xl font-bold text-xs uppercase"><span>New Entry</span><div class="hold-progress"></div></button>
+                <button onmousedown="ui.startHold(event, () => ui.openModal('import'))" ontouchstart="ui.startHold(event, () => ui.openModal('import'))" class="hold-btn bg-white text-black py-6 rounded-3xl font-bold text-xs uppercase"><span>Smart Scan</span><div class="hold-progress"></div></button>
             </div>
-            <div class="flex flex-col md:flex-row gap-4 mb-10">
-                <button onclick="ui.openModal('manual')" class="flex-1 bg-blue-600 text-white py-6 rounded-3xl font-black text-sm uppercase tracking-widest shadow-lg active:scale-95 transition-all">New Entry</button>
-                <button onclick="ui.openModal('import')" class="flex-1 bg-slate-900 dark:bg-white dark:text-slate-900 text-white py-6 rounded-3xl font-black text-sm uppercase tracking-widest italic shadow-lg active:scale-95 transition-all">Smart Scan</button>
-            </div>
-            <div id="transaction-list" class="space-y-4"></div>
+            <div id="transaction-list" class="space-y-4 pb-10"></div>
         </div>
 
-        <div id="page-monitor" class="page-hidden text-center">
-            <div class="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 mb-8 shadow-xl">
-                <h3 class="text-lg font-black mb-6 uppercase italic">Minecraft Server Check</h3>
-                <input type="text" id="mc-ip" placeholder="Server IP" class="w-full bg-slate-100 dark:bg-slate-800 p-5 rounded-2xl outline-none font-bold text-blue-600 text-center mb-4">
-                <button onclick="monitor.check()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black uppercase active:scale-95 transition-all">Scan Server</button>
+        <div id="page-monitor" class="page-hidden space-y-6">
+            <div class="liquid-glass p-8 rounded-[3rem]">
+                <h3 class="text-center font-bold mb-6">MINECRAFT MONITOR</h3>
+                <input type="text" id="mc-ip" placeholder="Server IP" class="w-full bg-white/5 p-5 rounded-2xl mb-4 text-center outline-none border border-white/10">
+                <button onclick="monitor.check()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold">Scan Server</button>
             </div>
-            <div id="mc-result" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+            <div id="mc-result" class="hidden grid grid-cols-2 gap-4"></div>
         </div>
 
-        <div id="page-admin" class="page-hidden">
-            <h2 class="text-3xl font-black uppercase italic tracking-tighter mb-8 text-blue-600">Admin Central</h2>
+        <div id="page-admin" class="page-hidden space-y-4">
+            <h2 class="text-2xl font-bold mb-6 italic">Terminal Control</h2>
             <div id="admin-user-list" class="space-y-3"></div>
         </div>
     </div>
 
-    <div id="modal" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 z-50">
-        <div class="bg-white dark:bg-slate-900 w-full max-w-md p-8 rounded-[3rem] shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-            <div id="ui-import" class="hidden text-center">
-                <h3 class="text-xl font-black mb-6 uppercase italic text-blue-600">Smart Scan</h3>
-                <div class="relative w-full h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mb-6 overflow-hidden border-2 border-transparent focus-within:border-blue-500">
-                    <span id="file-display-name" class="text-xs font-bold text-slate-500 uppercase px-4 truncate">Tap to select PDF</span>
+    <div id="modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-xl z-[200] flex items-center justify-center p-6">
+        <div class="liquid-glass w-full max-w-md p-8 rounded-[3.5rem]">
+            <div id="ui-manual" class="hidden space-y-4">
+                <div class="flex bg-white/5 p-1 rounded-2xl">
+                    <button id="tab-expense" onclick="ui.setEntryMode('expense')" class="flex-1 py-3 rounded-xl text-xs font-bold tab-active">Expense</button>
+                    <button id="tab-income" onclick="ui.setEntryMode('income')" class="flex-1 py-3 rounded-xl text-xs font-bold">Income</button>
+                </div>
+                <select id="manual-prefab" onchange="ui.handlePrefabChange(this)" class="w-full bg-white/5 p-4 rounded-xl outline-none font-bold text-sm border border-white/10"></select>
+                <input type="text" id="manual-desc" placeholder="Name" class="w-full bg-white/5 p-4 rounded-xl outline-none font-bold border border-white/10">
+                <input type="number" id="manual-amount" placeholder="0.00" class="w-full bg-white/5 p-4 rounded-xl outline-none font-bold border border-white/10">
+                <select id="manual-type" class="w-full bg-white/5 p-4 rounded-xl font-bold border border-white/10">
+                    <option value="once">One-time</option><option value="monthly">Monthly</option>
+                </select>
+                <button onclick="logic.saveManual()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase">Add Now</button>
+            </div>
+            <div id="ui-import" class="hidden space-y-4 text-center">
+                <h3 class="font-bold text-blue-500">SMART SCAN</h3>
+                <div class="relative w-full h-24 bg-white/5 rounded-2xl flex items-center justify-center border-2 border-dashed border-white/20">
+                    <span id="file-display-name" class="text-[10px] font-bold opacity-50">Drop PDF or Tap</span>
                     <input type="file" id="pdf-file" accept=".pdf" onchange="ui.handleFileSelect(this)">
                 </div>
-                <textarea id="ai-input" class="w-full h-32 bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl text-xs mb-4 outline-none font-mono" placeholder="Paste raw invoice text here..."></textarea>
-                <div id="scan-loading" class="hidden w-full mb-6">
-                    <div class="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1 overflow-hidden">
-                        <div class="progress-bar"></div>
-                    </div>
-                </div>
-                <button id="start-scan-btn" onclick="logic.processImport()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest active:scale-95 transition-all">Start Scan</button>
+                <textarea id="ai-input" class="w-full h-24 bg-white/5 p-4 rounded-2xl text-xs outline-none border border-white/10" placeholder="Or paste text..."></textarea>
+                <button onclick="logic.processImport()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase">Start Analysis</button>
             </div>
-
-            <div id="ui-manual" class="hidden text-center">
-                <h3 class="text-xl font-black mb-6 uppercase italic text-blue-600">New Entry</h3>
-                <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl mb-6">
-                    <button id="tab-expense" onclick="ui.setEntryMode('expense')" class="flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all tab-active">Expense</button>
-                    <button id="tab-income" onclick="ui.setEntryMode('income')" class="flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all">Income</button>
-                </div>
-                <select id="manual-prefab" onchange="ui.handlePrefabChange(this)" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl mb-4 outline-none font-bold text-sm"></select>
-                <input type="text" id="manual-desc" placeholder="Custom Name" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl mb-4 outline-none font-bold">
-                <input type="number" id="manual-amount" placeholder="0.00" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl mb-4 outline-none font-bold">
-                <select id="manual-type" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl mb-8 font-bold">
-                    <option value="once">One-time</option>
-                    <option value="monthly">Monthly</option>
-                </select>
-                <button onclick="logic.saveManual()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black uppercase">Add Now</button>
-            </div>
-            <button onclick="ui.closeModal()" class="w-full text-slate-400 py-4 font-bold text-[10px] uppercase tracking-widest mt-2">Close</button>
+            <button onclick="ui.closeModal()" class="w-full text-white/30 font-bold text-[10px] uppercase mt-6 tracking-widest">Close</button>
         </div>
     </div>
 
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         let state = JSON.parse(localStorage.getItem('v_data')) || { history: [], auth: null, allUsers: [] };
-        let chart = null;
-        let entryMode = 'expense';
-        const ADMIN_PIN = "1234";
-
-        const prefabs = {
-            income: ['Ranks', 'Donations', 'Collabs', 'Partner', 'Custom'],
-            expense: ['Plugins/Mods', 'Server Cost', 'Domain', 'Advertising', 'Freelancer', 'Custom']
-        };
+        let chart = null, holdInterval = null, entryMode = 'expense';
 
         const auth = {
             login() {
-                const user = document.getElementById('login-user').value;
-                const pass = document.getElementById('login-pass').value;
-                if(user.length > 2 && pass.length >= 7) {
-                    state.auth = { user, pass };
-                    if(!state.allUsers.find(u => u.user === user)) state.allUsers.push({ user, pass });
+                const u = document.getElementById('login-user').value, p = document.getElementById('login-pass').value;
+                if(u.length > 2 && p.length >= 7) {
+                    state.auth = { user: u, pass: p };
+                    if(!state.allUsers.find(x => x.user === u)) state.allUsers.push({ user: u, pass: p });
                     logic.save(); location.reload();
-                } else {
-                    document.getElementById('login-error').innerText = "Wrong Format (Min 7 Pass)";
-                    document.getElementById('login-error').classList.remove('hidden');
                 }
             },
             logout() { state.auth = null; logic.save(); location.reload(); }
         };
 
         const ui = {
-            handleFileSelect(input) {
-                const nameLabel = document.getElementById('file-display-name');
-                if (input.files && input.files[0]) {
-                    nameLabel.innerText = input.files[0].name;
-                    nameLabel.classList.add('text-blue-500');
-                }
+            startHold(event, callback) {
+                const btn = event.currentTarget;
+                const progress = btn.querySelector('.hold-progress');
+                let start = Date.now();
+                holdInterval = setInterval(() => {
+                    let elapsed = Date.now() - start;
+                    let p = (elapsed / 600) * 100;
+                    progress.style.width = Math.min(p, 100) + '%';
+                    if (elapsed >= 600) { this.clearHold(btn, progress); callback(); }
+                }, 20);
+                const end = () => { this.clearHold(btn, progress); window.removeEventListener('mouseup', end); window.removeEventListener('touchend', end); };
+                window.addEventListener('mouseup', end); window.addEventListener('touchend', end);
             },
-            setEntryMode(mode) {
-                entryMode = mode;
-                document.getElementById('tab-expense').classList.toggle('tab-active', mode === 'expense');
-                document.getElementById('tab-income').classList.toggle('tab-active', mode === 'income');
-                const select = document.getElementById('manual-prefab');
-                select.innerHTML = prefabs[mode].map(p => `<option value="${p}">${p}</option>`).join('');
-                this.handlePrefabChange(select);
-            },
-            handlePrefabChange(select) {
-                const input = document.getElementById('manual-desc');
-                if (select.value === 'Custom') {
-                    input.value = "";
-                    input.focus();
-                } else {
-                    input.value = select.value;
-                }
-            },
+            clearHold(btn, progress) { clearInterval(holdInterval); progress.style.width = '0%'; },
             toggleSidebar() {
-                const sb = document.getElementById('sidebar');
-                const ov = document.getElementById('sidebar-overlay');
-                const isOpen = sb.style.transform === 'translateX(0px)';
-                sb.style.transform = isOpen ? 'translateX(-100%)' : 'translateX(0px)';
+                const sb = document.getElementById('sidebar'), ov = document.getElementById('sidebar-overlay');
+                const open = sb.style.transform === 'translateX(0px)';
+                sb.style.transform = open ? 'translateX(-100%)' : 'translateX(0px)';
                 ov.classList.toggle('hidden');
             },
-            toggleTheme() {
-                document.documentElement.classList.toggle('dark');
-                localStorage.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-            },
-            switchPage(pageId) {
+            switchPage(id) {
                 ['dashboard', 'monitor', 'admin'].forEach(p => document.getElementById('page-' + p).classList.add('page-hidden'));
-                document.getElementById('page-' + pageId).classList.remove('page-hidden');
-                document.getElementById('page-title-display').innerText = pageId === 'dashboard' ? 'Vultrex' : pageId.toUpperCase();
-                if(pageId === 'admin') this.renderAdmin();
+                document.getElementById('page-' + id).classList.remove('page-hidden');
+                if(id === 'admin') this.renderAdmin();
                 this.toggleSidebar();
             },
             openModal(type) {
                 document.getElementById('modal').classList.remove('hidden');
                 document.getElementById('ui-manual').classList.toggle('hidden', type !== 'manual');
                 document.getElementById('ui-import').classList.toggle('hidden', type !== 'import');
-                if (type === 'manual') this.setEntryMode('expense');
+                if(type === 'manual') this.setEntryMode('expense');
             },
             closeModal() { document.getElementById('modal').classList.add('hidden'); },
-            openAdminPin() {
-                const pin = prompt("Admin Pin:");
-                if(pin === ADMIN_PIN) this.switchPage('admin');
+            setEntryMode(m) {
+                entryMode = m;
+                document.getElementById('tab-expense').classList.toggle('tab-active', m === 'expense');
+                document.getElementById('tab-income').classList.toggle('tab-active', m === 'income');
+                const p = { income: ['Ranks', 'Donations', 'Custom'], expense: ['Server', 'Plugins', 'Domain', 'Custom'] };
+                document.getElementById('manual-prefab').innerHTML = p[m].map(x => `<option value="${x}">${x}</option>`).join('');
+                this.handlePrefabChange(document.getElementById('manual-prefab'));
             },
+            handlePrefabChange(s) { document.getElementById('manual-desc').value = s.value === 'Custom' ? "" : s.value; },
+            handleFileSelect(i) { if(i.files[0]) document.getElementById('file-display-name').innerText = i.files[0].name; },
+            openAdminPin() { if(prompt("PIN:") === "1234") this.switchPage('admin'); },
             renderAdmin() {
-                const list = document.getElementById('admin-user-list');
-                list.innerHTML = state.allUsers.map(u => `
-                    <div class="p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl flex justify-between">
-                        <span class="font-black text-blue-600">${u.user}</span>
-                        <span class="font-mono text-xs opacity-50">${u.pass}</span>
-                    </div>`).join('');
+                document.getElementById('admin-user-list').innerHTML = state.allUsers.map(u => `
+                    <div class="liquid-glass p-5 rounded-2xl flex justify-between"><b>${u.user}</b><span class="opacity-50 text-xs">${u.pass}</span></div>`).join('');
             },
             updateDashboard() {
                 let total = 0, monthly = 0;
                 const list = document.getElementById('transaction-list');
                 list.innerHTML = '';
+                state.history.sort((a,b) => a.id - b.id);
                 state.history.forEach(t => {
                     total += t.amount;
                     if(t.type === 'monthly' && t.amount < 0) monthly += t.amount;
                 });
-                state.history.slice().reverse().forEach(t => {
-                    list.innerHTML += `<div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 flex justify-between items-center">
-                        <div><p class="font-bold text-sm">${t.desc}</p><p class="text-[9px] uppercase text-slate-500">${t.date}</p></div>
-                        <div class="text-right">
-                            <p class="font-black ${t.amount < 0 ? 'text-rose-500' : 'text-emerald-500'}">${t.amount.toFixed(2)} €</p>
-                            <button onclick="logic.deleteEntry(${t.id})" class="text-[8px] font-black text-slate-300">DELETE</button>
-                        </div>
-                    </div>`;
+                [...state.history].reverse().forEach(t => {
+                    list.innerHTML += `
+                        <div class="liquid-glass p-6 rounded-[2rem] flex justify-between items-center">
+                            <div><p class="font-bold text-sm">${t.desc}</p><p class="text-[9px] opacity-40 font-black">${t.date}</p></div>
+                            <div class="text-right flex items-center gap-4">
+                                <p class="font-black ${t.amount < 0 ? 'text-rose-500' : 'text-emerald-400'}">${t.amount.toFixed(2)} €</p>
+                                <button onclick="logic.deleteEntry(${t.id})" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center opacity-30 hover:opacity-100 transition-all">×</button>
+                            </div>
+                        </div>`;
                 });
                 document.getElementById('balance').innerText = total.toFixed(2) + " €";
-                document.getElementById('monthly-stats').innerText = Math.abs(monthly).toFixed(2) + " €";
-                logic.updateChart();
+                document.getElementById('monthly-stats').innerText = "Monthly: " + Math.abs(monthly).toFixed(2) + " €";
+                this.updateChart();
+            },
+            updateChart() {
+                if(!chart) return;
+                const sorted = [...state.history].sort((a,b) => a.id - b.id);
+                let running = 0, lastD = "";
+                chart.data.labels = sorted.map(t => { if(t.date !== lastD) { lastD = t.date; return t.date; } return ""; });
+                chart.data.datasets[0].data = sorted.map(t => { running += t.amount; return running; });
+                chart.update();
             }
         };
 
         const logic = {
             saveManual() {
-                const desc = document.getElementById('manual-desc').value || 'New Entry';
                 let amt = parseFloat(document.getElementById('manual-amount').value);
                 if(isNaN(amt)) return;
-                if(entryMode === 'expense') amt = -Math.abs(amt);
-                else amt = Math.abs(amt);
-                state.history.push({ 
-                    id: Date.now(), 
-                    desc, 
-                    amount: amt, 
-                    type: document.getElementById('manual-type').value, 
-                    date: new Date().toLocaleDateString('en-GB') 
-                });
+                amt = entryMode === 'expense' ? -Math.abs(amt) : Math.abs(amt);
+                state.history.push({ id: Date.now(), desc: document.getElementById('manual-desc').value || 'Entry', amount: amt, type: document.getElementById('manual-type').value, date: new Date().toLocaleDateString('en-GB') });
                 this.save(); ui.closeModal(); ui.updateDashboard();
-                document.getElementById('manual-amount').value = "";
             },
-            deleteEntry(id) {
-                state.history = state.history.filter(t => t.id !== id);
-                this.save(); ui.updateDashboard();
-            },
+            deleteEntry(id) { state.history = state.history.filter(t => t.id !== id); this.save(); ui.updateDashboard(); },
             save() { localStorage.setItem('v_data', JSON.stringify(state)); },
-            updateChart() {
-                if(!chart) return;
-                
-                // 1. Sortiere Historie chronologisch
-                const sortedHistory = [...state.history].sort((a, b) => a.id - b.id);
-                
-                let runningBalance = 0;
-                let lastDate = "";
-                const labels = [];
-                const dataPoints = [];
-
-                sortedHistory.forEach(t => {
-                    runningBalance += t.amount;
-                    dataPoints.push(runningBalance);
-                    
-                    // Nur den ersten Eintrag eines neuen Tages beschriften
-                    if (t.date !== lastDate) {
-                        labels.push(t.date);
-                        lastDate = t.date;
-                    } else {
-                        labels.push(""); // Platzhalter für Transaktionen am gleichen Tag
-                    }
-                });
-
-                chart.data.labels = labels;
-                chart.data.datasets[0].data = dataPoints;
-                chart.update();
-            },
             async processImport() {
                 const file = document.getElementById('pdf-file').files[0];
                 const textInput = document.getElementById('ai-input').value;
-                const loader = document.getElementById('scan-loading');
-                const btn = document.getElementById('start-scan-btn');
-                loader.classList.remove('hidden');
-                btn.classList.add('hidden');
                 if(file) {
                     const reader = new FileReader();
                     reader.onload = async (e) => {
-                        try {
-                            const pdf = await pdfjsLib.getDocument({data: new Uint8Array(e.target.result)}).promise;
-                            let fullText = "";
-                            for (let i = 1; i <= pdf.numPages; i++) {
-                                const page = await pdf.getPage(i);
-                                const content = await page.getTextContent();
-                                fullText += content.items.map(item => item.str).join(" ");
-                            }
-                            this.finalizeScan(fullText);
-                        } catch (err) { this.finalizeScan(""); }
+                        const pdf = await pdfjsLib.getDocument({data: new Uint8Array(e.target.result)}).promise;
+                        let fullText = "";
+                        for (let i = 1; i <= pdf.numPages; i++) {
+                            const page = await pdf.getPage(i);
+                            const content = await page.getTextContent();
+                            fullText += content.items.map(item => item.str).join(" ");
+                        }
+                        this.finalizeScan(fullText);
                     };
                     reader.readAsArrayBuffer(file);
-                } else if(textInput) {
-                    setTimeout(() => this.finalizeScan(textInput), 1000);
-                } else {
-                    loader.classList.add('hidden');
-                    btn.classList.remove('hidden');
-                }
+                } else if(textInput) { this.finalizeScan(textInput); }
             },
             finalizeScan(text) {
-                const moneyRegex = /(-?\d+[\.,]\d{2})/g;
-                const matches = text.match(moneyRegex);
-                let val = 5.00;
-                if(matches && matches.length > 0) {
-                    val = Math.abs(parseFloat(matches[0].replace(',', '.')));
-                }
-                state.history.push({ id: Date.now(), desc: 'Smart Scan', amount: -val, type: 'once', date: new Date().toLocaleDateString('en-GB') });
-                this.save();
-                document.getElementById('scan-loading').classList.add('hidden');
-                document.getElementById('start-scan-btn').classList.remove('hidden');
-                document.getElementById('pdf-file').value = "";
-                document.getElementById('ai-input').value = "";
-                ui.closeModal(); ui.updateDashboard();
+                const matches = text.match(/(-?\d+[\.,]\d{2})/g);
+                let val = matches ? Math.abs(parseFloat(matches[0].replace(',', '.'))) : 10.00;
+                state.history.push({ id: Date.now(), desc: 'Scan', amount: -val, type: 'once', date: new Date().toLocaleDateString('en-GB') });
+                this.save(); ui.closeModal(); ui.updateDashboard();
             }
         };
 
         const monitor = {
             async check() {
-                const ip = document.getElementById('mc-ip').value;
-                if(!ip) return;
+                const ip = document.getElementById('mc-ip').value; if(!ip) return;
                 const resDiv = document.getElementById('mc-result');
-                resDiv.innerHTML = "<p class='col-span-full py-10 font-black animate-pulse text-blue-600'>SCANNING...</p>";
+                resDiv.innerHTML = "<p class='col-span-2 text-center animate-pulse'>SCANNING...</p>";
                 resDiv.classList.remove('hidden');
                 try {
-                    const response = await fetch(`https://api.mcstatus.io/v2/status/java/${ip}`);
-                    const data = await response.json();
-                    if(data.online) {
+                    const r = await fetch(`https://api.mcstatus.io/v2/status/java/${ip}`);
+                    const d = await r.json();
+                    if(d.online) {
                         resDiv.innerHTML = `
-                            <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 flex flex-col items-center">
-                                <img src="${data.icon || 'https://cdn-icons-png.flaticon.com/512/3534/3534014.png'}" class="w-12 h-12 mb-2 rounded-lg">
-                                <p class="text-[8px] font-black text-emerald-500 uppercase">ONLINE</p>
-                            </div>
-                            <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 flex flex-col justify-center">
-                                <p class="text-[8px] font-black text-blue-500 uppercase text-center">Players</p><p class="text-sm font-black text-center">${data.players.online}/${data.players.max}</p>
-                            </div>
-                            <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 flex flex-col justify-center">
-                                <p class="text-[8px] font-black text-amber-500 uppercase text-center">Version</p><p class="text-[8px] font-black text-center truncate">${data.version.name_clean || 'N/A'}</p>
-                            </div>`;
-                    } else { resDiv.innerHTML = "<p class='col-span-full py-10 text-rose-500 font-black'>OFFLINE</p>"; }
+                            <div class="liquid-glass p-5 rounded-3xl text-center"><p class="text-[8px] text-emerald-500 font-bold">ONLINE</p><p class="text-sm font-bold">${d.players.online}/${d.players.max}</p></div>
+                            <div class="liquid-glass p-5 rounded-3xl text-center"><p class="text-[8px] text-blue-500 font-bold">VERSION</p><p class="text-[10px] truncate font-bold">${d.version.name_clean || 'N/A'}</p></div>`;
+                    } else { resDiv.innerHTML = "<p class='col-span-2 text-rose-500'>OFFLINE</p>"; }
                 } catch (e) { resDiv.innerHTML = "ERROR"; }
             }
         };
@@ -395,18 +305,10 @@
             if(state.auth) {
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('app-content').classList.remove('hidden');
-                const ctx = document.getElementById('financeChart').getContext('2d');
-                chart = new Chart(ctx, {
+                chart = new Chart(document.getElementById('financeChart'), {
                     type: 'line',
-                    data: { labels: [], datasets: [{ data: [], borderColor: '#3b82f6', tension: 0.4, fill: true, backgroundColor: 'rgba(59, 130, 246, 0.05)', borderWidth: 3 }] },
-                    options: { 
-                        responsive: true, 
-                        plugins: { legend: { display: false } },
-                        scales: { 
-                            x: { grid: { display: false }, ticks: { autoSkip: false, maxRotation: 0 } }, 
-                            y: { ticks: { stepSize: 5 } } 
-                        }
-                    }
+                    data: { labels: [], datasets: [{ data: [], borderColor: '#007AFF', borderWidth: 4, pointRadius: 0, tension: 0.4, fill: true, backgroundColor: 'rgba(0, 122, 255, 0.1)' }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { color: 'rgba(255,255,255,0.05)' } } } }
                 });
                 ui.updateDashboard();
             }
@@ -414,3 +316,4 @@
     </script>
 </body>
 </html>
+
