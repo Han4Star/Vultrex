@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
@@ -16,7 +15,6 @@
             --glass: rgba(255, 255, 255, 0.02);
             --glass-border: rgba(255, 255, 255, 0.15);
             --shadow: rgba(0, 0, 0, 0.8);
-            --input-bg: rgba(150, 150, 150, 0.1);
         }
 
         .light-mode {
@@ -25,7 +23,6 @@
             --glass: rgba(255, 255, 255, 0.7);
             --glass-border: rgba(255, 255, 255, 0.8);
             --shadow: rgba(0, 0, 0, 0.05);
-            --input-bg: #ffffff;
         }
 
         body {
@@ -51,14 +48,13 @@
             position: relative;
             width: 100%;
             height: 60px;
-            background: var(--input-bg);
+            background: rgba(150, 150, 150, 0.1);
             border-radius: 20px;
             padding: 4px;
             display: flex;
             align-items: center;
             cursor: pointer;
             touch-action: none;
-            border: 1px solid var(--glass-border);
         }
 
         .toggle-knob {
@@ -90,31 +86,22 @@
             opacity: 0.3;
             transition: opacity 0.3s;
             z-index: 5;
-            user-select: none;
         }
 
         .active-label { opacity: 1; }
         .page-hidden { display: none; }
         .sidebar-transition { transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
-        
-        input, select { 
-            background: var(--input-bg) !important; 
-            color: var(--text) !important;
-            border: 1px solid var(--glass-border) !important;
-            outline: none;
-        }
-        
         #pdf-file { opacity: 0; position: absolute; inset: 0; cursor: pointer; }
     </style>
 </head>
 <body class="dark-mode">
 
     <div id="login-screen" class="fixed inset-0 z-[200] bg-black flex items-center justify-center p-6">
-        <div class="w-full max-sm text-center text-white">
+        <div class="w-full max-w-sm text-center text-white">
             <h1 class="text-8xl font-black mb-12 italic tracking-tighter">V<span class="text-blue-500">.</span></h1>
             <div class="crystal-glass p-10 rounded-[3.5rem]" style="background: rgba(255,255,255,0.05)">
-                <input type="text" id="login-user" placeholder="Identity" class="w-full p-5 rounded-2xl mb-4 text-center font-bold outline-none">
-                <input type="password" id="login-pass" placeholder="Key" class="w-full p-5 rounded-2xl mb-8 text-center font-bold outline-none">
+                <input type="text" id="login-user" placeholder="Identity" class="w-full bg-white/5 p-5 rounded-2xl mb-4 border border-white/10 text-center font-bold outline-none">
+                <input type="password" id="login-pass" placeholder="Key" class="w-full bg-white/5 p-5 rounded-2xl mb-8 border border-white/10 text-center font-bold outline-none">
                 <button onclick="auth.login()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase tracking-widest active:scale-95 transition-all shadow-lg">Connect</button>
             </div>
         </div>
@@ -162,7 +149,7 @@
                     <p class="text-[10px] font-black uppercase opacity-40 mb-4 tracking-widest">Visual Mode</p>
                     <div class="toggle-container" id="theme-toggle">
                         <div class="toggle-knob" id="knob-theme">Dark</div>
-                        <div class="toggle-label">Dark</div>
+                        <div class="toggle-label active-label">Dark</div>
                         <div class="toggle-label">Light</div>
                     </div>
                 </div>
@@ -174,7 +161,7 @@
 
         <div id="page-monitor" class="page-hidden space-y-6">
             <div class="crystal-glass p-8 rounded-[3rem]">
-                <input type="text" id="mc-ip" placeholder="Node IP" class="w-full p-5 rounded-2xl mb-4 text-center border border-white/10 font-bold outline-none">
+                <input type="text" id="mc-ip" placeholder="Node IP" class="w-full bg-white/5 p-5 rounded-2xl mb-4 text-center border border-white/10 font-bold outline-none">
                 <button onclick="monitor.check()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold uppercase tracking-widest text-white">Check Node</button>
             </div>
             <div id="mc-result" class="hidden grid grid-cols-2 gap-4"></div>
@@ -187,15 +174,15 @@
             <div id="ui-manual" class="hidden space-y-5">
                 <div class="toggle-container" id="type-toggle">
                     <div class="toggle-knob" id="knob-type">Expense</div>
-                    <div class="toggle-label">Expense</div>
+                    <div class="toggle-label active-label">Expense</div>
                     <div class="toggle-label">Income</div>
                 </div>
-                <select id="manual-prefab" onchange="ui.handlePrefabChange(this)" class="w-full p-5 rounded-2xl outline-none font-bold text-xs text-center appearance-none"></select>
-                <input type="text" id="manual-desc" placeholder="Label" class="w-full p-5 rounded-2xl outline-none font-bold text-center">
-                <input type="number" id="manual-amount" placeholder="0.00" class="w-full p-5 rounded-2xl outline-none font-bold text-center">
+                <select id="manual-prefab" onchange="ui.handlePrefabChange(this)" class="w-full bg-white/5 p-5 rounded-2xl border border-white/10 outline-none font-bold text-xs text-center appearance-none"></select>
+                <input type="text" id="manual-desc" placeholder="Label" class="w-full bg-white/5 p-5 rounded-2xl border border-white/10 outline-none font-bold text-center">
+                <input type="number" id="manual-amount" placeholder="0.00" class="w-full bg-white/5 p-5 rounded-2xl border border-white/10 outline-none font-bold text-center">
                 <div class="toggle-container" id="freq-toggle">
                     <div class="toggle-knob" id="knob-freq">Once</div>
-                    <div class="toggle-label">Once</div>
+                    <div class="toggle-label active-label">Once</div>
                     <div class="toggle-label">Monthly</div>
                 </div>
                 <button onclick="logic.saveManual()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase tracking-widest text-white">Commit</button>
@@ -230,50 +217,53 @@
 
         const ui = {
             setupLiquidToggle(boxId, knobId, labels, callback, initialVal) {
-                const box = document.getElementById(boxId), knob = document.getElementById(knobId);
+                const box = document.getElementById(boxId);
+                const knob = document.getElementById(knobId);
                 const labelEls = box.querySelectorAll('.toggle-label');
                 let isDragging = false, startX, currentX = 0;
 
                 const updateUI = (idx) => {
                     const max = box.offsetWidth / 2 - 4;
                     currentX = idx === 0 ? 0 : max;
-                    knob.style.transition = 'transform 0.5s cubic-bezier(0.22, 1, 0.36, 1)';
                     knob.style.transform = `translateX(${currentX}px)`;
                     knob.innerText = labels[idx];
                     labelEls.forEach((l, i) => l.classList.toggle('active-label', i === idx));
                     callback(labels[idx]);
                 };
 
+                // Click to toggle
                 labelEls.forEach((el, idx) => el.onclick = () => updateUI(idx));
 
+                // Drag logic
                 box.onmousedown = box.ontouchstart = (e) => {
                     isDragging = true;
-                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                    startX = clientX - currentX;
+                    startX = (e.touches ? e.touches[0].clientX : e.clientX) - currentX;
                     knob.style.transition = 'none';
                 };
-
                 window.onmousemove = window.ontouchmove = (e) => {
                     if (!isDragging) return;
-                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                    const max = box.offsetWidth / 2 - 4;
-                    currentX = Math.max(0, Math.min(clientX - startX, max));
+                    const x = e.touches ? e.touches[0].clientX : e.clientX;
+                    currentX = Math.max(0, Math.min(x - startX, box.offsetWidth / 2 - 4));
                     knob.style.transform = `translateX(${currentX}px)`;
                 };
-
                 window.onmouseup = window.ontouchend = () => {
                     if (!isDragging) return;
                     isDragging = false;
-                    const max = box.offsetWidth / 2 - 4;
-                    updateUI(currentX > max / 2 ? 1 : 0);
+                    knob.style.transition = 'transform 0.5s cubic-bezier(0.22, 1, 0.36, 1)';
+                    updateUI(currentX > (box.offsetWidth / 4) ? 1 : 0);
                 };
 
-                updateUI(labels.indexOf(initialVal) !== -1 ? labels.indexOf(initialVal) : 0);
+                if(initialVal) updateUI(labels.indexOf(initialVal));
             },
 
             applyTheme(theme) {
                 state.theme = theme;
                 document.body.className = theme === 'light' ? 'light-mode' : '';
+                if(chart) {
+                    chart.options.scales.x.ticks.color = theme === 'light' ? '#00000044' : '#ffffff33';
+                    chart.options.scales.y.ticks.color = theme === 'light' ? '#00000044' : '#ffffff33';
+                    chart.update();
+                }
                 logic.save();
             },
 
@@ -292,11 +282,7 @@
                 document.getElementById('modal').classList.remove('hidden');
                 document.getElementById('ui-manual').classList.toggle('hidden', type !== 'manual');
                 document.getElementById('ui-import').classList.toggle('hidden', type !== 'import');
-                if(type === 'manual') {
-                    this.updatePrefabs();
-                    this.setupLiquidToggle('type-toggle', 'knob-type', ['Expense', 'Income'], (v) => { entryMode = v; ui.updatePrefabs(); }, entryMode);
-                    this.setupLiquidToggle('freq-toggle', 'knob-freq', ['Once', 'Monthly'], (v) => { freqMode = v; }, freqMode);
-                }
+                if(type === 'manual') this.updatePrefabs();
             },
             closeModal() { document.getElementById('modal').classList.add('hidden'); },
             updatePrefabs() {
@@ -362,7 +348,8 @@
 
         const monitor = {
             async check() {
-                const ip = document.getElementById('mc-ip').value, res = document.getElementById('mc-result');
+                const ip = document.getElementById('mc-ip').value;
+                const res = document.getElementById('mc-result');
                 res.innerHTML = "<p class='col-span-2 text-center opacity-30 text-[10px] font-black'>Polling...</p>";
                 res.classList.remove('hidden');
                 try {
@@ -379,14 +366,26 @@
             if(state.auth) {
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('app-content').classList.remove('hidden');
+                
                 chart = new Chart(document.getElementById('financeChart'), {
                     type: 'line',
                     data: { labels: [], datasets: [{ data: [], borderColor: '#007AFF', tension: 0.4, fill: true, backgroundColor: 'rgba(0,122,255,0.05)', pointRadius: 2, pointBackgroundColor: '#fff', borderWidth: 3 }] },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
+                    options: { 
+                        responsive: true, maintainAspectRatio: false, 
+                        plugins: { legend: { display: false } }, 
+                        scales: { 
+                            x: { ticks: { color: 'rgba(255,255,255,0.2)', font: { size: 8 } }, grid: { display: false }, border: { display: false } }, 
+                            y: { ticks: { color: 'rgba(255,255,255,0.2)', font: { size: 8 } }, grid: { display: false }, border: { display: false } } 
+                        } 
+                    }
                 });
+
                 ui.updateDashboard();
                 ui.applyTheme(state.theme || 'dark');
+                
                 ui.setupLiquidToggle('theme-toggle', 'knob-theme', ['dark', 'light'], (v) => ui.applyTheme(v), state.theme);
+                ui.setupLiquidToggle('type-toggle', 'knob-type', ['Expense', 'Income'], (v) => { entryMode = v; ui.updatePrefabs(); });
+                ui.setupLiquidToggle('freq-toggle', 'knob-freq', ['Once', 'Monthly'], (v) => { freqMode = v; });
             }
         };
     </script>
