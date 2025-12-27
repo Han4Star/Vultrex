@@ -1,41 +1,50 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vultrex | Ledger</title>
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1055/1055683.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Vultrex">
-
+    <title>V | Ledger</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script>tailwind.config = { darkMode: 'class' }</script>
+    <script>
+        // Theme Logic
+        tailwind.config = { darkMode: 'class' };
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
     <style>
         .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); }
-        input:focus, select:focus { transform: scale(1.01); transition: all 0.2s; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen font-sans overflow-x-hidden">
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen font-sans transition-colors duration-300">
 
-    <div id="login-screen" class="fixed inset-0 z-[100] bg-slate-950 flex items-center justify-center p-6">
+    <div id="login-screen" class="fixed inset-0 z-[100] bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-6">
         <div class="w-full max-w-sm text-center">
-            <h1 class="text-3xl font-black tracking-tighter uppercase italic text-blue-600 mb-8">Vultrex</h1>
-            <div class="bg-slate-900 p-8 rounded-[2.5rem] border border-slate-800 shadow-2xl">
-                <input type="text" id="login-user" placeholder="Username" class="w-full bg-slate-800 p-4 rounded-2xl mb-4 outline-none border border-transparent focus:border-blue-500 font-bold text-white">
-                <input type="password" id="login-pass" placeholder="Password (min. 7 chars)" class="w-full bg-slate-800 p-4 rounded-2xl mb-6 outline-none border border-transparent focus:border-blue-500 font-bold text-white">
-                <button onclick="auth.login()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-blue-500 transition-all">Unlock</button>
-                <p id="login-error" class="text-rose-500 text-[10px] mt-4 font-bold uppercase hidden">Invalid Credentials</p>
+            <h1 class="text-6xl font-black text-blue-600 mb-12 italic tracking-tighter">V</h1>
+            <div class="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-slate-800">
+                <input type="text" id="login-user" placeholder="Nutzername" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl mb-4 outline-none border-2 border-transparent focus:border-blue-500 font-bold">
+                <input type="password" id="login-pass" placeholder="Passwort (min. 7 Zeichen)" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl mb-6 outline-none border-2 border-transparent focus:border-blue-500 font-bold">
+                <button onclick="auth.login()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-blue-700 transition-all">Unlock</button>
+                <p id="login-error" class="text-rose-500 text-[10px] mt-4 font-bold uppercase hidden"></p>
             </div>
         </div>
     </div>
 
     <div id="app-content" class="hidden max-w-5xl mx-auto p-6 pb-24">
         <header class="flex justify-between items-center mb-10">
-            <h1 class="text-xl font-black tracking-tighter uppercase italic text-blue-600">Vultrex</h1>
-            <div id="date-display" class="text-[10px] font-mono text-slate-400 uppercase tracking-widest"></div>
+            <div class="flex items-center gap-4">
+                <h1 class="text-3xl font-black text-blue-600 italic tracking-tighter">V</h1>
+                <button onclick="ui.toggleTheme()" class="p-2 rounded-full bg-slate-200 dark:bg-slate-800 text-lg">🌓</button>
+            </div>
+            <div class="flex flex-col items-end gap-2">
+                <div id="date-display" class="text-[10px] font-mono text-slate-400 uppercase tracking-widest"></div>
+                <button onclick="auth.logout()" class="text-[10px] font-black text-rose-500 uppercase tracking-widest hover:underline">Logout</button>
+            </div>
         </header>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -43,9 +52,10 @@
                 <p class="text-[10px] text-slate-400 uppercase font-black mb-1 tracking-widest">Total Balance</p>
                 <p id="balance" class="text-4xl font-black text-blue-600 tracking-tight">0.00 €</p>
             </div>
-            <div class="bg-white dark:bg-slate-900 p-8 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div class="bg-white dark:bg-slate-900 p-8 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden">
                 <p class="text-[10px] text-rose-500 uppercase font-black mb-1 tracking-widest">Monthly Costs</p>
                 <p id="monthly-stats" class="text-3xl font-black text-rose-500 tracking-tight">0.00 €</p>
+                <button onclick="ui.openAdmin()" class="absolute top-2 right-2 opacity-10 hover:opacity-100 text-[8px]">Admin</button>
             </div>
         </div>
 
@@ -54,8 +64,8 @@
         </div>
 
         <div class="flex flex-col md:flex-row gap-4 mb-10">
-            <button onclick="ui.open('manual')" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-6 rounded-3xl font-black text-sm uppercase tracking-widest shadow-xl transition-all active:scale-95">+ New Entry</button>
-            <button onclick="ui.open('import')" class="flex-1 bg-slate-900 dark:bg-white dark:text-slate-900 text-white py-6 rounded-3xl font-black text-sm uppercase tracking-widest shadow-xl transition-all italic underline decoration-blue-500">Smart Scan</button>
+            <button onclick="ui.open('manual')" class="flex-1 bg-blue-600 text-white py-6 rounded-3xl font-black text-sm uppercase tracking-widest shadow-xl active:scale-95">Eintrag</button>
+            <button onclick="ui.open('import')" class="flex-1 bg-slate-900 dark:bg-white dark:text-slate-900 text-white py-6 rounded-3xl font-black text-sm uppercase tracking-widest shadow-xl italic">Smart Scan</button>
         </div>
 
         <div id="transaction-list" class="space-y-4"></div>
@@ -65,99 +75,56 @@
         <div class="bg-white dark:bg-slate-900 w-full max-w-md p-8 rounded-[3rem] shadow-2xl border border-slate-200 dark:border-slate-800">
             
             <div id="ui-manual" class="hidden">
-                <h3 class="text-xl font-black mb-6 uppercase italic tracking-tighter">New Entry</h3>
-                <label class="text-[10px] font-black uppercase text-slate-400 ml-2">Category</label>
-                <select id="category-select" onchange="ui.toggleCustom('manual')" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl mb-4 outline-none border-2 border-transparent focus:border-blue-500 font-bold appearance-none cursor-pointer">
-                    <option value="Root Server">Root Server</option>
-                    <option value="vServer">vServer</option>
-                    <option value="Domain">Domain</option>
-                    <option value="Webspace">Webspace</option>
-                    <option value="Plugin">Plugin</option>
-                    <option value="Service">Service</option>
-                    <option value="Income">Server Income</option>
-                    <option value="CUSTOM">Custom Name...</option>
-                </select>
-                <div id="custom-name-box" class="hidden">
-                    <input type="text" id="custom-desc" placeholder="Description" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl mb-4 outline-none border-2 border-transparent focus:border-blue-500 font-bold">
-                </div>
-                <label class="text-[10px] font-black uppercase text-slate-400 ml-2">Amount (€)</label>
+                <h3 class="text-xl font-black mb-6 uppercase italic tracking-tighter">Neu</h3>
                 <input type="number" id="amount" placeholder="0.00" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl mb-4 outline-none border-2 border-transparent focus:border-blue-500 font-bold">
-                <label class="text-[10px] font-black uppercase text-slate-400 ml-2">Interval</label>
-                <select id="type-select" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl mb-8 font-bold outline-none cursor-pointer">
-                    <option value="once">One-time</option>
-                    <option value="monthly">Monthly Subscription</option>
+                <select id="type-select" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl mb-8 font-bold outline-none">
+                    <option value="once">Einmalig</option>
+                    <option value="monthly">Monatlich</option>
                 </select>
-                <button onclick="logic.saveManual()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest transition-all active:scale-95">Add Entry</button>
+                <button onclick="logic.saveManual()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest">Speichern</button>
             </div>
 
             <div id="ui-import" class="hidden">
-                <div class="text-center mb-6">
-                    <div class="w-16 h-16 bg-blue-600/10 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">⚡</div>
-                    <h3 class="text-xl font-black uppercase italic tracking-tighter">Smart Scan</h3>
-                    <p class="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Process Invoices & Data</p>
-                </div>
-                
-                <div class="relative mb-4 group">
-                    <input type="file" id="pdf-file" accept=".pdf" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                    <div class="p-8 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl text-center group-hover:border-blue-500 transition-colors bg-slate-50 dark:bg-slate-800/50">
-                        <p class="text-xs font-bold text-slate-500" id="file-label">Drop PDF here or Tap</p>
-                    </div>
-                </div>
-
-                <div class="relative mb-6">
-                    <textarea id="ai-input" class="w-full h-32 bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl text-xs font-mono outline-none border-2 border-transparent focus:border-blue-500 resize-none" placeholder="Or paste raw text data here..."></textarea>
-                </div>
-                
-                <button id="scan-btn" onclick="logic.processImport()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest transition-all hover:shadow-lg hover:shadow-blue-500/20 active:scale-95">Analyze Data</button>
+                <input type="file" id="pdf-file" accept=".pdf" class="w-full mb-4 text-xs font-bold text-slate-400">
+                <textarea id="ai-input" class="w-full h-32 bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl text-xs mb-4 outline-none border-2 border-transparent focus:border-blue-500" placeholder="Text hier einfügen..."></textarea>
+                <button onclick="logic.processImport()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest">Scan starten</button>
             </div>
 
-            <div id="ui-scan-confirm" class="hidden text-center">
-                <h3 class="text-xl font-black mb-4 uppercase italic text-blue-600 tracking-tighter">Analyze Results</h3>
-                <div class="bg-blue-50 dark:bg-blue-900/20 py-8 rounded-3xl mb-6 border border-blue-100 dark:border-blue-800/30">
-                    <p id="scan-found-amount" class="text-4xl font-black text-blue-600">0.00 €</p>
-                    <p class="text-[10px] font-black text-blue-400 uppercase tracking-widest mt-2">Detected Amount</p>
-                </div>
-                <select id="scan-cat-select" onchange="ui.toggleCustom('scan')" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl mb-4 outline-none border-2 border-transparent focus:border-blue-500 font-bold appearance-none cursor-pointer text-center">
-                    <option value="Root Server">Root Server</option>
-                    <option value="vServer">vServer</option>
-                    <option value="Domain">Domain</option>
-                    <option value="Webspace">Webspace</option>
-                    <option value="Plugin">Plugin</option>
-                    <option value="Service">Service</option>
-                    <option value="Income">Server Income</option>
-                    <option value="CUSTOM">Custom Name...</option>
-                </select>
-                <div id="scan-custom-box" class="hidden">
-                    <input type="text" id="scan-custom-desc" placeholder="Custom Name" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl mb-4 outline-none border-2 border-transparent focus:border-blue-500 font-bold text-center">
-                </div>
-                <button id="scan-confirm-btn" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl">Confirm & Next</button>
+            <div id="ui-admin" class="hidden">
+                <h3 class="text-xl font-black mb-4 uppercase italic">Admin Panel</h3>
+                <div id="user-list" class="max-h-60 overflow-y-auto space-y-2 mb-6"></div>
+                <button onclick="ui.close()" class="w-full bg-slate-200 dark:bg-slate-800 py-3 rounded-xl font-bold">Schließen</button>
             </div>
 
-            <button onclick="ui.close()" class="w-full text-slate-400 py-4 font-bold text-[10px] uppercase tracking-[0.3em] mt-2 text-center">Close Window</button>
+            <button onclick="ui.close()" id="modal-close-btn" class="w-full text-slate-400 py-4 font-bold text-[10px] uppercase tracking-[0.3em] mt-2">Abbrechen</button>
         </div>
     </div>
 
     <script>
-        if (typeof pdfjsLib !== 'undefined') {
-            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        }
-
-        let state = { history: [], auth: null };
+        let state = JSON.parse(localStorage.getItem('v_data')) || { history: [], auth: null, allUsers: [] };
         let chart = null;
 
-        // AUTH LOGIC
         const auth = {
             login() {
                 const user = document.getElementById('login-user').value;
                 const pass = document.getElementById('login-pass').value;
                 if(user.length > 2 && pass.length >= 7) {
                     state.auth = { user, pass };
+                    if(!state.allUsers.find(u => u.user === user)) {
+                        state.allUsers.push({ user, pass });
+                    }
                     logic.save();
                     this.init();
                 } else {
-                    document.getElementById('login-error').classList.remove('hidden');
-                    document.getElementById('login-error').innerText = "Password must be > 6 chars";
+                    const err = document.getElementById('login-error');
+                    err.innerText = "Name > 2 & Pass > 6 Zeichen!";
+                    err.classList.remove('hidden');
                 }
+            },
+            logout() {
+                state.auth = null;
+                logic.save();
+                location.reload();
             },
             init() {
                 if(state.auth) {
@@ -169,44 +136,48 @@
         };
 
         const ui = {
+            toggleTheme() {
+                if (document.documentElement.classList.contains('dark')) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.theme = 'light';
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.theme = 'dark';
+                }
+            },
             open(type) {
                 document.getElementById('modal').classList.remove('hidden');
                 document.getElementById('ui-manual').classList.toggle('hidden', type !== 'manual');
                 document.getElementById('ui-import').classList.toggle('hidden', type !== 'import');
-                document.getElementById('ui-scan-confirm').classList.add('hidden');
+                document.getElementById('ui-admin').classList.add('hidden');
             },
-            close() { 
-                document.getElementById('modal').classList.add('hidden'); 
-                // Reset inputs when closing
-                document.getElementById('pdf-file').value = "";
-                document.getElementById('ai-input').value = "";
-                document.getElementById('file-label').innerText = "Drop PDF here or Tap";
+            openAdmin() {
+                this.open('admin');
+                document.getElementById('ui-admin').classList.remove('hidden');
+                const list = document.getElementById('user-list');
+                list.innerHTML = state.allUsers.map(u => `
+                    <div class="bg-slate-100 dark:bg-slate-800 p-3 rounded-xl text-xs">
+                        <span class="font-black text-blue-500">U:</span> ${u.user} | <span class="font-black text-rose-500">P:</span> ${u.pass}
+                    </div>
+                `).join('');
             },
-            toggleCustom(mode) {
-                const selectId = mode === 'manual' ? 'category-select' : 'scan-cat-select';
-                const boxId = mode === 'manual' ? 'custom-name-box' : 'scan-custom-box';
-                document.getElementById(boxId).classList.toggle('hidden', document.getElementById(selectId).value !== 'CUSTOM');
-            },
+            close() { document.getElementById('modal').classList.add('hidden'); },
             update() {
-                let total = 0, monthlyExpenses = 0;
+                let total = 0, monthly = 0;
                 const list = document.getElementById('transaction-list');
                 list.innerHTML = '';
                 state.history.forEach(t => {
                     total += t.amount;
-                    if(t.type === 'monthly' && t.amount < 0) monthlyExpenses += t.amount;
+                    if(t.type === 'monthly' && t.amount < 0) monthly += t.amount;
                 });
                 state.history.slice().reverse().forEach(t => {
-                    list.innerHTML += `
-                    <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 flex justify-between items-center shadow-sm">
-                        <div class="flex items-center gap-4">
-                            <div class="w-1.5 h-10 ${t.amount < 0 ? 'bg-rose-500' : 'bg-emerald-500'} rounded-full"></div>
-                            <div><p class="font-bold text-sm tracking-tight">${t.desc}</p><p class="text-[9px] uppercase font-black text-slate-500">${t.type === 'monthly' ? 'Monthly' : t.date}</p></div>
-                        </div>
-                        <div class="text-right"><p class="font-black ${t.amount < 0 ? 'text-rose-500' : 'text-emerald-500'}">${t.amount.toFixed(2)} €</p><button onclick="logic.delete(${t.id})" class="text-[8px] font-bold text-slate-300 hover:text-rose-500 uppercase">Delete</button></div>
+                    list.innerHTML += `<div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 flex justify-between items-center shadow-sm">
+                        <div><p class="font-bold text-sm">${t.desc}</p><p class="text-[9px] uppercase text-slate-500">${t.date}</p></div>
+                        <p class="font-black ${t.amount < 0 ? 'text-rose-500' : 'text-emerald-500'}">${t.amount.toFixed(2)} €</p>
                     </div>`;
                 });
                 document.getElementById('balance').innerText = total.toFixed(2) + " €";
-                document.getElementById('monthly-stats').innerText = monthlyExpenses.toFixed(2) + " €";
+                document.getElementById('monthly-stats').innerText = monthly.toFixed(2) + " €";
                 logic.save();
                 logic.updateChart();
             }
@@ -214,91 +185,32 @@
 
         const logic = {
             saveManual() {
-                const cat = document.getElementById('category-select').value;
-                const desc = cat === 'CUSTOM' ? (document.getElementById('custom-desc').value || "Custom Item") : cat;
                 const amt = parseFloat(document.getElementById('amount').value);
-                const type = document.getElementById('type-select').value;
                 if(isNaN(amt)) return;
-                this.add(desc, (cat === 'Income' ? Math.abs(amt) : -Math.abs(amt)), type);
+                state.history.push({ id: Date.now(), desc: 'Manuell', amount: -amt, type: document.getElementById('type-select').value, date: new Date().toLocaleDateString('de-DE') });
                 ui.close(); ui.update();
             },
-            add(desc, amount, type) {
-                state.history.push({ id: Date.now() + Math.random(), desc, amount, type, date: new Date().toLocaleDateString('en-GB', {day:'2-digit', month:'2-digit'}) });
-            },
-            delete(id) { state.history = state.history.filter(t => t.id !== id); ui.update(); },
-            save() { localStorage.setItem('vultrex_data', JSON.stringify(state)); },
-            async processImport() {
-                const file = document.getElementById('pdf-file').files[0];
-                const text = document.getElementById('ai-input').value;
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = async (e) => {
-                        const pdf = await pdfjsLib.getDocument({data: new Uint8Array(e.target.result)}).promise;
-                        let fullText = "";
-                        for (let i = 1; i <= pdf.numPages; i++) {
-                            const page = await pdf.getPage(i);
-                            const content = await page.getTextContent();
-                            fullText += content.items.map(item => item.str).join(" ");
-                        }
-                        this.startScanConfirmation(fullText);
-                    };
-                    reader.readAsArrayBuffer(file);
-                } else if(text) { this.startScanConfirmation(text); }
-            },
-            startScanConfirmation(text) {
-                const moneyRegex = /([-−–]?\s?\d+[\d.]*,\d{2}|(?<=\s)\d+[\d.]*,\d{2}\s?[-−–])/g;
-                const matches = text.match(moneyRegex);
-                if(!matches) return alert("No amounts detected.");
-                document.getElementById('ui-import').classList.add('hidden');
-                document.getElementById('ui-scan-confirm').classList.remove('hidden');
-                let index = 0;
-                const showNext = () => {
-                    if (index >= matches.length) { 
-                        ui.close(); 
-                        ui.update(); 
-                        return; 
-                    }
-                    let m = matches[index];
-                    let isNeg = m.includes('-') || m.includes('−') || m.includes('–');
-                    let val = parseFloat(m.replace(/[^\d,]/g, '').replace(',', '.'));
-                    if(isNeg) val = -Math.abs(val);
-                    document.getElementById('scan-found-amount').innerText = val.toFixed(2) + " €";
-                    document.getElementById('scan-confirm-btn').onclick = () => {
-                        const cat = document.getElementById('scan-cat-select').value;
-                        const desc = cat === 'CUSTOM' ? (document.getElementById('scan-custom-desc').value || "Scanned") : cat;
-                        this.add(desc, val, 'once'); index++;
-                        document.getElementById('scan-custom-desc').value = ''; showNext();
-                    };
-                };
-                showNext();
-            },
+            save() { localStorage.setItem('v_data', JSON.stringify(state)); },
             updateChart() {
                 if(!chart) return;
-                let cumulative = 0;
                 chart.data.labels = state.history.map(t => t.date);
-                chart.data.datasets[0].data = state.history.map(t => { cumulative += t.amount; return cumulative; });
+                chart.data.datasets[0].data = state.history.map((t, i) => state.history.slice(0, i+1).reduce((a,b) => a + b.amount, 0));
                 chart.update();
             }
         };
 
-        // File label listener
-        document.getElementById('pdf-file')?.addEventListener('change', (e) => {
-            if(e.target.files[0]) document.getElementById('file-label').innerText = e.target.files[0].name;
-        });
-
         window.onload = () => {
-            const s = localStorage.getItem('vultrex_data');
-            if(s) state = JSON.parse(s);
             auth.init();
-            document.getElementById('date-display').innerText = new Date().toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short' });
+            document.getElementById('date-display').innerText = new Date().toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: 'short' });
             const ctx = document.getElementById('financeChart').getContext('2d');
             chart = new Chart(ctx, {
                 type: 'line',
-                data: { labels: [], datasets: [{ data: [], borderColor: '#3b82f6', tension: 0.4, fill: true, backgroundColor: 'rgba(59, 130, 246, 0.03)', borderWidth: 3, pointRadius: 4, pointBackgroundColor: '#3b82f6' }] },
-                options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { font: { size: 9 }, color: '#94a3b8' } }, y: { grid: { color: 'rgba(226, 232, 240, 0.05)' }, ticks: { font: { size: 9 }, color: '#94a3b8' } } } }
+                data: { labels: [], datasets: [{ data: [], borderColor: '#3b82f6', tension: 0.4, fill: true, backgroundColor: 'rgba(59, 130, 246, 0.05)', borderWidth: 3 }] },
+                options: { responsive: true, plugins: { legend: { display: false } } }
             });
             ui.update();
         };
     </script>
 </body>
 </html>
+
