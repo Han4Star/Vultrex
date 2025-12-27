@@ -16,6 +16,7 @@
             --glass: rgba(255, 255, 255, 0.02);
             --glass-border: rgba(255, 255, 255, 0.15);
             --shadow: rgba(0, 0, 0, 0.8);
+            --input-bg: rgba(150, 150, 150, 0.1);
         }
 
         .light-mode {
@@ -24,6 +25,7 @@
             --glass: rgba(255, 255, 255, 0.7);
             --glass-border: rgba(255, 255, 255, 0.8);
             --shadow: rgba(0, 0, 0, 0.05);
+            --input-bg: #ffffff;
         }
 
         body {
@@ -49,13 +51,14 @@
             position: relative;
             width: 100%;
             height: 60px;
-            background: rgba(150, 150, 150, 0.1);
+            background: var(--input-bg);
             border-radius: 20px;
             padding: 4px;
             display: flex;
             align-items: center;
             cursor: pointer;
             touch-action: none;
+            border: 1px solid var(--glass-border);
         }
 
         .toggle-knob {
@@ -87,11 +90,21 @@
             opacity: 0.3;
             transition: opacity 0.3s;
             z-index: 5;
+            user-select: none;
         }
 
         .active-label { opacity: 1; }
         .page-hidden { display: none; }
         .sidebar-transition { transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+        
+        input, select { 
+            background: var(--input-bg) !important; 
+            color: var(--text) !important;
+            border: 1px solid var(--glass-border) !important;
+            outline: none;
+        }
+        
+        input:disabled { opacity: 0.4; cursor: not-allowed; }
         #pdf-file { opacity: 0; position: absolute; inset: 0; cursor: pointer; }
     </style>
 </head>
@@ -101,8 +114,8 @@
         <div class="w-full max-w-sm text-center text-white">
             <h1 class="text-8xl font-black mb-12 italic tracking-tighter">V<span class="text-blue-500">.</span></h1>
             <div class="crystal-glass p-10 rounded-[3.5rem]" style="background: rgba(255,255,255,0.05)">
-                <input type="text" id="login-user" placeholder="Identity" class="w-full bg-white/5 p-5 rounded-2xl mb-4 border border-white/10 text-center font-bold outline-none">
-                <input type="password" id="login-pass" placeholder="Key" class="w-full bg-white/5 p-5 rounded-2xl mb-8 border border-white/10 text-center font-bold outline-none">
+                <input type="text" id="login-user" placeholder="Identity" class="w-full p-5 rounded-2xl mb-4 border border-white/10 text-center font-bold outline-none">
+                <input type="password" id="login-pass" placeholder="Key" class="w-full p-5 rounded-2xl mb-8 border border-white/10 text-center font-bold outline-none">
                 <button onclick="auth.login()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase tracking-widest active:scale-95 transition-all shadow-lg">Connect</button>
             </div>
         </div>
@@ -115,7 +128,6 @@
                 <button onclick="ui.switchPage('dashboard')" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold transition-all">Analytics</button>
                 <button onclick="ui.switchPage('monitor')" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold transition-all">Node</button>
                 <button onclick="ui.switchPage('settings')" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold transition-all">Settings</button>
-                <button onclick="ui.openAdminPin()" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold opacity-20 transition-all">Terminal</button>
             </nav>
             <button onclick="auth.logout()" class="p-5 rounded-2xl bg-rose-500/10 text-rose-500 font-bold uppercase text-[10px]">Terminate</button>
         </div>
@@ -125,7 +137,7 @@
     <div id="app-content" class="hidden p-6 max-w-xl mx-auto h-screen overflow-y-auto">
         <header class="flex justify-between items-center mb-10 pt-4">
             <button onclick="ui.toggleSidebar()" class="w-12 h-12 crystal-glass rounded-full flex items-center justify-center text-xl">≡</button>
-            <div id="avatar" class="w-12 h-12 bg-blue-600 rounded-full border-2 border-white/20 shadow-lg"></div>
+            <div class="w-12 h-12 bg-blue-600 rounded-full border-2 border-white/20 shadow-lg"></div>
         </header>
 
         <div id="page-dashboard" class="space-y-6">
@@ -150,24 +162,20 @@
                     <p class="text-[10px] font-black uppercase opacity-40 mb-4 tracking-widest">Visual Mode</p>
                     <div class="toggle-container" id="theme-toggle">
                         <div class="toggle-knob" id="knob-theme">Dark</div>
-                        <div class="toggle-label active-label">Dark</div>
+                        <div class="toggle-label">Dark</div>
                         <div class="toggle-label">Light</div>
                     </div>
-                </div>
-                <div class="pt-4 border-t border-white/5">
-                    <p class="text-[8px] opacity-20 uppercase font-bold">Vultrex Crystal Engine v4.0</p>
                 </div>
             </div>
         </div>
 
         <div id="page-monitor" class="page-hidden space-y-6">
             <div class="crystal-glass p-8 rounded-[3rem]">
-                <input type="text" id="mc-ip" placeholder="Node IP" class="w-full bg-white/5 p-5 rounded-2xl mb-4 text-center border border-white/10 font-bold outline-none">
+                <input type="text" id="mc-ip" placeholder="Node IP" class="w-full p-5 rounded-2xl mb-4 text-center border border-white/10 font-bold outline-none">
                 <button onclick="monitor.check()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold uppercase tracking-widest text-white">Check Node</button>
             </div>
             <div id="mc-result" class="hidden grid grid-cols-2 gap-4"></div>
         </div>
-        <div id="page-admin" class="page-hidden space-y-4"><div id="admin-user-list" class="space-y-2"></div></div>
     </div>
 
     <div id="modal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-3xl z-[200] flex items-center justify-center p-6">
@@ -175,19 +183,22 @@
             <div id="ui-manual" class="hidden space-y-5">
                 <div class="toggle-container" id="type-toggle">
                     <div class="toggle-knob" id="knob-type">Expense</div>
-                    <div class="toggle-label active-label">Expense</div>
+                    <div class="toggle-label">Expense</div>
                     <div class="toggle-label">Income</div>
                 </div>
-                <select id="manual-prefab" onchange="ui.handlePrefabChange(this)" class="w-full bg-white/5 p-5 rounded-2xl border border-white/10 outline-none font-bold text-xs text-center appearance-none"></select>
-                <input type="text" id="manual-desc" placeholder="Label" class="w-full bg-white/5 p-5 rounded-2xl border border-white/10 outline-none font-bold text-center">
-                <input type="number" id="manual-amount" placeholder="0.00" class="w-full bg-white/5 p-5 rounded-2xl border border-white/10 outline-none font-bold text-center">
+                <select id="manual-prefab" onchange="ui.handlePrefabChange(this)" class="w-full p-5 rounded-2xl outline-none font-bold text-xs text-center appearance-none"></select>
+                <input type="text" id="manual-desc" placeholder="Label" class="w-full p-5 rounded-2xl outline-none font-bold text-center">
+                <input type="number" id="manual-amount" placeholder="0.00" class="w-full p-5 rounded-2xl outline-none font-bold text-center">
+                <input type="text" id="manual-date" placeholder="DD.MM.YYYY" class="w-full p-5 rounded-2xl outline-none font-bold text-center">
                 <div class="toggle-container" id="freq-toggle">
                     <div class="toggle-knob" id="knob-freq">Once</div>
-                    <div class="toggle-label active-label">Once</div>
+                    <div class="toggle-label">Once</div>
                     <div class="toggle-label">Monthly</div>
                 </div>
                 <button onclick="logic.saveManual()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase tracking-widest text-white">Commit</button>
+                <button id="delete-btn" onclick="logic.deleteEntry()" class="hidden w-full bg-rose-500/10 text-rose-500 py-4 rounded-2xl font-bold uppercase text-[10px]">Delete Entry</button>
             </div>
+            
             <div id="ui-import" class="hidden space-y-6 text-center">
                 <div class="relative w-full h-32 bg-white/5 rounded-3xl border-2 border-dashed border-white/10 flex items-center justify-center">
                     <span id="file-display-name" class="opacity-20 text-[10px] uppercase font-black">Drop PDF</span>
@@ -201,70 +212,63 @@
 
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        let state = JSON.parse(localStorage.getItem('v_data')) || { history: [], auth: null, allUsers: [], theme: 'dark' };
-        let chart = null, entryMode = 'Expense', freqMode = 'Once';
+        let state = JSON.parse(localStorage.getItem('v_v4')) || { history: [], auth: null, theme: 'dark' };
+        let chart = null, entryMode = 'Expense', freqMode = 'Once', editingId = null;
 
         const auth = {
             login() {
                 const u = document.getElementById('login-user').value, p = document.getElementById('login-pass').value;
-                if(u && p) {
-                    state.auth = { user: u, pass: p };
-                    if(!state.allUsers.find(x => x.user === u)) state.allUsers.push({ user: u, pass: p });
-                    logic.save(); location.reload();
-                }
+                if(u && p) { state.auth = { user: u }; logic.save(); location.reload(); }
             },
             logout() { state.auth = null; logic.save(); location.reload(); }
         };
 
         const ui = {
             setupLiquidToggle(boxId, knobId, labels, callback, initialVal) {
-                const box = document.getElementById(boxId);
-                const knob = document.getElementById(knobId);
+                const box = document.getElementById(boxId), knob = document.getElementById(knobId);
                 const labelEls = box.querySelectorAll('.toggle-label');
                 let isDragging = false, startX, currentX = 0;
 
                 const updateUI = (idx) => {
                     const max = box.offsetWidth / 2 - 4;
                     currentX = idx === 0 ? 0 : max;
+                    knob.style.transition = 'transform 0.5s cubic-bezier(0.22, 1, 0.36, 1)';
                     knob.style.transform = `translateX(${currentX}px)`;
                     knob.innerText = labels[idx];
                     labelEls.forEach((l, i) => l.classList.toggle('active-label', i === idx));
                     callback(labels[idx]);
                 };
 
-                // Click to toggle
                 labelEls.forEach((el, idx) => el.onclick = () => updateUI(idx));
 
-                // Drag logic
                 box.onmousedown = box.ontouchstart = (e) => {
                     isDragging = true;
-                    startX = (e.touches ? e.touches[0].clientX : e.clientX) - currentX;
+                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                    startX = clientX - currentX;
                     knob.style.transition = 'none';
                 };
+
                 window.onmousemove = window.ontouchmove = (e) => {
                     if (!isDragging) return;
-                    const x = e.touches ? e.touches[0].clientX : e.clientX;
-                    currentX = Math.max(0, Math.min(x - startX, box.offsetWidth / 2 - 4));
+                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                    const max = box.offsetWidth / 2 - 4;
+                    currentX = Math.max(0, Math.min(clientX - startX, max));
                     knob.style.transform = `translateX(${currentX}px)`;
                 };
+
                 window.onmouseup = window.ontouchend = () => {
                     if (!isDragging) return;
                     isDragging = false;
-                    knob.style.transition = 'transform 0.5s cubic-bezier(0.22, 1, 0.36, 1)';
-                    updateUI(currentX > (box.offsetWidth / 4) ? 1 : 0);
+                    const max = box.offsetWidth / 2 - 4;
+                    updateUI(currentX > max / 2 ? 1 : 0);
                 };
 
-                if(initialVal) updateUI(labels.indexOf(initialVal));
+                updateUI(labels.indexOf(initialVal) !== -1 ? labels.indexOf(initialVal) : 0);
             },
 
             applyTheme(theme) {
                 state.theme = theme;
                 document.body.className = theme === 'light' ? 'light-mode' : '';
-                if(chart) {
-                    chart.options.scales.x.ticks.color = theme === 'light' ? '#00000044' : '#ffffff33';
-                    chart.options.scales.y.ticks.color = theme === 'light' ? '#00000044' : '#ffffff33';
-                    chart.update();
-                }
                 logic.save();
             },
 
@@ -274,41 +278,69 @@
                 sb.style.transform = open ? 'translateX(-100%)' : 'translateX(0px)';
                 ov.classList.toggle('hidden');
             },
+
             switchPage(id) {
-                ['dashboard', 'monitor', 'admin', 'settings'].forEach(p => document.getElementById('page-' + p).classList.add('page-hidden'));
+                ['dashboard', 'monitor', 'settings'].forEach(p => document.getElementById('page-' + p).classList.add('page-hidden'));
                 document.getElementById('page-' + id).classList.remove('page-hidden');
                 this.toggleSidebar();
             },
-            openModal(type) {
+
+            openModal(type, editData = null) {
                 document.getElementById('modal').classList.remove('hidden');
                 document.getElementById('ui-manual').classList.toggle('hidden', type !== 'manual');
                 document.getElementById('ui-import').classList.toggle('hidden', type !== 'import');
+                
+                const dateInp = document.getElementById('manual-date');
+                if(editData) {
+                    editingId = editData.id;
+                    dateInp.value = editData.date;
+                    dateInp.disabled = false;
+                    document.getElementById('manual-desc').value = editData.desc;
+                    document.getElementById('manual-amount').value = Math.abs(editData.amount);
+                    document.getElementById('delete-btn').classList.remove('hidden');
+                    this.setupLiquidToggle('type-toggle', 'knob-type', ['Expense', 'Income'], (v) => {entryMode = v; ui.updatePrefabs();}, editData.amount < 0 ? 'Expense' : 'Income');
+                    this.setupLiquidToggle('freq-toggle', 'knob-freq', ['Once', 'Monthly'], (v) => freqMode = v, editData.type || 'Once');
+                } else {
+                    editingId = null;
+                    dateInp.value = new Date().toLocaleDateString('de-DE');
+                    dateInp.disabled = true;
+                    document.getElementById('manual-desc').value = "";
+                    document.getElementById('manual-amount').value = "";
+                    document.getElementById('delete-btn').classList.add('hidden');
+                    this.setupLiquidToggle('type-toggle', 'knob-type', ['Expense', 'Income'], (v) => {entryMode = v; ui.updatePrefabs();}, 'Expense');
+                    this.setupLiquidToggle('freq-toggle', 'knob-freq', ['Once', 'Monthly'], (v) => freqMode = v, 'Once');
+                }
                 if(type === 'manual') this.updatePrefabs();
             },
+
             closeModal() { document.getElementById('modal').classList.add('hidden'); },
+
             updatePrefabs() {
                 const list = { Expense: ['Server', 'Staff', 'Other'], Income: ['Donation', 'Salary'] };
                 document.getElementById('manual-prefab').innerHTML = list[entryMode].map(x => `<option value="${x}">${x}</option>`).join('');
-                this.handlePrefabChange(document.getElementById('manual-prefab'));
+                if(!editingId) this.handlePrefabChange(document.getElementById('manual-prefab'));
             },
+
             handlePrefabChange(s) { document.getElementById('manual-desc').value = s.value; },
             handleFileSelect(i) { if(i.files[0]) document.getElementById('file-display-name').innerText = i.files[0].name; },
-            openAdminPin() { if(prompt("Terminal PIN:") === "1234") this.switchPage('admin'); },
+
             updateDashboard() {
                 let total = 0;
                 const list = document.getElementById('transaction-list');
                 list.innerHTML = '';
                 state.history.forEach(t => total += t.amount);
                 [...state.history].reverse().forEach(t => {
-                    list.innerHTML += `
-                        <div class="crystal-glass p-6 rounded-[2.5rem] flex justify-between items-center">
-                            <div><p class="font-bold text-sm tracking-tight">${t.desc}</p><p class="text-[9px] opacity-20 font-black">${t.date}</p></div>
-                            <p class="font-black ${t.amount < 0 ? 'text-rose-500' : 'text-emerald-500'}">${t.amount.toFixed(2)} €</p>
-                        </div>`;
+                    const item = document.createElement('div');
+                    item.className = "crystal-glass p-6 rounded-[2.5rem] flex justify-between items-center active:scale-95 transition-all cursor-pointer";
+                    item.onclick = () => ui.openModal('manual', t);
+                    item.innerHTML = `<div><p class="font-bold text-sm tracking-tight">${t.desc}</p><p class="text-[9px] opacity-20 font-black">${t.date}</p></div>
+                                      <p class="font-black ${t.amount < 0 ? 'text-rose-500' : 'text-emerald-500'}">${t.amount.toFixed(2)} €</p>`;
+                    list.appendChild(item);
                 });
                 document.getElementById('balance').innerText = total.toFixed(2) + " €";
                 this.updateChart();
             },
+
             updateChart() {
                 if(!chart) return;
                 const sorted = [...state.history].sort((a,b) => a.id - b.id);
@@ -324,10 +356,20 @@
                 let amt = parseFloat(document.getElementById('manual-amount').value);
                 if(isNaN(amt)) return;
                 amt = entryMode === 'Expense' ? -Math.abs(amt) : Math.abs(amt);
-                state.history.push({ id: Date.now(), desc: document.getElementById('manual-desc').value, amount: amt, type: freqMode, date: new Date().toLocaleDateString('de-DE') });
+                const date = document.getElementById('manual-date').value;
+                if(editingId) {
+                    const idx = state.history.findIndex(x => x.id === editingId);
+                    state.history[idx] = { ...state.history[idx], desc: document.getElementById('manual-desc').value, amount: amt, type: freqMode, date: date };
+                } else {
+                    state.history.push({ id: Date.now(), desc: document.getElementById('manual-desc').value, amount: amt, type: freqMode, date: date });
+                }
                 this.save(); ui.closeModal(); ui.updateDashboard();
             },
-            save() { localStorage.setItem('v_data', JSON.stringify(state)); },
+            deleteEntry() {
+                state.history = state.history.filter(x => x.id !== editingId);
+                this.save(); ui.closeModal(); ui.updateDashboard();
+            },
+            save() { localStorage.setItem('v_v4', JSON.stringify(state)); },
             async processImport() {
                 const file = document.getElementById('pdf-file').files[0];
                 if(file) {
@@ -349,9 +391,8 @@
 
         const monitor = {
             async check() {
-                const ip = document.getElementById('mc-ip').value;
-                const res = document.getElementById('mc-result');
-                res.innerHTML = "<p class='col-span-2 text-center opacity-30 text-[10px] font-black'>Polling...</p>";
+                const ip = document.getElementById('mc-ip').value, res = document.getElementById('mc-result');
+                res.innerHTML = "<p class='col-span-2 text-center opacity-30 text-[10px]'>Polling...</p>";
                 res.classList.remove('hidden');
                 try {
                     const r = await fetch(`https://api.mcstatus.io/v2/status/java/${ip}`);
@@ -367,26 +408,14 @@
             if(state.auth) {
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('app-content').classList.remove('hidden');
-                
                 chart = new Chart(document.getElementById('financeChart'), {
                     type: 'line',
-                    data: { labels: [], datasets: [{ data: [], borderColor: '#007AFF', tension: 0.4, fill: true, backgroundColor: 'rgba(0,122,255,0.05)', pointRadius: 2, pointBackgroundColor: '#fff', borderWidth: 3 }] },
-                    options: { 
-                        responsive: true, maintainAspectRatio: false, 
-                        plugins: { legend: { display: false } }, 
-                        scales: { 
-                            x: { ticks: { color: 'rgba(255,255,255,0.2)', font: { size: 8 } }, grid: { display: false }, border: { display: false } }, 
-                            y: { ticks: { color: 'rgba(255,255,255,0.2)', font: { size: 8 } }, grid: { display: false }, border: { display: false } } 
-                        } 
-                    }
+                    data: { labels: [], datasets: [{ data: [], borderColor: '#007AFF', tension: 0.4, fill: true, backgroundColor: 'rgba(0,122,255,0.05)', pointRadius: 0, borderWidth: 3 }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
                 });
-
                 ui.updateDashboard();
                 ui.applyTheme(state.theme || 'dark');
-                
                 ui.setupLiquidToggle('theme-toggle', 'knob-theme', ['dark', 'light'], (v) => ui.applyTheme(v), state.theme);
-                ui.setupLiquidToggle('type-toggle', 'knob-type', ['Expense', 'Income'], (v) => { entryMode = v; ui.updatePrefabs(); });
-                ui.setupLiquidToggle('freq-toggle', 'knob-freq', ['Once', 'Monthly'], (v) => { freqMode = v; });
             }
         };
     </script>
