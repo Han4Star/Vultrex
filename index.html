@@ -59,6 +59,7 @@
             cursor: pointer;
             touch-action: none;
             border: 1px solid var(--glass-border);
+            user-select: none;
         }
 
         .toggle-knob {
@@ -90,7 +91,7 @@
             opacity: 0.3;
             transition: opacity 0.3s;
             z-index: 5;
-            user-select: none;
+            pointer-events: auto;
         }
 
         .active-label { opacity: 1; }
@@ -231,42 +232,59 @@
                 const labelEls = box.querySelectorAll('.toggle-label');
                 let isDragging = false, startX, currentX = 0;
 
-                const updateUI = (idx) => {
+                const updateUI = (idx, animate = true) => {
                     const max = box.offsetWidth / 2 - 4;
                     currentX = (idx === 0) ? 0 : max;
-                    knob.style.transition = 'transform 0.5s cubic-bezier(0.22, 1, 0.36, 1)';
+                    knob.style.transition = animate ? 'transform 0.5s cubic-bezier(0.22, 1, 0.36, 1)' : 'none';
                     knob.style.transform = `translateX(${currentX}px)`;
                     knob.innerText = labels[idx];
                     labelEls.forEach((l, i) => l.classList.toggle('active-label', i === idx));
                     callback(labels[idx]);
                 };
 
-                labelEls.forEach((el, idx) => el.onclick = () => updateUI(idx));
+                // Klick-Handler
+                labelEls.forEach((el, idx) => {
+                    el.onclick = (e) => {
+                        e.stopPropagation();
+                        updateUI(idx);
+                    };
+                });
 
-                box.onmousedown = box.ontouchstart = (e) => {
+                // Drag-Handler
+                const onStart = (e) => {
                     isDragging = true;
                     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                    startX = clientX - currentX;
+                    const rect = box.getBoundingClientRect();
+                    startX = clientX - (rect.left + currentX);
                     knob.style.transition = 'none';
                 };
 
-                window.onmousemove = window.ontouchmove = (e) => {
+                const onMove = (e) => {
                     if (!isDragging) return;
+                    e.preventDefault();
                     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                    const rect = box.getBoundingClientRect();
                     const max = box.offsetWidth / 2 - 4;
-                    currentX = Math.max(0, Math.min(clientX - startX, max));
+                    currentX = Math.max(0, Math.min(clientX - rect.left - startX, max));
                     knob.style.transform = `translateX(${currentX}px)`;
                 };
 
-                window.onmouseup = window.ontouchend = () => {
+                const onEnd = () => {
                     if (!isDragging) return;
                     isDragging = false;
                     const max = box.offsetWidth / 2 - 4;
                     updateUI(currentX > max / 2 ? 1 : 0);
                 };
 
+                box.onmousedown = box.ontouchstart = onStart;
+                window.addEventListener('mousemove', onMove, {passive: false});
+                window.addEventListener('touchmove', onMove, {passive: false});
+                window.addEventListener('mouseup', onEnd);
+                window.addEventListener('touchend', onEnd);
+
+                // Initialisierung
                 const initialIdx = labels.indexOf(initialVal) !== -1 ? labels.indexOf(initialVal) : 0;
-                updateUI(initialIdx);
+                setTimeout(() => updateUI(initialIdx, false), 10);
             },
 
             applyTheme(theme) {
@@ -298,6 +316,7 @@
                 document.getElementById('ui-import').classList.toggle('hidden', type !== 'import');
                 if(type === 'manual') {
                     this.updatePrefabs();
+                    // Toggles beim Öffnen sauber aufsetzen
                     this.setupLiquidToggle('type-toggle', 'knob-type', ['Expense', 'Income'], (v) => { entryMode = v; ui.updatePrefabs(); }, entryMode);
                     this.setupLiquidToggle('freq-toggle', 'knob-freq', ['Once', 'Monthly'], (v) => { freqMode = v; }, freqMode);
                 }
