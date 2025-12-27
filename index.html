@@ -12,6 +12,7 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
         tailwind.config = { darkMode: 'class' };
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -21,18 +22,19 @@
     <style>
         .sidebar-transition { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .page-hidden { display: none; }
-        input:focus { transform: scale(1.01); transition: all 0.2s; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen font-sans overflow-x-hidden">
 
     <div id="login-screen" class="fixed inset-0 z-[100] bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-6">
-        <div class="w-full max-sm text-center">
+        <div class="w-full max-w-sm text-center">
             <h1 class="text-5xl font-black text-blue-600 mb-12 italic tracking-tighter">Vultrex</h1>
             <div class="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-slate-800">
                 <input type="text" id="login-user" placeholder="Username" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl mb-4 outline-none border-2 border-transparent focus:border-blue-500 font-bold">
-                <input type="password" id="login-pass" placeholder="Password" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl mb-6 outline-none border-2 border-transparent focus:border-blue-500 font-bold">
+                <input type="password" id="login-pass" placeholder="Password (min. 7 chars)" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl mb-6 outline-none border-2 border-transparent focus:border-blue-500 font-bold">
                 <button onclick="auth.login()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-blue-700 transition-all">Unlock</button>
+                <p id="login-error" class="text-rose-500 text-[10px] mt-4 font-bold uppercase hidden"></p>
             </div>
         </div>
     </div>
@@ -41,9 +43,9 @@
         <div class="p-8 flex flex-col h-full">
             <h2 class="text-3xl font-black text-blue-600 italic mb-12">Vultrex</h2>
             <nav class="space-y-2 flex-1">
-                <button onclick="ui.switchPage('dashboard')" class="w-full text-left p-4 rounded-2xl hover:bg-blue-600/10 hover:text-blue-600 transition-all font-bold flex items-center gap-4"><span>📊</span> Dashboard</button>
-                <button onclick="ui.switchPage('monitor')" class="w-full text-left p-4 rounded-2xl hover:bg-blue-600/10 hover:text-blue-600 transition-all font-bold flex items-center gap-4"><span>🎮</span> Server Monitor</button>
-                <button onclick="ui.openAdminPin()" class="w-full text-left p-4 rounded-2xl hover:bg-blue-600/10 hover:text-blue-600 transition-all font-bold flex items-center gap-4"><span>🔒</span> Admin Panel</button>
+                <button onclick="ui.switchPage('dashboard')" class="w-full text-left p-4 rounded-2xl hover:bg-blue-600/10 hover:text-blue-600 transition-all font-bold flex items-center gap-4">📊 Dashboard</button>
+                <button onclick="ui.switchPage('monitor')" class="w-full text-left p-4 rounded-2xl hover:bg-blue-600/10 hover:text-blue-600 transition-all font-bold flex items-center gap-4">🎮 Server Monitor</button>
+                <button onclick="ui.openAdminPin()" class="w-full text-left p-4 rounded-2xl hover:bg-blue-600/10 hover:text-blue-600 transition-all font-bold flex items-center gap-4">🔒 Admin Panel</button>
             </nav>
             <button onclick="auth.logout()" class="w-full p-4 rounded-2xl text-rose-500 font-black uppercase text-xs tracking-widest bg-rose-500/5 hover:bg-rose-500/10 transition-all">Logout</button>
         </div>
@@ -52,7 +54,6 @@
     <div id="sidebar-overlay" onclick="ui.toggleSidebar()" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[55] hidden"></div>
 
     <div id="app-content" class="hidden p-6 max-w-5xl mx-auto min-h-screen">
-        
         <header class="flex justify-between items-center mb-10 mt-4">
             <button onclick="ui.toggleSidebar()" class="w-12 h-12 flex items-center justify-center bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 text-xl active:scale-90 transition-all">☰</button>
             <h1 id="page-title-display" class="text-xl font-black uppercase italic tracking-tighter text-blue-600">Vultrex</h1>
@@ -61,23 +62,33 @@
 
         <div id="page-dashboard">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <div class="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-800">
+                <div class="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm">
                     <p class="text-[10px] text-slate-400 uppercase font-black mb-1 tracking-widest">Balance</p>
                     <p id="balance" class="text-4xl font-black text-blue-600 tracking-tight">0.00 €</p>
                 </div>
-                <div class="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-800">
+                <div class="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm">
                     <p class="text-[10px] text-rose-500 uppercase font-black mb-1 tracking-widest">Monthly Costs</p>
                     <p id="monthly-stats" class="text-3xl font-black text-rose-500 tracking-tight">0.00 €</p>
                 </div>
             </div>
+
+            <div class="bg-white dark:bg-slate-900 p-6 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 mb-8">
+                <canvas id="financeChart" height="120"></canvas>
+            </div>
+
+            <div class="flex flex-col md:flex-row gap-4 mb-10">
+                <button onclick="ui.openModal('manual')" class="flex-1 bg-blue-600 text-white py-6 rounded-3xl font-black text-sm uppercase tracking-widest active:scale-95 transition-all">New Entry</button>
+                <button onclick="ui.openModal('import')" class="flex-1 bg-slate-900 dark:bg-white dark:text-slate-900 text-white py-6 rounded-3xl font-black text-sm uppercase tracking-widest italic">Smart Scan</button>
+            </div>
+
             <div id="transaction-list" class="space-y-4"></div>
         </div>
 
         <div id="page-monitor" class="page-hidden">
             <div class="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 mb-8 shadow-xl text-center">
                 <h3 class="text-lg font-black mb-6 uppercase italic">Minecraft Server Check</h3>
-                <input type="text" id="mc-ip" placeholder="Server IP (e.g. hypixel.net)" class="w-full bg-slate-100 dark:bg-slate-800 p-5 rounded-2xl outline-none font-bold text-blue-600 border-2 border-transparent focus:border-blue-500 mb-4 text-center">
-                <button onclick="monitor.check()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest active:scale-95 transition-all">Scan Server</button>
+                <input type="text" id="mc-ip" placeholder="Server IP (e.g. hypixel.net)" class="w-full bg-slate-100 dark:bg-slate-800 p-5 rounded-2xl outline-none font-bold text-blue-600 text-center mb-4">
+                <button onclick="monitor.check()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black uppercase active:scale-95 transition-all">Scan Server</button>
             </div>
             <div id="mc-result" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"></div>
         </div>
@@ -91,8 +102,37 @@
         </div>
     </div>
 
+    <div id="modal" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 z-50">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-md p-8 rounded-[3rem] shadow-2xl border border-slate-200 dark:border-slate-800">
+            <div id="ui-manual" class="hidden text-center">
+                <h3 class="text-xl font-black mb-6 uppercase italic">Manual Entry</h3>
+                <input type="text" id="manual-desc" placeholder="Description" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl mb-4 outline-none font-bold">
+                <input type="number" id="manual-amount" placeholder="0.00" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl mb-4 outline-none font-bold">
+                <select id="manual-type" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl mb-8 font-bold">
+                    <option value="once">One-time</option>
+                    <option value="monthly">Monthly Subscription</option>
+                </select>
+                <button onclick="logic.saveManual()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black uppercase">Save</button>
+            </div>
+
+            <div id="ui-import" class="hidden text-center">
+                <h3 class="text-xl font-black mb-6 uppercase italic">Smart Scan</h3>
+                <input type="file" id="pdf-file" accept=".pdf" class="w-full mb-4 text-xs font-bold text-slate-400">
+                <textarea id="ai-input" class="w-full h-32 bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl text-xs mb-4 outline-none" placeholder="Paste raw text here..."></textarea>
+                <button onclick="logic.processImport()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black uppercase">Start Scan</button>
+            </div>
+            
+            <button onclick="ui.closeModal()" class="w-full text-slate-400 py-4 font-bold text-[10px] uppercase tracking-widest mt-2">Cancel</button>
+        </div>
+    </div>
+
     <script>
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+
         let state = JSON.parse(localStorage.getItem('v_data')) || { history: [], auth: null, allUsers: [] };
+        let chart = null;
         const ADMIN_PIN = "1234";
 
         const auth = {
@@ -104,6 +144,10 @@
                     if(!state.allUsers.find(u => u.user === user)) state.allUsers.push({ user, pass });
                     logic.save();
                     location.reload();
+                } else {
+                    const err = document.getElementById('login-error');
+                    err.innerText = "Password must be min. 7 chars!";
+                    err.classList.remove('hidden');
                 }
             },
             logout() {
@@ -135,25 +179,76 @@
             openAdminPin() {
                 const pin = prompt("Enter Admin PIN:");
                 if(pin === ADMIN_PIN) this.switchPage('admin');
-                else if(pin !== null) alert("Access Denied.");
+                else if(pin !== null) alert("Denied.");
             },
+            openModal(type) {
+                document.getElementById('modal').classList.remove('hidden');
+                document.getElementById('ui-manual').classList.toggle('hidden', type !== 'manual');
+                document.getElementById('ui-import').classList.toggle('hidden', type !== 'import');
+            },
+            closeModal() { document.getElementById('modal').classList.add('hidden'); },
             renderAdmin() {
                 const list = document.getElementById('admin-user-list');
                 list.innerHTML = state.allUsers.map(u => `
-                    <div class="p-5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl flex justify-between items-center border border-slate-100 dark:border-slate-800">
-                        <span class="font-bold text-sm text-blue-600">${u.user}</span>
-                        <span class="font-mono text-[10px] bg-slate-200 dark:bg-slate-700 px-3 py-1 rounded-lg">${u.pass}</span>
-                    </div>
-                `).join('');
+                    <div class="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl flex justify-between border border-slate-100 dark:border-slate-800">
+                        <span class="font-bold text-blue-600">${u.user}</span>
+                        <span class="font-mono text-xs opacity-50">${u.pass}</span>
+                    </div>`).join('');
             },
             updateDashboard() {
                 let total = 0, monthly = 0;
+                const list = document.getElementById('transaction-list');
+                list.innerHTML = '';
                 state.history.forEach(t => {
                     total += t.amount;
                     if(t.type === 'monthly' && t.amount < 0) monthly += t.amount;
                 });
+                state.history.slice().reverse().forEach(t => {
+                    list.innerHTML += `<div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 flex justify-between items-center shadow-sm">
+                        <div><p class="font-bold text-sm">${t.desc}</p><p class="text-[9px] uppercase text-slate-500">${t.date}</p></div>
+                        <div class="text-right">
+                            <p class="font-black ${t.amount < 0 ? 'text-rose-500' : 'text-emerald-500'}">${t.amount.toFixed(2)} €</p>
+                            <button onclick="logic.deleteEntry(${t.id})" class="text-[8px] uppercase font-black text-slate-300">Delete</button>
+                        </div>
+                    </div>`;
+                });
                 document.getElementById('balance').innerText = total.toFixed(2) + " €";
                 document.getElementById('monthly-stats').innerText = Math.abs(monthly).toFixed(2) + " €";
+                logic.updateChart();
+            }
+        };
+
+        const logic = {
+            saveManual() {
+                const desc = document.getElementById('manual-desc').value || 'Manual';
+                const amt = parseFloat(document.getElementById('manual-amount').value);
+                if(isNaN(amt)) return;
+                state.history.push({ id: Date.now(), desc, amount: -amt, type: document.getElementById('manual-type').value, date: new Date().toLocaleDateString('en-GB') });
+                logic.save(); ui.closeModal(); ui.updateDashboard();
+            },
+            deleteEntry(id) {
+                state.history = state.history.filter(t => t.id !== id);
+                logic.save(); ui.updateDashboard();
+            },
+            save() { localStorage.setItem('v_data', JSON.stringify(state)); },
+            updateChart() {
+                if(!chart) return;
+                chart.data.labels = state.history.map(t => t.date);
+                chart.data.datasets[0].data = state.history.map((t, i) => state.history.slice(0, i+1).reduce((a,b) => a + b.amount, 0));
+                chart.update();
+            },
+            async processImport() {
+                // Simplified Smart Scan (Same as before)
+                const text = document.getElementById('ai-input').value;
+                if(text) {
+                    const moneyRegex = /([-−–]?\s?\d+[\d.]*,\d{2}|(?<=\s)\d+[\d.]*,\d{2}\s?[-−–])/g;
+                    const match = text.match(moneyRegex);
+                    if(match) {
+                        let val = parseFloat(match[0].replace(/[^\d,]/g, '').replace(',', '.'));
+                        state.history.push({ id: Date.now(), desc: 'Scanned', amount: -val, type: 'once', date: new Date().toLocaleDateString('en-GB') });
+                        logic.save(); ui.closeModal(); ui.updateDashboard();
+                    }
+                }
             }
         };
 
@@ -162,52 +257,43 @@
                 const ip = document.getElementById('mc-ip').value;
                 if(!ip) return;
                 const resDiv = document.getElementById('mc-result');
-                resDiv.innerHTML = "<p class='col-span-full text-center py-10 font-black animate-pulse text-blue-600'>CONNECTING...</p>";
+                resDiv.innerHTML = "<p class='col-span-full text-center py-10 animate-pulse text-blue-600'>SCANNING...</p>";
                 resDiv.classList.remove('hidden');
-
                 const start = Date.now();
                 try {
                     const response = await fetch(`https://api.mcstatus.io/v2/status/java/${ip}`);
                     const data = await response.json();
                     const ping = Date.now() - start;
-                    
                     if(data.online) {
                         resDiv.innerHTML = `
                             <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 text-center flex flex-col items-center">
-                                <img src="${data.icon || 'https://cdn-icons-png.flaticon.com/512/3534/3534014.png'}" class="w-12 h-12 mb-4 rounded-lg shadow-lg">
-                                <p class="text-[10px] font-black text-emerald-500 uppercase">Status</p>
-                                <p class="text-lg font-black">ONLINE</p>
+                                <img src="${data.icon || 'https://cdn-icons-png.flaticon.com/512/3534/3534014.png'}" class="w-12 h-12 mb-2 rounded-lg">
+                                <p class="text-[8px] font-black text-emerald-500 uppercase">Status</p><p class="text-sm font-black">ONLINE</p>
                             </div>
                             <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 text-center">
-                                <p class="text-[10px] font-black text-blue-500 mb-2 uppercase">Players</p>
-                                <p class="text-xl font-black">${data.players.online} / ${data.players.max}</p>
+                                <p class="text-[8px] font-black text-blue-500 uppercase">Players</p><p class="text-sm font-black">${data.players.online}/${data.players.max}</p>
                             </div>
                             <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 text-center">
-                                <p class="text-[10px] font-black text-amber-500 mb-2 uppercase">Latency</p>
-                                <p class="text-xl font-black">${ping}ms</p>
+                                <p class="text-[8px] font-black text-amber-500 uppercase">Latency</p><p class="text-sm font-black">${ping}ms</p>
                             </div>
-                            <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 text-center">
-                                <p class="text-[10px] font-black text-purple-500 mb-2 uppercase">Version</p>
-                                <p class="text-[10px] font-bold truncate w-full">${data.version.name_clean || 'N/A'}</p>
-                            </div>
-                        `;
-                    } else {
-                        resDiv.innerHTML = "<div class='col-span-full p-10 bg-rose-500/10 rounded-3xl text-rose-500 text-center font-black'>SERVER OFFLINE</div>";
-                    }
-                } catch (e) {
-                    resDiv.innerHTML = "<div class='col-span-full p-10 bg-rose-500/10 rounded-3xl text-rose-500 text-center font-black'>API ERROR</div>";
-                }
+                            <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 text-center overflow-hidden">
+                                <p class="text-[8px] font-black text-purple-500 uppercase">Version</p><p class="text-[8px] font-bold truncate">${data.version.name_clean || 'N/A'}</p>
+                            </div>`;
+                    } else { resDiv.innerHTML = "<p class='col-span-full text-center text-rose-500 py-10 font-black'>OFFLINE</p>"; }
+                } catch (e) { resDiv.innerHTML = "<p class='col-span-full text-center text-rose-500 py-10 font-black'>ERROR</p>"; }
             }
-        };
-
-        const logic = {
-            save() { localStorage.setItem('v_data', JSON.stringify(state)); }
         };
 
         window.onload = () => {
             if(state.auth) {
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('app-content').classList.remove('hidden');
+                const ctx = document.getElementById('financeChart').getContext('2d');
+                chart = new Chart(ctx, {
+                    type: 'line',
+                    data: { labels: [], datasets: [{ data: [], borderColor: '#3b82f6', tension: 0.4, fill: true, backgroundColor: 'rgba(59, 130, 246, 0.05)', borderWidth: 3 }] },
+                    options: { responsive: true, plugins: { legend: { display: false } } }
+                });
                 ui.updateDashboard();
             }
         };
