@@ -197,7 +197,6 @@
                 </div>
                 <button onclick="logic.saveManual()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase tracking-widest text-white">Commit</button>
             </div>
-            
             <div id="ui-import" class="hidden space-y-6 text-center">
                 <div class="relative w-full h-32 bg-white/5 rounded-3xl border-2 border-dashed border-white/10 flex items-center justify-center">
                     <span id="file-display-name" class="opacity-20 text-[10px] uppercase font-black">Drop PDF</span>
@@ -266,7 +265,6 @@
                     updateUI(currentX > max / 2 ? 1 : 0);
                 };
 
-                // Sofort-Update ohne Verzögerung für die Initialisierung
                 const initialIdx = labels.indexOf(initialVal) !== -1 ? labels.indexOf(initialVal) : 0;
                 updateUI(initialIdx);
             },
@@ -274,6 +272,12 @@
             applyTheme(theme) {
                 state.theme = theme;
                 document.body.className = theme === 'light' ? 'light-mode' : 'dark-mode';
+                if(chart) {
+                    const color = theme === 'light' ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.3)';
+                    chart.options.scales.x.ticks.color = color;
+                    chart.options.scales.y.ticks.color = color;
+                    chart.update();
+                }
                 logic.save();
             },
 
@@ -294,7 +298,6 @@
                 document.getElementById('ui-import').classList.toggle('hidden', type !== 'import');
                 if(type === 'manual') {
                     this.updatePrefabs();
-                    // Re-Init Toggles beim Öffnen für perfekte Animation
                     this.setupLiquidToggle('type-toggle', 'knob-type', ['Expense', 'Income'], (v) => { entryMode = v; ui.updatePrefabs(); }, entryMode);
                     this.setupLiquidToggle('freq-toggle', 'knob-freq', ['Once', 'Monthly'], (v) => { freqMode = v; }, freqMode);
                 }
@@ -380,11 +383,29 @@
             if(state.auth) {
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('app-content').classList.remove('hidden');
+                
                 chart = new Chart(document.getElementById('financeChart'), {
                     type: 'line',
-                    data: { labels: [], datasets: [{ data: [], borderColor: '#007AFF', tension: 0.4, fill: true, backgroundColor: 'rgba(0,122,255,0.05)', pointRadius: 2, pointBackgroundColor: '#fff', borderWidth: 3 }] },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
+                    data: { labels: [], datasets: [{ data: [], borderColor: '#007AFF', tension: 0.4, fill: true, backgroundColor: 'rgba(0,122,255,0.05)', pointRadius: 4, pointBackgroundColor: '#007AFF', borderWidth: 3 }] },
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false, 
+                        plugins: { legend: { display: false } }, 
+                        scales: { 
+                            x: { 
+                                display: true, 
+                                grid: { display: false }, 
+                                ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 10 } } 
+                            }, 
+                            y: { 
+                                display: true, 
+                                grid: { color: 'rgba(255,255,255,0.05)' }, 
+                                ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 10 }, callback: v => v + '€' } 
+                            } 
+                        } 
+                    }
                 });
+
                 ui.updateDashboard();
                 ui.applyTheme(state.theme || 'dark');
                 ui.setupLiquidToggle('theme-toggle', 'knob-theme', ['Dark', 'Light'], (v) => ui.applyTheme(v.toLowerCase()), state.theme === 'light' ? 'Light' : 'Dark');
