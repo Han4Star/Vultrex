@@ -13,10 +13,10 @@
         :root {
             --bg: #000;
             --text: #fff;
-            --glass: rgba(255, 255, 255, 0.02);
+            --glass: rgba(255, 255, 255, 0.03);
             --glass-border: rgba(255, 255, 255, 0.15);
             --shadow: rgba(0, 0, 0, 0.8);
-            --input-bg: rgba(150, 150, 150, 0.1);
+            --input-bg: rgba(255, 255, 255, 0.08);
             --blur: blur(40px) saturate(180%);
         }
 
@@ -24,18 +24,23 @@
             --bg: #f0f2f5;
             --text: #1a1a1a;
             --glass: rgba(255, 255, 255, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.8);
+            --glass-border: rgba(0, 0, 0, 0.1);
             --shadow: rgba(0, 0, 0, 0.05);
-            --input-bg: #ffffff;
+            --input-bg: rgba(0, 0, 0, 0.05);
         }
 
+        /* Wenn Crystal Engine OFF ist */
         .no-glass {
-            --glass: rgba(30, 30, 30, 0.95);
-            --blur: none;
+            --blur: none !important;
+            --glass: rgba(45, 45, 45, 1);
+            --input-bg: rgba(65, 65, 65, 1);
+            --glass-border: rgba(255, 255, 255, 0.1);
         }
-
+        
         .light-mode.no-glass {
             --glass: #ffffff;
+            --input-bg: #e5e5e5;
+            --glass-border: rgba(0, 0, 0, 0.1);
         }
 
         body {
@@ -45,7 +50,7 @@
             font-family: -apple-system, system-ui, sans-serif;
             overflow: hidden;
             height: 100vh;
-            transition: background 0.5s ease;
+            transition: background 0.4s ease;
         }
 
         .crystal-glass {
@@ -54,10 +59,10 @@
             -webkit-backdrop-filter: var(--blur);
             border: 1px solid var(--glass-border);
             box-shadow: 0 8px 32px 0 var(--shadow);
-            transition: background 0.3s, backdrop-filter 0.3s;
+            transition: background 0.3s, border 0.3s;
         }
 
-        /* TOGGLE SYSTEM */
+        /* TOGGLE SYSTEM - Festes Design, damit nichts verschwindet */
         .toggle-container {
             position: relative;
             width: 100%;
@@ -80,7 +85,7 @@
             background: linear-gradient(165deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%), #007AFF;
             border: 1px solid rgba(255, 255, 255, 0.4);
             border-radius: 17px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.5);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -102,7 +107,6 @@
             opacity: 0.3;
             transition: opacity 0.3s;
             z-index: 5;
-            pointer-events: auto;
         }
 
         .active-label { opacity: 1; }
@@ -122,12 +126,12 @@
 <body class="dark-mode">
 
     <div id="login-screen" class="fixed inset-0 z-[200] bg-black flex items-center justify-center p-6">
-        <div class="w-full max-w-sm text-center text-white">
-            <h1 class="text-8xl font-black mb-12 italic tracking-tighter">V<span class="text-blue-500">.</span></h1>
-            <div class="crystal-glass p-10 rounded-[3.5rem]" style="background: rgba(255,255,255,0.05)">
-                <input type="text" id="login-user" placeholder="Identity" class="w-full p-5 rounded-2xl mb-4 text-center font-bold outline-none">
-                <input type="password" id="login-pass" placeholder="Key" class="w-full p-5 rounded-2xl mb-8 text-center font-bold outline-none">
-                <button onclick="auth.login()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase tracking-widest active:scale-95 transition-all shadow-lg">Connect</button>
+        <div class="w-full max-w-sm text-center">
+            <h1 class="text-8xl font-black mb-12 italic text-white tracking-tighter">V<span class="text-blue-500">.</span></h1>
+            <div class="crystal-glass p-10 rounded-[3.5rem]">
+                <input type="text" id="login-user" placeholder="Identity" class="w-full p-5 rounded-2xl mb-4 text-center font-bold">
+                <input type="password" id="login-pass" placeholder="Key" class="w-full p-5 rounded-2xl mb-8 text-center font-bold">
+                <button onclick="auth.login()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase text-white shadow-lg">Connect</button>
             </div>
         </div>
     </div>
@@ -154,8 +158,8 @@
 
         <div id="page-dashboard" class="space-y-6">
             <div class="crystal-glass p-8 rounded-[3.5rem]">
-                <p class="text-[10px] opacity-40 uppercase font-black tracking-widest mb-1">Balance</p>
-                <h3 id="balance" class="text-5xl font-bold tracking-tighter italic">0.00 €</h3>
+                <p class="text-[10px] opacity-40 uppercase font-black mb-1 tracking-widest">Balance</p>
+                <h3 id="balance" class="text-5xl font-bold italic tracking-tighter">0.00 €</h3>
             </div>
             <div class="crystal-glass p-6 rounded-[3rem] h-64">
                 <canvas id="financeChart"></canvas>
@@ -196,11 +200,16 @@
             </div>
             <div id="mc-result" class="hidden grid grid-cols-2 gap-4"></div>
         </div>
-        <div id="page-admin" class="page-hidden space-y-4"><div id="admin-user-list" class="space-y-2"></div></div>
+
+        <div id="page-admin" class="page-hidden space-y-4">
+            <h2 class="text-2xl font-black italic mb-4">Terminal</h2>
+            <div id="admin-user-list" class="space-y-2"></div>
+        </div>
     </div>
 
     <div id="modal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-3xl z-[200] flex items-center justify-center p-6">
         <div class="crystal-glass w-full max-w-sm p-8 rounded-[4rem]">
+            
             <div id="ui-manual" class="hidden space-y-5">
                 <div class="toggle-container" id="type-toggle">
                     <div class="toggle-knob" id="knob-type">Expense</div>
@@ -217,6 +226,7 @@
                 </div>
                 <button onclick="logic.saveManual()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase tracking-widest text-white">Commit</button>
             </div>
+
             <div id="ui-import" class="hidden space-y-6 text-center">
                 <div class="relative w-full h-32 bg-white/5 rounded-3xl border-2 border-dashed border-white/10 flex items-center justify-center">
                     <span id="file-display-name" class="opacity-20 text-[10px] uppercase font-black">Drop PDF</span>
@@ -224,30 +234,47 @@
                 </div>
                 <button onclick="logic.processImport()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase tracking-widest text-white">Scan</button>
             </div>
+
             <button onclick="ui.closeModal()" class="w-full text-white/20 font-bold text-[10px] uppercase mt-8 tracking-widest">Back</button>
         </div>
     </div>
 
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        let state = JSON.parse(localStorage.getItem('v_data')) || { history: [], auth: null, allUsers: [], theme: 'dark', glass: 'On' };
-        let chart = null, entryMode = 'Expense', freqMode = 'Once';
+        
+        // State Management
+        let state = JSON.parse(localStorage.getItem('v_data')) || { 
+            history: [], 
+            auth: null, 
+            theme: 'dark', 
+            glass: 'On' 
+        };
+        
+        let chart = null;
+        let entryMode = 'Expense';
+        let freqMode = 'Once';
 
         const auth = {
             login() {
-                const u = document.getElementById('login-user').value, p = document.getElementById('login-pass').value;
+                const u = document.getElementById('login-user').value;
+                const p = document.getElementById('login-pass').value;
                 if(u && p) {
                     state.auth = { user: u, pass: p };
-                    if(!state.allUsers.find(x => x.user === u)) state.allUsers.push({ user: u, pass: p });
-                    logic.save(); location.reload();
+                    logic.save(); 
+                    location.reload();
                 }
             },
-            logout() { state.auth = null; logic.save(); location.reload(); }
+            logout() {
+                state.auth = null;
+                logic.save();
+                location.reload();
+            }
         };
 
         const ui = {
             setupLiquidToggle(boxId, knobId, labels, callback, initialVal) {
-                const box = document.getElementById(boxId), knob = document.getElementById(knobId);
+                const box = document.getElementById(boxId);
+                const knob = document.getElementById(knobId);
                 const labelEls = box.querySelectorAll('.toggle-label');
                 let isDragging = false, startX, currentX = 0;
 
@@ -265,38 +292,34 @@
                     el.onclick = (e) => { e.stopPropagation(); updateUI(idx); };
                 });
 
-                const onStart = (e) => {
+                box.onmousedown = box.ontouchstart = (e) => {
                     isDragging = true;
                     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                    const rect = box.getBoundingClientRect();
-                    startX = clientX - (rect.left + currentX);
+                    startX = clientX - (box.getBoundingClientRect().left + currentX);
                     knob.style.transition = 'none';
                 };
 
                 const onMove = (e) => {
                     if (!isDragging) return;
                     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                    const rect = box.getBoundingClientRect();
                     const max = box.offsetWidth / 2 - 4;
-                    currentX = Math.max(0, Math.min(clientX - rect.left - startX, max));
+                    currentX = Math.max(0, Math.min(clientX - box.getBoundingClientRect().left - startX, max));
                     knob.style.transform = `translateX(${currentX}px)`;
                 };
 
                 const onEnd = () => {
                     if (!isDragging) return;
                     isDragging = false;
-                    const max = box.offsetWidth / 2 - 4;
-                    updateUI(currentX > max / 2 ? 1 : 0);
+                    updateUI(currentX > (box.offsetWidth / 4) ? 1 : 0);
                 };
 
-                box.onmousedown = box.ontouchstart = onStart;
                 window.addEventListener('mousemove', onMove);
                 window.addEventListener('touchmove', onMove, {passive: false});
                 window.addEventListener('mouseup', onEnd);
                 window.addEventListener('touchend', onEnd);
 
-                const initialIdx = labels.indexOf(initialVal) !== -1 ? labels.indexOf(initialVal) : 0;
-                setTimeout(() => updateUI(initialIdx, false), 10);
+                const initIdx = labels.indexOf(initialVal);
+                setTimeout(() => updateUI(initIdx !== -1 ? initIdx : 0, false), 100);
             },
 
             applyTheme(theme) {
@@ -317,51 +340,75 @@
                 logic.save();
             },
 
+            switchPage(id) {
+                ['dashboard', 'monitor', 'admin', 'settings'].forEach(p => {
+                    const el = document.getElementById('page-' + p);
+                    if(el) el.classList.add('page-hidden');
+                });
+                document.getElementById('page-' + id).classList.remove('page-hidden');
+                this.toggleSidebar();
+            },
+
             toggleSidebar() {
-                const sb = document.getElementById('sidebar'), ov = document.getElementById('sidebar-overlay');
+                const sb = document.getElementById('sidebar');
+                const ov = document.getElementById('sidebar-overlay');
                 const open = sb.style.transform === 'translateX(0px)';
                 sb.style.transform = open ? 'translateX(-100%)' : 'translateX(0px)';
                 ov.classList.toggle('hidden');
             },
-            switchPage(id) {
-                ['dashboard', 'monitor', 'admin', 'settings'].forEach(p => document.getElementById('page-' + p).classList.add('page-hidden'));
-                document.getElementById('page-' + id).classList.remove('page-hidden');
-                this.toggleSidebar();
-            },
+
             openModal(type) {
                 document.getElementById('modal').classList.remove('hidden');
                 document.getElementById('ui-manual').classList.toggle('hidden', type !== 'manual');
                 document.getElementById('ui-import').classList.toggle('hidden', type !== 'import');
                 if(type === 'manual') {
                     this.updatePrefabs();
-                    this.setupLiquidToggle('type-toggle', 'knob-type', ['Expense', 'Income'], (v) => { entryMode = v; ui.updatePrefabs(); }, entryMode);
-                    this.setupLiquidToggle('freq-toggle', 'knob-freq', ['Once', 'Monthly'], (v) => { freqMode = v; }, freqMode);
+                    this.setupLiquidToggle('type-toggle', 'knob-type', ['Expense', 'Income'], (v) => { 
+                        entryMode = v; 
+                        ui.updatePrefabs(); 
+                    }, entryMode);
+                    this.setupLiquidToggle('freq-toggle', 'knob-freq', ['Once', 'Monthly'], (v) => { 
+                        freqMode = v; 
+                    }, freqMode);
                 }
             },
+
             closeModal() { document.getElementById('modal').classList.add('hidden'); },
+
             updatePrefabs() {
-                const list = { Expense: ['Server', 'Staff', 'Other'], Income: ['Donation', 'Salary'] };
+                const list = { 
+                    Expense: ['Server', 'Staff', 'Electricity', 'Other'], 
+                    Income: ['Donation', 'Salary', 'Investment'] 
+                };
                 document.getElementById('manual-prefab').innerHTML = list[entryMode].map(x => `<option value="${x}">${x}</option>`).join('');
-                this.handlePrefabChange(document.getElementById('manual-prefab'));
+                document.getElementById('manual-desc').value = list[entryMode][0];
             },
+
             handlePrefabChange(s) { document.getElementById('manual-desc').value = s.value; },
             handleFileSelect(i) { if(i.files[0]) document.getElementById('file-display-name').innerText = i.files[0].name; },
-            openAdminPin() { if(prompt("Terminal PIN:") === "1234") this.switchPage('admin'); },
+
             updateDashboard() {
                 let total = 0;
                 const list = document.getElementById('transaction-list');
                 list.innerHTML = '';
                 state.history.forEach(t => total += t.amount);
+                
                 [...state.history].reverse().forEach(t => {
                     list.innerHTML += `
                         <div class="crystal-glass p-6 rounded-[2.5rem] flex justify-between items-center">
-                            <div><p class="font-bold text-sm tracking-tight">${t.desc}</p><p class="text-[9px] opacity-20 font-black">${t.date}</p></div>
-                            <p class="font-black ${t.amount < 0 ? 'text-rose-500' : 'text-emerald-500'}">${t.amount.toFixed(2)} €</p>
+                            <div>
+                                <p class="font-bold text-sm tracking-tight">${t.desc}</p>
+                                <p class="text-[9px] opacity-20 font-black uppercase">${t.date} • ${t.type || 'Once'}</p>
+                            </div>
+                            <p class="font-black ${t.amount < 0 ? 'text-rose-500' : 'text-emerald-500'}">
+                                ${t.amount.toFixed(2)} €
+                            </p>
                         </div>`;
                 });
                 document.getElementById('balance').innerText = total.toFixed(2) + " €";
                 this.updateChart();
             },
+
             updateChart() {
                 if(!chart) return;
                 const sorted = [...state.history].sort((a,b) => a.id - b.id);
@@ -369,6 +416,10 @@
                 chart.data.labels = sorted.map(t => t.date);
                 chart.data.datasets[0].data = sorted.map(t => { run += t.amount; return run; });
                 chart.update();
+            },
+
+            openAdminPin() {
+                if(prompt("Terminal PIN:") === "1234") this.switchPage('admin');
             }
         };
 
@@ -377,41 +428,73 @@
                 let amt = parseFloat(document.getElementById('manual-amount').value);
                 if(isNaN(amt)) return;
                 amt = entryMode === 'Expense' ? -Math.abs(amt) : Math.abs(amt);
-                state.history.push({ id: Date.now(), desc: document.getElementById('manual-desc').value, amount: amt, type: freqMode, date: new Date().toLocaleDateString('de-DE') });
-                this.save(); ui.closeModal(); ui.updateDashboard();
+                state.history.push({ 
+                    id: Date.now(), 
+                    desc: document.getElementById('manual-desc').value, 
+                    amount: amt, 
+                    type: freqMode, 
+                    date: new Date().toLocaleDateString('de-DE') 
+                });
+                this.save(); 
+                ui.closeModal(); 
+                ui.updateDashboard();
             },
-            save() { localStorage.setItem('v_data', JSON.stringify(state)); },
+
             async processImport() {
                 const file = document.getElementById('pdf-file').files[0];
-                if(file) {
-                    const reader = new FileReader();
-                    reader.onload = async (e) => {
+                if(!file) return;
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    try {
                         const pdf = await pdfjsLib.getDocument({data: new Uint8Array(e.target.result)}).promise;
                         const page = await pdf.getPage(1);
                         const content = await page.getTextContent();
                         const text = content.items.map(s => s.str).join(" ");
                         const match = text.match(/(\d+[\.,]\d{2})/);
                         let val = match ? parseFloat(match[0].replace(',', '.')) : 10.0;
-                        state.history.push({ id: Date.now(), desc: "AI Scan", amount: -val, type: 'Once', date: new Date().toLocaleDateString('de-DE') });
-                        this.save(); ui.closeModal(); ui.updateDashboard();
-                    };
-                    reader.readAsArrayBuffer(file);
-                }
-            }
+                        state.history.push({ 
+                            id: Date.now(), 
+                            desc: "AI Scan: " + file.name, 
+                            amount: -val, 
+                            type: 'Once', 
+                            date: new Date().toLocaleDateString('de-DE') 
+                        });
+                        this.save(); 
+                        ui.closeModal(); 
+                        ui.updateDashboard();
+                    } catch(err) { alert("PDF Error"); }
+                };
+                reader.readAsArrayBuffer(file);
+            },
+
+            save() { localStorage.setItem('v_data', JSON.stringify(state)); }
         };
 
         const monitor = {
             async check() {
-                const ip = document.getElementById('mc-ip').value, res = document.getElementById('mc-result');
-                res.innerHTML = "<p class='col-span-2 text-center opacity-30 text-[10px] font-black'>Polling...</p>";
+                const ip = document.getElementById('mc-ip').value;
+                const res = document.getElementById('mc-result');
+                res.innerHTML = "<p class='col-span-2 text-center opacity-30 text-[10px] font-black uppercase'>Polling Node...</p>";
                 res.classList.remove('hidden');
                 try {
                     const r = await fetch(`https://api.mcstatus.io/v2/status/java/${ip}`);
                     const d = await r.json();
                     if(d.online) {
-                        res.innerHTML = `<div class="crystal-glass p-6 rounded-3xl text-center"><p class="text-[8px] opacity-30 font-black">Status</p><p class="text-emerald-500 font-bold">ONLINE</p></div><div class="crystal-glass p-6 rounded-3xl text-center"><p class="text-[8px] opacity-30 font-black">Players</p><p class="font-bold">${d.players.online}</p></div>`;
-                    } else { res.innerHTML = "<p class='col-span-2 text-rose-500 text-center font-bold'>OFFLINE</p>"; }
-                } catch(e) { res.innerHTML = "Error"; }
+                        res.innerHTML = `
+                            <div class="crystal-glass p-6 rounded-3xl text-center">
+                                <p class="text-[8px] opacity-30 font-black uppercase">Status</p>
+                                <p class="text-emerald-500 font-bold">ONLINE</p>
+                            </div>
+                            <div class="crystal-glass p-6 rounded-3xl text-center">
+                                <p class="text-[8px] opacity-30 font-black uppercase">Players</p>
+                                <p class="font-bold text-xl">${d.players.online}</p>
+                            </div>`;
+                    } else {
+                        res.innerHTML = "<p class='col-span-2 text-rose-500 text-center font-bold uppercase py-4'>Node Offline</p>";
+                    }
+                } catch(e) {
+                    res.innerHTML = "<p class='col-span-2 text-center opacity-50'>Connection Failed</p>";
+                }
             }
         };
 
@@ -422,7 +505,19 @@
                 
                 chart = new Chart(document.getElementById('financeChart'), {
                     type: 'line',
-                    data: { labels: [], datasets: [{ data: [], borderColor: '#007AFF', tension: 0.4, fill: true, backgroundColor: 'rgba(0,122,255,0.05)', pointRadius: 4, pointBackgroundColor: '#007AFF', borderWidth: 3 }] },
+                    data: { 
+                        labels: [], 
+                        datasets: [{ 
+                            data: [], 
+                            borderColor: '#007AFF', 
+                            tension: 0.4, 
+                            fill: true, 
+                            backgroundColor: 'rgba(0,122,255,0.05)', 
+                            pointRadius: 4, 
+                            pointBackgroundColor: '#007AFF', 
+                            borderWidth: 3 
+                        }] 
+                    },
                     options: { 
                         responsive: true, 
                         maintainAspectRatio: false, 
