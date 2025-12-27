@@ -36,7 +36,6 @@
             animation: scan-progress 2s ease-in-out infinite;
         }
 
-        /* Versteckt den Standard-Button, lässt das Feld aber anklickbar */
         #pdf-file {
             opacity: 0;
             position: absolute;
@@ -46,12 +45,14 @@
             cursor: pointer;
             z-index: 10;
         }
+
+        .tab-active { background-color: #2563eb; color: white; }
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen font-sans overflow-x-hidden">
 
     <div id="login-screen" class="fixed inset-0 z-[100] bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-6">
-        <div class="w-full max-sm text-center">
+        <div class="w-full max-w-sm text-center">
             <h1 class="text-5xl font-black text-blue-600 mb-12 italic tracking-tighter">Vultrex</h1>
             <div class="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-slate-800">
                 <input type="text" id="login-user" placeholder="Username" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl mb-4 outline-none border-2 border-transparent focus:border-blue-500 font-bold">
@@ -120,6 +121,7 @@
 
     <div id="modal" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 z-50">
         <div class="bg-white dark:bg-slate-900 w-full max-w-md p-8 rounded-[3rem] shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+            
             <div id="ui-import" class="hidden text-center">
                 <h3 class="text-xl font-black mb-6 uppercase italic text-blue-600">Smart Scan</h3>
                 <div class="relative w-full h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mb-6 overflow-hidden border-2 border-transparent focus-within:border-blue-500">
@@ -134,16 +136,28 @@
                 </div>
                 <button id="start-scan-btn" onclick="logic.processImport()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest active:scale-95 transition-all">Start Scan</button>
             </div>
+
             <div id="ui-manual" class="hidden text-center">
                 <h3 class="text-xl font-black mb-6 uppercase italic text-blue-600">New Entry</h3>
-                <input type="text" id="manual-desc" placeholder="Service Name" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl mb-4 outline-none font-bold">
+                
+                <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl mb-6">
+                    <button id="tab-expense" onclick="ui.setEntryMode('expense')" class="flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all tab-active">Expense</button>
+                    <button id="tab-income" onclick="ui.setEntryMode('income')" class="flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all">Income</button>
+                </div>
+
+                <select id="manual-prefab" onchange="ui.handlePrefabChange(this)" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl mb-4 outline-none font-bold text-sm">
+                    </select>
+                <input type="text" id="manual-desc" placeholder="Custom Name" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl mb-4 outline-none font-bold">
                 <input type="number" id="manual-amount" placeholder="0.00" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl mb-4 outline-none font-bold">
+                
                 <select id="manual-type" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl mb-8 font-bold">
                     <option value="once">One-time</option>
                     <option value="monthly">Monthly</option>
                 </select>
+                
                 <button onclick="logic.saveManual()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black uppercase">Add Now</button>
             </div>
+
             <button onclick="ui.closeModal()" class="w-full text-slate-400 py-4 font-bold text-[10px] uppercase tracking-widest mt-2">Close</button>
         </div>
     </div>
@@ -152,7 +166,13 @@
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         let state = JSON.parse(localStorage.getItem('v_data')) || { history: [], auth: null, allUsers: [] };
         let chart = null;
+        let entryMode = 'expense'; // expense or income
         const ADMIN_PIN = "1234";
+
+        const prefabs = {
+            income: ['Ranks', 'Donations', 'Collabs', 'Partner', 'Custom'],
+            expense: ['Plugins/Mods', 'Server Cost', 'Domain', 'Advertising', 'Freelancer', 'Custom']
+        };
 
         const auth = {
             login() {
@@ -175,12 +195,25 @@
                 const nameLabel = document.getElementById('file-display-name');
                 if (input.files && input.files[0]) {
                     nameLabel.innerText = input.files[0].name;
-                    nameLabel.classList.remove('text-slate-500');
                     nameLabel.classList.add('text-blue-500');
+                }
+            },
+            setEntryMode(mode) {
+                entryMode = mode;
+                document.getElementById('tab-expense').classList.toggle('tab-active', mode === 'expense');
+                document.getElementById('tab-income').classList.toggle('tab-active', mode === 'income');
+                
+                const select = document.getElementById('manual-prefab');
+                select.innerHTML = prefabs[mode].map(p => `<option value="${p}">${p}</option>`).join('');
+                this.handlePrefabChange(select);
+            },
+            handlePrefabChange(select) {
+                const input = document.getElementById('manual-desc');
+                if (select.value === 'Custom') {
+                    input.value = "";
+                    input.focus();
                 } else {
-                    nameLabel.innerText = "Tap to select PDF";
-                    nameLabel.classList.add('text-slate-500');
-                    nameLabel.classList.remove('text-blue-500');
+                    input.value = select.value;
                 }
             },
             toggleSidebar() {
@@ -205,9 +238,7 @@
                 document.getElementById('modal').classList.remove('hidden');
                 document.getElementById('ui-manual').classList.toggle('hidden', type !== 'manual');
                 document.getElementById('ui-import').classList.toggle('hidden', type !== 'import');
-                // Reset File Display
-                document.getElementById('file-display-name').innerText = "Tap to select PDF";
-                document.getElementById('file-display-name').classList.add('text-slate-500');
+                if (type === 'manual') this.setEntryMode('expense');
             },
             closeModal() { document.getElementById('modal').classList.add('hidden'); },
             openAdminPin() {
@@ -248,9 +279,20 @@
         const logic = {
             saveManual() {
                 const desc = document.getElementById('manual-desc').value || 'New Entry';
-                const amt = parseFloat(document.getElementById('manual-amount').value);
+                let amt = parseFloat(document.getElementById('manual-amount').value);
                 if(isNaN(amt)) return;
-                state.history.push({ id: Date.now(), desc, amount: -amt, type: document.getElementById('manual-type').value, date: new Date().toLocaleDateString('en-GB') });
+                
+                // Logic: Einnahme (+) vs Ausgabe (-)
+                if(entryMode === 'expense') amt = -Math.abs(amt);
+                else amt = Math.abs(amt);
+
+                state.history.push({ 
+                    id: Date.now(), 
+                    desc, 
+                    amount: amt, 
+                    type: document.getElementById('manual-type').value, 
+                    date: new Date().toLocaleDateString('en-GB') 
+                });
                 this.save(); ui.closeModal(); ui.updateDashboard();
                 document.getElementById('manual-amount').value = "";
             },
