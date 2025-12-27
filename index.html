@@ -1,9 +1,9 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vultrex Specular Glass</title>
+    <title>Vultrex Crystal Physics</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -19,70 +19,71 @@
             height: 100vh;
         }
 
-        .liquid-glass {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(30px) saturate(180%);
-            -webkit-backdrop-filter: blur(30px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        /* CRYSTAL GLASS EFFECT */
+        .crystal-glass {
+            background: rgba(255, 255, 255, 0.015);
+            backdrop-filter: blur(40px) saturate(200%) brightness(1.1);
+            -webkit-backdrop-filter: blur(40px) saturate(200%) brightness(1.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
         }
 
-        /* SPECULAR GLASS TOGGLE */
+        /* TOGGLE SYSTEM */
         .toggle-container {
             position: relative;
             width: 100%;
-            height: 64px;
-            background: rgba(255, 255, 255, 0.06);
-            border-radius: 22px;
-            padding: 6px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 4px;
             display: flex;
             align-items: center;
             cursor: pointer;
             touch-action: none;
-            overflow: visible;
         }
 
         .toggle-knob {
             position: absolute;
             height: 52px;
-            width: calc(50% - 6px);
-            /* Glass Reflection Look */
-            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0) 100%), #007AFF;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 18px;
-            box-shadow: inset 0 1px 1px rgba(255,255,255,0.4), 0 10px 20px rgba(0,0,0,0.4);
+            width: calc(50% - 4px);
+            /* Specular Reflection Gradient */
+            background: linear-gradient(165deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 40%, rgba(255,255,255,0) 100%), #007AFF;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 17px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.5);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 11px;
-            font-weight: 800;
+            font-weight: 900;
             text-transform: uppercase;
             letter-spacing: 1px;
             z-index: 10;
             pointer-events: none;
-            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s;
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         .toggle-knob.dragging {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px) brightness(1.2);
-            -webkit-backdrop-filter: blur(10px) brightness(1.2);
             transition: none;
-            transform: scale(0.97);
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            transform: scale(0.96);
         }
 
         .toggle-label {
             flex: 1;
             text-align: center;
-            font-size: 11px;
-            font-weight: 700;
+            font-size: 10px;
+            font-weight: 800;
             text-transform: uppercase;
-            opacity: 0.3;
+            opacity: 0.2;
             transition: opacity 0.3s;
         }
 
         .active-label { opacity: 1; }
         .page-hidden { display: none; }
-        .sidebar-transition { transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        .sidebar-transition { transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
         #pdf-file { opacity: 0; position: absolute; inset: 0; cursor: pointer; }
     </style>
 </head>
@@ -90,55 +91,56 @@
 
     <div id="login-screen" class="fixed inset-0 z-[200] bg-black flex items-center justify-center p-6">
         <div class="w-full max-w-sm text-center">
-            <h1 class="text-7xl font-black mb-10 italic">V<span class="text-blue-500">.</span></h1>
-            <div class="liquid-glass p-8 rounded-[3.5rem]">
-                <input type="text" id="login-user" placeholder="Identity" class="w-full bg-white/5 p-5 rounded-2xl mb-4 border border-white/10 text-center font-bold outline-none">
-                <input type="password" id="login-pass" placeholder="Password" class="w-full bg-white/5 p-5 rounded-2xl mb-8 border border-white/10 text-center font-bold outline-none">
-                <button onclick="auth.login()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase tracking-widest">Connect</button>
+            <h1 class="text-8xl font-black mb-12 italic tracking-tighter">V<span class="text-blue-500">.</span></h1>
+            <div class="crystal-glass p-10 rounded-[3.5rem]">
+                <input type="text" id="login-user" placeholder="Identity" class="w-full bg-white/5 p-5 rounded-2xl mb-4 border border-white/10 text-center font-bold outline-none focus:bg-white/10 transition-all">
+                <input type="password" id="login-pass" placeholder="Master Key" class="w-full bg-white/5 p-5 rounded-2xl mb-8 border border-white/10 text-center font-bold outline-none focus:bg-white/10 transition-all">
+                <button onclick="auth.login()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase tracking-widest active:scale-95 transition-transform shadow-xl shadow-blue-500/20">Enter</button>
             </div>
         </div>
     </div>
 
-    <div id="sidebar" class="fixed inset-y-0 left-0 w-72 liquid-glass z-[150] sidebar-transition -translate-x-full rounded-r-[3rem] border-r border-white/20">
+    <div id="sidebar" class="fixed inset-y-0 left-0 w-72 crystal-glass z-[150] sidebar-transition -translate-x-full rounded-r-[3rem]">
         <div class="p-10 flex flex-col h-full">
-            <h2 class="text-3xl font-black mb-12 italic">Menu</h2>
+            <h2 class="text-3xl font-black mb-12 italic">System</h2>
             <nav class="space-y-4 flex-1">
-                <button onclick="ui.switchPage('dashboard')" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold">📊 Analytics</button>
-                <button onclick="ui.switchPage('monitor')" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold">🎮 Server API</button>
-                <button onclick="ui.openAdminPin()" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold text-white/30">🔒 Admin Node</button>
+                <button onclick="ui.switchPage('dashboard')" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold">Analytics</button>
+                <button onclick="ui.switchPage('monitor')" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold">Monitor</button>
+                <button onclick="ui.openAdminPin()" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold text-white/20">Terminal</button>
             </nav>
-            <button onclick="auth.logout()" class="p-5 rounded-2xl bg-rose-500/10 text-rose-500 font-bold uppercase text-[10px]">Terminate</button>
+            <button onclick="auth.logout()" class="p-5 rounded-2xl bg-rose-500/10 text-rose-500 font-bold uppercase text-[10px]">Logout</button>
         </div>
     </div>
-    <div id="sidebar-overlay" onclick="ui.toggleSidebar()" class="fixed inset-0 bg-black/60 backdrop-blur-md z-[140] hidden"></div>
+    <div id="sidebar-overlay" onclick="ui.toggleSidebar()" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[140] hidden"></div>
 
     <div id="app-content" class="hidden p-6 max-w-xl mx-auto h-screen overflow-y-auto">
-        <header class="flex justify-between items-center mb-8">
-            <button onclick="ui.toggleSidebar()" class="w-12 h-12 liquid-glass rounded-full text-xl">≡</button>
-            <div class="w-12 h-12 bg-blue-600 rounded-full shadow-[0_0_15px_rgba(0,122,255,0.4)]"></div>
+        <header class="flex justify-between items-center mb-10 pt-4">
+            <button onclick="ui.toggleSidebar()" class="w-12 h-12 crystal-glass rounded-full flex items-center justify-center text-xl">≡</button>
+            <div class="w-12 h-12 bg-blue-600 rounded-full border-2 border-white/20 shadow-lg"></div>
         </header>
 
         <div id="page-dashboard" class="space-y-6">
-            <div class="liquid-glass p-8 rounded-[3rem]">
-                <p class="text-[10px] opacity-40 uppercase font-black mb-1">Current Balance</p>
-                <h3 id="balance" class="text-5xl font-bold italic tracking-tighter">0.00 €</h3>
+            <div class="crystal-glass p-8 rounded-[3.5rem] relative overflow-hidden">
+                <div class="absolute -top-10 -right-10 w-40 h-40 bg-blue-500/10 blur-[60px]"></div>
+                <p class="text-[10px] opacity-30 uppercase font-black tracking-widest mb-1">Total Assets</p>
+                <h3 id="balance" class="text-5xl font-bold tracking-tighter italic">0.00 €</h3>
             </div>
             
-            <div class="liquid-glass p-5 rounded-[2.5rem] h-64 shadow-inner">
+            <div class="crystal-glass p-6 rounded-[3rem] h-64">
                 <canvas id="financeChart"></canvas>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
-                <button onclick="ui.openModal('manual')" class="liquid-glass py-6 rounded-[2rem] font-bold uppercase text-xs">Manual</button>
-                <button onclick="ui.openModal('import')" class="bg-white text-black py-6 rounded-[2rem] font-bold uppercase text-xs">AI Scan</button>
+                <button onclick="ui.openModal('manual')" class="crystal-glass py-7 rounded-[2.5rem] font-bold uppercase text-[10px] tracking-widest active:scale-95 transition-all">Manual</button>
+                <button onclick="ui.openModal('import')" class="bg-white text-black py-7 rounded-[2.5rem] font-bold uppercase text-[10px] tracking-widest active:scale-95 transition-all">AI Scan</button>
             </div>
             <div id="transaction-list" class="space-y-4 pb-12"></div>
         </div>
 
         <div id="page-monitor" class="page-hidden space-y-6">
-            <div class="liquid-glass p-8 rounded-[3rem]">
-                <input type="text" id="mc-ip" placeholder="Server IP" class="w-full bg-white/5 p-5 rounded-2xl mb-4 text-center border border-white/10 font-bold">
-                <button onclick="monitor.check()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold uppercase">Poll Status</button>
+            <div class="crystal-glass p-8 rounded-[3rem]">
+                <input type="text" id="mc-ip" placeholder="Server IP" class="w-full bg-white/5 p-5 rounded-2xl mb-4 text-center border border-white/10 font-bold outline-none">
+                <button onclick="monitor.check()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold uppercase">Poll Node</button>
             </div>
             <div id="mc-result" class="hidden grid grid-cols-2 gap-4"></div>
         </div>
@@ -148,8 +150,8 @@
         </div>
     </div>
 
-    <div id="modal" class="hidden fixed inset-0 bg-black/95 backdrop-blur-2xl z-[200] flex items-center justify-center p-6">
-        <div class="liquid-glass w-full max-w-sm p-8 rounded-[3.5rem]">
+    <div id="modal" class="hidden fixed inset-0 bg-black/95 backdrop-blur-3xl z-[200] flex items-center justify-center p-6">
+        <div class="crystal-glass w-full max-w-sm p-8 rounded-[4rem]">
             <div id="ui-manual" class="hidden space-y-5">
                 <div class="toggle-container" id="type-toggle">
                     <div class="toggle-knob" id="knob-type">Expense</div>
@@ -157,9 +159,9 @@
                     <div class="toggle-label">Income</div>
                 </div>
 
-                <select id="manual-prefab" onchange="ui.handlePrefabChange(this)" class="w-full bg-white/5 p-5 rounded-2xl border border-white/10 outline-none font-bold text-xs"></select>
-                <input type="text" id="manual-desc" placeholder="Label" class="w-full bg-white/5 p-5 rounded-2xl border border-white/10 outline-none font-bold">
-                <input type="number" id="manual-amount" placeholder="0.00" class="w-full bg-white/5 p-5 rounded-2xl border border-white/10 outline-none font-bold">
+                <select id="manual-prefab" onchange="ui.handlePrefabChange(this)" class="w-full bg-white/5 p-5 rounded-2xl border border-white/10 outline-none font-bold text-xs appearance-none text-center"></select>
+                <input type="text" id="manual-desc" placeholder="Label" class="w-full bg-white/5 p-5 rounded-2xl border border-white/10 outline-none font-bold text-center">
+                <input type="number" id="manual-amount" placeholder="0.00" class="w-full bg-white/5 p-5 rounded-2xl border border-white/10 outline-none font-bold text-center">
                 
                 <div class="toggle-container" id="freq-toggle">
                     <div class="toggle-knob" id="knob-freq">Once</div>
@@ -170,14 +172,14 @@
                 <button onclick="logic.saveManual()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase tracking-widest">Commit</button>
             </div>
 
-            <div id="ui-import" class="hidden space-y-4">
+            <div id="ui-import" class="hidden space-y-6 text-center">
                 <div class="relative w-full h-32 bg-white/5 rounded-3xl border-2 border-dashed border-white/10 flex items-center justify-center">
-                    <span id="file-display-name" class="opacity-30 text-[10px] uppercase font-bold">Select PDF</span>
+                    <span id="file-display-name" class="opacity-30 text-[10px] uppercase font-black">Select PDF Invoice</span>
                     <input type="file" id="pdf-file" accept=".pdf" onchange="ui.handleFileSelect(this)">
                 </div>
-                <button onclick="logic.processImport()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase">Analyze</button>
+                <button onclick="logic.processImport()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase">Run Scan</button>
             </div>
-            <button onclick="ui.closeModal()" class="w-full text-white/20 font-bold text-[10px] uppercase mt-8">Back</button>
+            <button onclick="ui.closeModal()" class="w-full text-white/20 font-bold text-[10px] uppercase mt-8 tracking-widest">Back</button>
         </div>
     </div>
 
@@ -215,7 +217,7 @@
 
                 const move = (e) => {
                     if (!isDragging) return;
-                    const max = box.offsetWidth / 2 - 6;
+                    const max = box.offsetWidth / 2 - 4;
                     currentX = Math.max(0, Math.min(getClientX(e) - startX, max));
                     knob.style.transform = `translateX(${currentX}px)`;
                 };
@@ -224,7 +226,7 @@
                     if (!isDragging) return;
                     isDragging = false;
                     knob.classList.remove('dragging');
-                    const max = box.offsetWidth / 2 - 6;
+                    const max = box.offsetWidth / 2 - 4;
                     currentX = currentX > max / 2 ? max : 0;
                     knob.style.transform = `translateX(${currentX}px)`;
                     
@@ -235,12 +237,9 @@
                     callback(val);
                 };
 
-                box.addEventListener('mousedown', start);
-                box.addEventListener('touchstart', start);
-                window.addEventListener('mousemove', move);
-                window.addEventListener('touchmove', move);
-                window.addEventListener('mouseup', end);
-                window.addEventListener('touchend', end);
+                box.addEventListener('mousedown', start); box.addEventListener('touchstart', start);
+                window.addEventListener('mousemove', move); window.addEventListener('touchmove', move);
+                window.addEventListener('mouseup', end); window.addEventListener('touchend', end);
             },
 
             toggleSidebar() {
@@ -262,16 +261,16 @@
             },
             closeModal() { document.getElementById('modal').classList.add('hidden'); },
             updatePrefabs() {
-                const list = { Expense: ['Server', 'Domain', 'Staff', 'Other'], Income: ['Donation', 'Salary', 'Gift'] };
+                const list = { Expense: ['Server', 'Staff', 'Domain'], Income: ['Salary', 'Gift'] };
                 document.getElementById('manual-prefab').innerHTML = list[entryMode].map(x => `<option value="${x}">${x}</option>`).join('');
                 this.handlePrefabChange(document.getElementById('manual-prefab'));
             },
             handlePrefabChange(s) { document.getElementById('manual-desc').value = s.value; },
             handleFileSelect(i) { if(i.files[0]) document.getElementById('file-display-name').innerText = i.files[0].name; },
-            openAdminPin() { if(prompt("Code:") === "1234") this.switchPage('admin'); },
+            openAdminPin() { if(prompt("Auth Code:") === "1234") this.switchPage('admin'); },
             renderAdmin() {
                 document.getElementById('admin-user-list').innerHTML = state.allUsers.map(u => `
-                    <div class="liquid-glass p-4 rounded-2xl flex justify-between font-bold text-xs"><span>${u.user}</span><span class="opacity-30">${u.pass}</span></div>`).join('');
+                    <div class="crystal-glass p-5 rounded-2xl flex justify-between font-bold text-[10px] uppercase"><span>${u.user}</span><span class="opacity-20">${u.pass}</span></div>`).join('');
             },
             updateDashboard() {
                 let total = 0;
@@ -280,8 +279,8 @@
                 state.history.forEach(t => total += t.amount);
                 [...state.history].reverse().forEach(t => {
                     list.innerHTML += `
-                        <div class="liquid-glass p-5 rounded-[2rem] flex justify-between items-center">
-                            <div><p class="font-bold text-sm">${t.desc}</p><p class="text-[9px] opacity-30">${t.date}</p></div>
+                        <div class="crystal-glass p-6 rounded-[2.5rem] flex justify-between items-center active:scale-95 transition-all">
+                            <div><p class="font-bold text-sm tracking-tight">${t.desc}</p><p class="text-[9px] opacity-20 font-black">${t.date}</p></div>
                             <p class="font-black ${t.amount < 0 ? 'text-rose-500' : 'text-emerald-400'}">${t.amount.toFixed(2)} €</p>
                         </div>`;
                 });
@@ -333,15 +332,15 @@
             async check() {
                 const ip = document.getElementById('mc-ip').value;
                 const res = document.getElementById('mc-result');
-                res.innerHTML = "<p class='col-span-2 text-center opacity-30'>Polling...</p>";
+                res.innerHTML = "<p class='col-span-2 text-center opacity-30 animate-pulse uppercase text-[10px] font-black'>Polling...</p>";
                 res.classList.remove('hidden');
                 try {
                     const r = await fetch(`https://api.mcstatus.io/v2/status/java/${ip}`);
                     const d = await r.json();
                     if(d.online) {
                         res.innerHTML = `
-                        <div class="liquid-glass p-5 rounded-3xl text-center"><p class="text-[8px] opacity-40">Status</p><p class="text-emerald-500 font-bold">ONLINE</p></div>
-                        <div class="liquid-glass p-5 rounded-3xl text-center"><p class="text-[8px] opacity-40">Players</p><p class="font-bold">${d.players.online}</p></div>`;
+                        <div class="crystal-glass p-6 rounded-3xl text-center"><p class="text-[8px] opacity-30 uppercase font-black">Status</p><p class="text-emerald-500 font-bold">ONLINE</p></div>
+                        <div class="crystal-glass p-6 rounded-3xl text-center"><p class="text-[8px] opacity-30 uppercase font-black">Players</p><p class="font-bold">${d.players.online}</p></div>`;
                     } else { res.innerHTML = "<p class='col-span-2 text-rose-500 text-center font-bold'>OFFLINE</p>"; }
                 } catch(e) { res.innerHTML = "Error"; }
             }
@@ -353,14 +352,13 @@
                 document.getElementById('app-content').classList.remove('hidden');
                 chart = new Chart(document.getElementById('financeChart'), {
                     type: 'line',
-                    data: { labels: [], datasets: [{ data: [], borderColor: '#007AFF', tension: 0.4, fill: true, backgroundColor: 'rgba(0,122,255,0.1)', pointRadius: 4, pointBackgroundColor: '#fff' }] },
+                    data: { labels: [], datasets: [{ data: [], borderColor: '#007AFF', tension: 0.4, fill: true, backgroundColor: 'rgba(0,122,255,0.05)', pointRadius: 2, pointBackgroundColor: '#fff', borderWidth: 3 }] },
                     options: { 
-                        responsive: true, 
-                        maintainAspectRatio: false, 
+                        responsive: true, maintainAspectRatio: false, 
                         plugins: { legend: { display: false } }, 
                         scales: { 
-                            x: { ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 9 } }, grid: { display: false } }, 
-                            y: { ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 9 } }, grid: { color: 'rgba(255,255,255,0.1)' } } 
+                            x: { ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 8 } }, grid: { display: false }, border: { display: false } }, 
+                            y: { ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 8 } }, grid: { display: false }, border: { display: false } } 
                         } 
                     }
                 });
@@ -372,4 +370,3 @@
     </script>
 </body>
 </html>
-
