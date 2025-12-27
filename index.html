@@ -48,6 +48,7 @@
             box-shadow: 0 8px 32px 0 var(--shadow);
         }
 
+        /* Liquid Toggle Design */
         .toggle-container {
             position: relative;
             width: 100%;
@@ -79,7 +80,6 @@
             text-transform: uppercase;
             color: white;
             z-index: 10;
-            pointer-events: none;
             transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
         }
 
@@ -92,7 +92,6 @@
             opacity: 0.3;
             transition: opacity 0.3s;
             z-index: 5;
-            pointer-events: auto;
         }
 
         .active-label { opacity: 1; }
@@ -108,7 +107,21 @@
         
         #pdf-file { opacity: 0; position: absolute; inset: 0; cursor: pointer; }
         #sidebar-btn { color: var(--icon-color); }
-        #profile-menu { transform-origin: top right; transition: all 0.2s ease-out; }
+
+        /* Profil Menü Animation */
+        #profile-menu {
+            transform-origin: top right;
+            transition: all 0.2s ease-out;
+        }
+
+        /* Achievement Animation */
+        #achievement-toast {
+            transform: translate(-50%, 150px);
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        #achievement-toast.show {
+            transform: translate(-50%, 0);
+        }
     </style>
 </head>
 <body class="dark-mode">
@@ -117,8 +130,8 @@
         <div class="w-full max-w-sm text-center text-white">
             <h1 class="text-8xl font-black mb-12 italic tracking-tighter">V<span class="text-blue-500">.</span></h1>
             <div class="crystal-glass p-10 rounded-[3.5rem]" style="background: rgba(255,255,255,0.05)">
-                <input type="text" id="login-user" placeholder="Identity" class="w-full p-5 rounded-2xl mb-4 text-center font-bold outline-none">
-                <input type="password" id="login-pass" placeholder="Key" class="w-full p-5 rounded-2xl mb-8 text-center font-bold outline-none">
+                <input type="text" id="login-user" placeholder="Identity" class="w-full p-5 rounded-2xl mb-4 text-center font-bold">
+                <input type="password" id="login-pass" placeholder="Key" class="w-full p-5 rounded-2xl mb-8 text-center font-bold">
                 <button onclick="auth.login()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase tracking-widest active:scale-95 transition-all shadow-lg">Connect</button>
             </div>
         </div>
@@ -128,10 +141,10 @@
         <div class="p-10 flex flex-col h-full">
             <h2 class="text-3xl font-black mb-12 italic">Vultrex</h2>
             <nav class="space-y-4 flex-1">
-                <button onclick="ui.switchPage('dashboard')" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold transition-all">Analytics</button>
-                <button onclick="ui.switchPage('monitor')" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold transition-all">Node</button>
-                <button onclick="ui.switchPage('settings')" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold transition-all">Settings</button>
-                <button onclick="ui.openAdminPin()" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold opacity-20 transition-all">Terminal</button>
+                <button onclick="ui.switchPage('dashboard')" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold">Analytics</button>
+                <button onclick="ui.switchPage('monitor')" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold">Node</button>
+                <button onclick="ui.switchPage('settings')" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold">Settings</button>
+                <button onclick="ui.openAdminPin()" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold opacity-20">Terminal</button>
             </nav>
             <button onclick="auth.logout()" class="p-5 rounded-2xl bg-rose-500/10 text-rose-500 font-bold uppercase text-[10px]">Terminate</button>
         </div>
@@ -139,38 +152,52 @@
     <div id="sidebar-overlay" onclick="ui.toggleSidebar()" class="fixed inset-0 bg-black/40 backdrop-blur-md z-[140] hidden"></div>
 
     <div id="app-content" class="hidden p-6 max-w-xl mx-auto h-screen overflow-y-auto">
+        
         <header class="flex justify-between items-center mb-10 pt-4 relative">
-            <button id="sidebar-btn" onclick="ui.toggleSidebar()" class="w-12 h-12 crystal-glass rounded-full flex items-center justify-center text-xl">≡</button>
+            <button id="sidebar-btn" onclick="ui.toggleSidebar()" class="w-12 h-12 crystal-glass rounded-full flex items-center justify-center text-xl font-bold">≡</button>
             
             <div class="relative">
                 <button onclick="ui.toggleProfileMenu()" id="avatar" class="w-12 h-12 bg-blue-600 rounded-full border-2 border-white/20 shadow-lg flex items-center justify-center font-bold text-white uppercase active:scale-90 transition-transform">?</button>
-                <div id="profile-menu" class="hidden absolute right-0 mt-3 w-48 crystal-glass p-4 rounded-3xl z-[160] border border-white/10">
+                
+                <div id="profile-menu" class="hidden absolute right-0 mt-3 w-48 crystal-glass p-4 rounded-3xl z-[160] border border-white/10 shadow-2xl">
                     <p id="menu-user-name" class="text-[10px] font-black uppercase opacity-40 mb-3 px-2 tracking-widest text-center truncate">User</p>
-                    <button onclick="auth.logout()" class="w-full p-3 rounded-xl bg-rose-500/10 text-rose-500 text-xs font-bold uppercase transition-all active:bg-rose-500/20">Sign Out</button>
+                    <button onclick="auth.logout()" class="w-full p-3 rounded-xl bg-rose-500/10 text-rose-500 text-xs font-bold uppercase active:bg-rose-500/20 transition-all">Sign Out</button>
                 </div>
             </div>
         </header>
 
+        <div id="achievement-toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[300] w-[85%] max-w-sm crystal-glass p-6 rounded-[2.5rem] flex items-center gap-4 pointer-events-none border-emerald-500/30">
+            <div class="w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center text-2xl shadow-lg shadow-emerald-500/20">🏆</div>
+            <div>
+                <p class="text-[10px] font-black uppercase opacity-40 tracking-widest">Meilenstein</p>
+                <p class="font-bold">Gute Arbeit! Kontostand > 100€</p>
+            </div>
+        </div>
+
         <div id="page-dashboard" class="space-y-6">
             <div class="crystal-glass p-8 rounded-[3.5rem]">
-                <p class="text-[10px] opacity-40 uppercase font-black tracking-widest mb-1">Balance</p>
+                <p class="text-[10px] opacity-40 uppercase font-black tracking-widest mb-1">Total Balance</p>
                 <h3 id="balance" class="text-5xl font-bold tracking-tighter italic">0.00 €</h3>
             </div>
+
             <div class="crystal-glass p-6 rounded-[3rem] h-64">
                 <canvas id="financeChart"></canvas>
             </div>
+
             <div class="grid grid-cols-2 gap-4">
-                <button onclick="ui.openModal('manual')" class="crystal-glass py-7 rounded-[2.5rem] font-bold uppercase text-[10px]">Manual</button>
-                <button onclick="ui.openModal('import')" class="bg-blue-600 text-white py-7 rounded-[2.5rem] font-bold uppercase text-[10px]">AI Scan</button>
+                <button onclick="ui.openModal('manual')" class="crystal-glass py-7 rounded-[2.5rem] font-bold uppercase text-[10px] tracking-widest active:scale-95 transition-all">Manual</button>
+                <button onclick="ui.openModal('import')" class="bg-blue-600 text-white py-7 rounded-[2.5rem] font-bold uppercase text-[10px] tracking-widest active:scale-95 transition-all">AI Scan</button>
             </div>
-            <div id="transaction-list" class="space-y-4 pb-12"></div>
+
+            <div id="transaction-list" class="space-y-4 pb-20">
+                </div>
         </div>
 
         <div id="page-settings" class="page-hidden space-y-6">
-            <h2 class="text-2xl font-black italic mb-8">System Settings</h2>
+            <h2 class="text-2xl font-black italic mb-8 tracking-tight">System Settings</h2>
             <div class="crystal-glass p-8 rounded-[3rem] space-y-8">
                 <div>
-                    <p class="text-[10px] font-black uppercase opacity-40 mb-4 tracking-widest">Visual Mode</p>
+                    <p class="text-[10px] font-black uppercase opacity-40 mb-4 tracking-widest">Visual Theme</p>
                     <div class="toggle-container" id="theme-toggle">
                         <div class="toggle-knob" id="knob-theme">Dark</div>
                         <div class="toggle-label">Dark</div>
@@ -182,51 +209,72 @@
 
         <div id="page-monitor" class="page-hidden space-y-6">
             <div class="crystal-glass p-8 rounded-[3rem]">
-                <input type="text" id="mc-ip" placeholder="Node IP" class="w-full p-5 rounded-2xl mb-4 text-center border border-white/10 font-bold outline-none">
-                <button onclick="monitor.check()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold uppercase tracking-widest text-white">Check Node</button>
+                <p class="text-[10px] font-black uppercase opacity-40 mb-4 tracking-widest text-center">Server Status</p>
+                <input type="text" id="mc-ip" placeholder="Node IP (e.g. play.vultrex.net)" class="w-full p-5 rounded-2xl mb-4 text-center border border-white/10 font-bold outline-none">
+                <button onclick="monitor.check()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold uppercase tracking-widest text-white active:scale-95 transition-all">Check Node</button>
             </div>
-            <div id="mc-result" class="hidden grid grid-cols-2 gap-4"></div>
+            <div id="mc-result" class="hidden grid grid-cols-2 gap-4">
+                </div>
         </div>
 
         <div id="page-admin" class="page-hidden space-y-4">
+            <h2 class="text-2xl font-black italic mb-6">User Database</h2>
             <div id="admin-user-list" class="space-y-2"></div>
         </div>
     </div>
 
     <div id="modal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-3xl z-[200] flex items-center justify-center p-6">
         <div class="crystal-glass w-full max-w-sm p-8 rounded-[4rem]">
+            
             <div id="ui-manual" class="hidden space-y-5">
                 <div class="toggle-container" id="type-toggle">
                     <div class="toggle-knob" id="knob-type">Expense</div>
                     <div class="toggle-label">Expense</div>
                     <div class="toggle-label">Income</div>
                 </div>
-                <select id="manual-prefab" onchange="ui.handlePrefabChange(this)" class="w-full p-5 rounded-2xl outline-none font-bold text-xs text-center appearance-none"></select>
+
+                <select id="manual-prefab" onchange="ui.handlePrefabChange(this)" class="w-full p-5 rounded-2xl outline-none font-bold text-xs text-center appearance-none cursor-pointer"></select>
+                
                 <input type="text" id="manual-desc" placeholder="Label / Purpose" class="w-full p-5 rounded-2xl outline-none font-bold text-center">
-                <input type="number" id="manual-amount" placeholder="0.00" class="w-full p-5 rounded-2xl outline-none font-bold text-center">
+                <input type="number" id="manual-amount" placeholder="0.00" class="w-full p-5 rounded-2xl outline-none font-bold text-center text-2xl">
+                
                 <div class="toggle-container" id="freq-toggle">
                     <div class="toggle-knob" id="knob-freq">Once</div>
                     <div class="toggle-label">Once</div>
                     <div class="toggle-label">Monthly</div>
                 </div>
-                <button onclick="logic.saveManual()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase tracking-widest text-white">Commit</button>
+
+                <button onclick="logic.saveManual()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase tracking-widest text-white shadow-xl active:scale-95 transition-all">Commit Entry</button>
             </div>
+
             <div id="ui-import" class="hidden space-y-6 text-center">
-                <div class="relative w-full h-32 bg-white/5 rounded-3xl border-2 border-dashed border-white/10 flex items-center justify-center">
-                    <span id="file-display-name" class="opacity-20 text-[10px] uppercase font-black">Drop PDF</span>
+                <div class="relative w-full h-40 bg-white/5 rounded-3xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-3">
+                    <span id="file-display-name" class="opacity-30 text-[10px] uppercase font-black tracking-widest px-4">Drag & Drop Invoice PDF</span>
                     <input type="file" id="pdf-file" accept=".pdf" onchange="ui.handleFileSelect(this)">
                 </div>
-                <button onclick="logic.processImport()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase tracking-widest text-white">Scan</button>
+                <button onclick="logic.processImport()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase tracking-widest text-white active:scale-95 transition-all">Start AI Scan</button>
             </div>
-            <button onclick="ui.closeModal()" class="w-full text-white/20 font-bold text-[10px] uppercase mt-8 tracking-widest">Back</button>
+
+            <button onclick="ui.closeModal()" class="w-full text-white/20 font-bold text-[10px] uppercase mt-8 tracking-widest">Return</button>
         </div>
     </div>
 
     <script>
+        // PDF.js Konfiguration
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        let state = JSON.parse(localStorage.getItem('v_data')) || { history: [], auth: null, allUsers: [], theme: 'dark' };
-        let chart = null, entryMode = 'Expense', freqMode = 'Once';
 
+        // State Management
+        let state = JSON.parse(localStorage.getItem('v_data')) || { 
+            history: [], 
+            auth: null, 
+            allUsers: [], 
+            theme: 'dark' 
+        };
+        let chart = null;
+        let entryMode = 'Expense';
+        let freqMode = 'Once';
+
+        // AUTH LOGIC
         const auth = {
             login() {
                 const u = document.getElementById('login-user').value;
@@ -247,6 +295,7 @@
             }
         };
 
+        // UI CONTROLS
         const ui = {
             setupLiquidToggle(boxId, knobId, labels, callback, initialVal) {
                 const box = document.getElementById(boxId);
@@ -306,9 +355,7 @@
             applyTheme(theme) {
                 state.theme = theme;
                 document.body.className = theme === 'light' ? 'light-mode' : 'dark-mode';
-                if(chart) {
-                    this.updateChart();
-                }
+                if(chart) this.updateChart();
                 logic.save();
             },
 
@@ -386,26 +433,37 @@
                 let total = 0;
                 const list = document.getElementById('transaction-list');
                 list.innerHTML = '';
+                
                 state.history.forEach(t => total += t.amount);
                 
                 [...state.history].reverse().forEach(t => {
-                    list.innerHTML += `<div class="crystal-glass p-6 rounded-[2.5rem] flex justify-between items-center">
-                        <div>
-                            <p class="font-bold text-sm tracking-tight">${t.desc}</p>
-                            <p class="text-[9px] opacity-20 font-black">${t.date}</p>
-                        </div>
-                        <p class="font-black ${t.amount < 0 ? 'text-rose-500' : 'text-emerald-500'}">
-                            ${t.amount.toFixed(2)} €
-                        </p>
-                    </div>`;
+                    list.innerHTML += `
+                        <div class="crystal-glass p-6 rounded-[2.5rem] flex justify-between items-center">
+                            <div>
+                                <p class="font-bold text-sm tracking-tight">${t.desc}</p>
+                                <p class="text-[9px] opacity-20 font-black tracking-widest">${t.date}</p>
+                            </div>
+                            <p class="font-black ${t.amount < 0 ? 'text-rose-500' : 'text-emerald-500'}">
+                                ${t.amount.toFixed(2)} €
+                            </p>
+                        </div>`;
                 });
 
                 document.getElementById('balance').innerText = total.toFixed(2) + " €";
                 
+                // Avatar Initials
                 if(state.auth && state.auth.user) {
                     document.getElementById('avatar').innerText = state.auth.user.charAt(0);
                     document.getElementById('menu-user-name').innerText = state.auth.user;
                 }
+
+                // MEILENSTEIN CHECK
+                if(total >= 100) {
+                    const toast = document.getElementById('achievement-toast');
+                    toast.classList.add('show');
+                    setTimeout(() => toast.classList.remove('show'), 5000);
+                }
+
                 this.updateChart();
             },
 
@@ -425,9 +483,9 @@
                     const zeroPos = range === 0 ? 0.5 : max / range;
 
                     const grad = ctx.createLinearGradient(0, area.top, 0, area.bottom);
-                    grad.addColorStop(0, '#10b981'); 
+                    grad.addColorStop(0, '#10b981'); // Grün
                     grad.addColorStop(Math.max(0, Math.min(1, zeroPos)), '#10b981');
-                    grad.addColorStop(Math.max(0, Math.min(1, zeroPos)), '#f43f5e');
+                    grad.addColorStop(Math.max(0, Math.min(1, zeroPos)), '#f43f5e'); // Rot
                     grad.addColorStop(1, '#f43f5e');
 
                     chart.data.datasets[0].borderColor = grad;
@@ -441,11 +499,13 @@
             }
         };
 
+        // DATA LOGIC
         const logic = {
             saveManual() {
                 let amt = parseFloat(document.getElementById('manual-amount').value);
                 if(isNaN(amt)) return;
-                amt = entryMode === 'Expense' ? -Math.abs(amt) : Math.abs(amt);
+                
+                amt = (entryMode === 'Expense') ? -Math.abs(amt) : Math.abs(amt);
                 
                 state.history.push({ 
                     id: Date.now(), 
@@ -460,47 +520,51 @@
                 ui.updateDashboard();
                 document.getElementById('manual-amount').value = "";
             },
+            
             save() {
                 localStorage.setItem('v_data', JSON.stringify(state));
             },
+
             async processImport() {
                 const f = document.getElementById('pdf-file').files[0];
-                if(f) {
-                    const reader = new FileReader();
-                    reader.onload = async (e) => {
-                        try {
-                            const pdf = await pdfjsLib.getDocument({data: new Uint8Array(e.target.result)}).promise;
-                            const page = await pdf.getPage(1);
-                            const content = await page.getTextContent();
-                            const text = content.items.map(s => s.str).join(" ");
-                            const match = text.match(/(\d+[\.,]\d{2})/);
-                            let v = match ? parseFloat(match[0].replace(',', '.')) : 10.0;
-                            
-                            state.history.push({ 
-                                id: Date.now(), 
-                                desc: "Scan: " + f.name, 
-                                amount: -v, 
-                                type: 'Once', 
-                                date: new Date().toLocaleDateString('de-DE') 
-                            });
-                            
-                            this.save();
-                            ui.closeModal();
-                            ui.updateDashboard();
-                        } catch(err) {
-                            alert("Failed.");
-                        }
-                    };
-                    reader.readAsArrayBuffer(f);
-                }
+                if(!f) return;
+                
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    try {
+                        const pdf = await pdfjsLib.getDocument({data: new Uint8Array(e.target.result)}).promise;
+                        const page = await pdf.getPage(1);
+                        const content = await page.getTextContent();
+                        const text = content.items.map(s => s.str).join(" ");
+                        
+                        const match = text.match(/(\d+[\.,]\d{2})/);
+                        let v = match ? parseFloat(match[0].replace(',', '.')) : 10.0;
+                        
+                        state.history.push({ 
+                            id: Date.now(), 
+                            desc: "Scan: " + f.name, 
+                            amount: -v, 
+                            type: 'Once', 
+                            date: new Date().toLocaleDateString('de-DE') 
+                        });
+                        
+                        this.save();
+                        ui.closeModal();
+                        ui.updateDashboard();
+                    } catch(err) {
+                        alert("AI Scan failed. Please check PDF format.");
+                    }
+                };
+                reader.readAsArrayBuffer(f);
             }
         };
 
+        // NODE MONITOR LOGIC
         const monitor = {
             async check() {
                 const ip = document.getElementById('mc-ip').value;
                 const res = document.getElementById('mc-result');
-                res.innerHTML = "<p class='col-span-2 text-center opacity-30 text-[10px] font-black'>Polling...</p>";
+                res.innerHTML = "<p class='col-span-2 text-center opacity-30 text-[10px] font-black tracking-widest'>Polling API...</p>";
                 res.classList.remove('hidden');
                 
                 try {
@@ -509,27 +573,29 @@
                     if(d.online) {
                         res.innerHTML = `
                             <div class="crystal-glass p-6 rounded-3xl text-center">
-                                <p class="text-[8px] opacity-30 font-black">Status</p>
+                                <p class="text-[8px] opacity-30 font-black uppercase tracking-widest">Status</p>
                                 <p class="text-emerald-500 font-bold">ONLINE</p>
                             </div>
                             <div class="crystal-glass p-6 rounded-3xl text-center">
-                                <p class="text-[8px] opacity-30 font-black">Players</p>
+                                <p class="text-[8px] opacity-30 font-black uppercase tracking-widest">Players</p>
                                 <p class="font-bold text-xl">${d.players.online}</p>
                             </div>`;
                     } else {
-                        res.innerHTML = "<p class='col-span-2 text-rose-500 text-center font-bold'>OFFLINE</p>";
+                        res.innerHTML = "<p class='col-span-2 text-rose-500 text-center font-bold uppercase'>Node Offline</p>";
                     }
                 } catch(e) {
-                    res.innerHTML = "<p class='col-span-2 text-center'>Error</p>";
+                    res.innerHTML = "<p class='col-span-2 text-center text-xs opacity-50'>API Error</p>";
                 }
             }
         };
 
+        // APP INIT
         window.onload = () => {
             if(state.auth) {
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('app-content').classList.remove('hidden');
                 
+                // Chart Setup
                 chart = new Chart(document.getElementById('financeChart'), {
                     type: 'line',
                     data: {
@@ -567,7 +633,15 @@
                 
                 ui.updateDashboard();
                 ui.applyTheme(state.theme || 'dark');
-                ui.setupLiquidToggle('theme-toggle', 'knob-theme', ['Dark', 'Light'], (v) => ui.applyTheme(v.toLowerCase()), state.theme === 'light' ? 'Light' : 'Dark');
+                
+                // Theme Toggle Setup
+                ui.setupLiquidToggle(
+                    'theme-toggle', 
+                    'knob-theme', 
+                    ['Dark', 'Light'], 
+                    (v) => ui.applyTheme(v.toLowerCase()), 
+                    state.theme === 'light' ? 'Light' : 'Dark'
+                );
             }
         };
     </script>
