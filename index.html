@@ -18,6 +18,7 @@
             --shadow: rgba(0, 0, 0, 0.8);
             --input-bg: rgba(150, 150, 150, 0.1);
             --icon-color: #fff;
+            --delete-red: linear-gradient(90deg, rgba(244, 63, 94, 0.6) 0%, rgba(225, 29, 72, 0.8) 100%);
         }
 
         .light-mode {
@@ -122,6 +123,34 @@
         #achievement-toast.show {
             transform: translate(-50%, 0);
         }
+
+        /* Swipe Delete Styles */
+        .transaction-wrapper {
+            position: relative;
+            overflow: hidden;
+            border-radius: 2.5rem;
+            background: var(--delete-red);
+            margin-bottom: 1rem;
+        }
+
+        .delete-indicator {
+            position: absolute;
+            left: 25px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            font-size: 20px;
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .transaction-card {
+            position: relative;
+            z-index: 2;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            margin-bottom: 0 !important;
+        }
     </style>
 </head>
 <body class="dark-mode">
@@ -190,7 +219,7 @@
             </div>
 
             <div id="transaction-list" class="space-y-4 pb-20">
-                </div>
+            </div>
         </div>
 
         <div id="page-settings" class="page-hidden space-y-6">
@@ -214,7 +243,7 @@
                 <button onclick="monitor.check()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold uppercase tracking-widest text-white active:scale-95 transition-all">Check Node</button>
             </div>
             <div id="mc-result" class="hidden grid grid-cols-2 gap-4">
-                </div>
+            </div>
         </div>
 
         <div id="page-admin" class="page-hidden space-y-4">
@@ -273,6 +302,8 @@
         let chart = null;
         let entryMode = 'Expense';
         let freqMode = 'Once';
+        let touchStartX = 0;
+        let currentSwipeElem = null;
 
         // AUTH LOGIC
         const auth = {
@@ -429,6 +460,47 @@
                 if(prompt("Terminal PIN:") === "1234") this.switchPage('admin');
             },
 
+            handleSwipeStart(e) {
+                touchStartX = e.touches[0].clientX;
+                currentSwipeElem = e.currentTarget;
+                currentSwipeElem.style.transition = 'none';
+            },
+
+            handleSwipeMove(e) {
+                if (!currentSwipeElem) return;
+                const touchX = e.touches[0].clientX;
+                const diff = touchX - touchStartX;
+                
+                if (diff > 0) {
+                    const move = Math.min(diff, 150);
+                    currentSwipeElem.style.transform = `translateX(${move}px)`;
+                    
+                    const indicator = currentSwipeElem.parentElement.querySelector('.delete-indicator');
+                    if(indicator) indicator.style.opacity = move > 40 ? (move / 120) : 0;
+                }
+            },
+
+            handleSwipeEnd(e) {
+                if (!currentSwipeElem) return;
+                const diff = e.changedTouches[0].clientX - touchStartX;
+                const threshold = 120;
+                
+                currentSwipeElem.style.transition = 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+                
+                if (diff > threshold) {
+                    currentSwipeElem.style.transform = `translateX(100%)`;
+                    const id = currentSwipeElem.getAttribute('data-id');
+                    setTimeout(() => {
+                        logic.deleteEntry(id);
+                    }, 300);
+                } else {
+                    currentSwipeElem.style.transform = `translateX(0px)`;
+                    const indicator = currentSwipeElem.parentElement.querySelector('.delete-indicator');
+                    if(indicator) indicator.style.opacity = 0;
+                }
+                currentSwipeElem = null;
+            },
+
             updateDashboard() {
                 let total = 0;
                 const list = document.getElementById('transaction-list');
@@ -437,8 +509,15 @@
                 state.history.forEach(t => total += t.amount);
                 
                 [...state.history].reverse().forEach(t => {
-                    list.innerHTML += `
-                        <div class="crystal-glass p-6 rounded-[2.5rem] flex justify-between items-center">
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'transaction-wrapper';
+                    wrapper.innerHTML = `
+                        <div class="delete-indicator">🗑️</div>
+                        <div class="transaction-card crystal-glass p-6 rounded-[2.5rem] flex justify-between items-center" 
+                             data-id="${t.id}"
+                             ontouchstart="ui.handleSwipeStart(event)" 
+                             ontouchmove="ui.handleSwipeMove(event)" 
+                             ontouchend="ui.handleSwipeEnd(event)">
                             <div>
                                 <p class="font-bold text-sm tracking-tight">${t.desc}</p>
                                 <p class="text-[9px] opacity-20 font-black tracking-widest">${t.date}</p>
@@ -447,17 +526,16 @@
                                 ${t.amount.toFixed(2)} €
                             </p>
                         </div>`;
+                    list.appendChild(wrapper);
                 });
 
                 document.getElementById('balance').innerText = total.toFixed(2) + " €";
                 
-                // Avatar Initials
                 if(state.auth && state.auth.user) {
                     document.getElementById('avatar').innerText = state.auth.user.charAt(0);
                     document.getElementById('menu-user-name').innerText = state.auth.user;
                 }
 
-                // MEILENSTEIN CHECK
                 if(total >= 100) {
                     const toast = document.getElementById('achievement-toast');
                     toast.classList.add('show');
@@ -483,9 +561,9 @@
                     const zeroPos = range === 0 ? 0.5 : max / range;
 
                     const grad = ctx.createLinearGradient(0, area.top, 0, area.bottom);
-                    grad.addColorStop(0, '#10b981'); // Grün
+                    grad.addColorStop(0, '#10b981');
                     grad.addColorStop(Math.max(0, Math.min(1, zeroPos)), '#10b981');
-                    grad.addColorStop(Math.max(0, Math.min(1, zeroPos)), '#f43f5e'); // Rot
+                    grad.addColorStop(Math.max(0, Math.min(1, zeroPos)), '#f43f5e');
                     grad.addColorStop(1, '#f43f5e');
 
                     chart.data.datasets[0].borderColor = grad;
@@ -523,6 +601,12 @@
             
             save() {
                 localStorage.setItem('v_data', JSON.stringify(state));
+            },
+
+            deleteEntry(id) {
+                state.history = state.history.filter(t => t.id != id);
+                this.save();
+                ui.updateDashboard();
             },
 
             async processImport() {
@@ -595,7 +679,6 @@
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('app-content').classList.remove('hidden');
                 
-                // Chart Setup
                 chart = new Chart(document.getElementById('financeChart'), {
                     type: 'line',
                     data: {
@@ -634,7 +717,6 @@
                 ui.updateDashboard();
                 ui.applyTheme(state.theme || 'dark');
                 
-                // Theme Toggle Setup
                 ui.setupLiquidToggle(
                     'theme-toggle', 
                     'knob-theme', 
