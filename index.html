@@ -20,12 +20,12 @@
         }
 
         .light-mode {
-            --bg: #f0f2f5;
+            --bg: #ffffff;
             --text: #1a1a1a;
-            --glass: rgba(255, 255, 255, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.8);
+            --glass: rgba(240, 242, 245, 0.7);
+            --glass-border: rgba(0, 0, 0, 0.05);
             --shadow: rgba(0, 0, 0, 0.05);
-            --input-bg: #ffffff;
+            --input-bg: #f0f2f5;
         }
 
         body {
@@ -46,7 +46,6 @@
             box-shadow: 0 8px 32px 0 var(--shadow);
         }
 
-        /* TOGGLE SYSTEM */
         .toggle-container {
             position: relative;
             width: 100%;
@@ -104,7 +103,7 @@
             outline: none;
         }
         
-        input:disabled { opacity: 0.4; cursor: not-allowed; }
+        input:disabled { opacity: 0.3; cursor: not-allowed; }
         #pdf-file { opacity: 0; position: absolute; inset: 0; cursor: pointer; }
     </style>
 </head>
@@ -189,7 +188,7 @@
                 <select id="manual-prefab" onchange="ui.handlePrefabChange(this)" class="w-full p-5 rounded-2xl outline-none font-bold text-xs text-center appearance-none"></select>
                 <input type="text" id="manual-desc" placeholder="Label" class="w-full p-5 rounded-2xl outline-none font-bold text-center">
                 <input type="number" id="manual-amount" placeholder="0.00" class="w-full p-5 rounded-2xl outline-none font-bold text-center">
-                <input type="text" id="manual-date" placeholder="DD.MM.YYYY" class="w-full p-5 rounded-2xl outline-none font-bold text-center">
+                <input type="text" id="manual-date" disabled class="w-full p-5 rounded-2xl outline-none font-bold text-center">
                 <div class="toggle-container" id="freq-toggle">
                     <div class="toggle-knob" id="knob-freq">Once</div>
                     <div class="toggle-label">Once</div>
@@ -294,7 +293,6 @@
                 if(editData) {
                     editingId = editData.id;
                     dateInp.value = editData.date;
-                    dateInp.disabled = false;
                     document.getElementById('manual-desc').value = editData.desc;
                     document.getElementById('manual-amount').value = Math.abs(editData.amount);
                     document.getElementById('delete-btn').classList.remove('hidden');
@@ -303,7 +301,6 @@
                 } else {
                     editingId = null;
                     dateInp.value = new Date().toLocaleDateString('de-DE');
-                    dateInp.disabled = true;
                     document.getElementById('manual-desc').value = "";
                     document.getElementById('manual-amount').value = "";
                     document.getElementById('delete-btn').classList.add('hidden');
@@ -329,7 +326,7 @@
                 const list = document.getElementById('transaction-list');
                 list.innerHTML = '';
                 state.history.forEach(t => total += t.amount);
-                [...state.history].reverse().forEach(t => {
+                [...state.history].sort((a,b) => b.id - a.id).forEach(t => {
                     const item = document.createElement('div');
                     item.className = "crystal-glass p-6 rounded-[2.5rem] flex justify-between items-center active:scale-95 transition-all cursor-pointer";
                     item.onclick = () => ui.openModal('manual', t);
