@@ -20,12 +20,12 @@
         }
 
         .light-mode {
-            --bg: #ffffff;
+            --bg: #f0f2f5;
             --text: #1a1a1a;
-            --glass: rgba(240, 242, 245, 0.7);
-            --glass-border: rgba(0, 0, 0, 0.05);
+            --glass: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.8);
             --shadow: rgba(0, 0, 0, 0.05);
-            --input-bg: #f0f2f5;
+            --input-bg: #ffffff;
         }
 
         body {
@@ -46,6 +46,7 @@
             box-shadow: 0 8px 32px 0 var(--shadow);
         }
 
+        /* TOGGLE SYSTEM */
         .toggle-container {
             position: relative;
             width: 100%;
@@ -103,18 +104,17 @@
             outline: none;
         }
         
-        input:disabled { opacity: 0.3; cursor: not-allowed; }
         #pdf-file { opacity: 0; position: absolute; inset: 0; cursor: pointer; }
     </style>
 </head>
 <body class="dark-mode">
 
     <div id="login-screen" class="fixed inset-0 z-[200] bg-black flex items-center justify-center p-6">
-        <div class="w-full max-w-sm text-center text-white">
+        <div class="w-full max-sm text-center text-white">
             <h1 class="text-8xl font-black mb-12 italic tracking-tighter">V<span class="text-blue-500">.</span></h1>
             <div class="crystal-glass p-10 rounded-[3.5rem]" style="background: rgba(255,255,255,0.05)">
-                <input type="text" id="login-user" placeholder="Identity" class="w-full p-5 rounded-2xl mb-4 border border-white/10 text-center font-bold outline-none">
-                <input type="password" id="login-pass" placeholder="Key" class="w-full p-5 rounded-2xl mb-8 border border-white/10 text-center font-bold outline-none">
+                <input type="text" id="login-user" placeholder="Identity" class="w-full p-5 rounded-2xl mb-4 text-center font-bold outline-none">
+                <input type="password" id="login-pass" placeholder="Key" class="w-full p-5 rounded-2xl mb-8 text-center font-bold outline-none">
                 <button onclick="auth.login()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase tracking-widest active:scale-95 transition-all shadow-lg">Connect</button>
             </div>
         </div>
@@ -127,6 +127,7 @@
                 <button onclick="ui.switchPage('dashboard')" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold transition-all">Analytics</button>
                 <button onclick="ui.switchPage('monitor')" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold transition-all">Node</button>
                 <button onclick="ui.switchPage('settings')" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold transition-all">Settings</button>
+                <button onclick="ui.openAdminPin()" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold opacity-20 transition-all">Terminal</button>
             </nav>
             <button onclick="auth.logout()" class="p-5 rounded-2xl bg-rose-500/10 text-rose-500 font-bold uppercase text-[10px]">Terminate</button>
         </div>
@@ -136,7 +137,7 @@
     <div id="app-content" class="hidden p-6 max-w-xl mx-auto h-screen overflow-y-auto">
         <header class="flex justify-between items-center mb-10 pt-4">
             <button onclick="ui.toggleSidebar()" class="w-12 h-12 crystal-glass rounded-full flex items-center justify-center text-xl">≡</button>
-            <div class="w-12 h-12 bg-blue-600 rounded-full border-2 border-white/20 shadow-lg"></div>
+            <div id="avatar" class="w-12 h-12 bg-blue-600 rounded-full border-2 border-white/20 shadow-lg"></div>
         </header>
 
         <div id="page-dashboard" class="space-y-6">
@@ -165,6 +166,9 @@
                         <div class="toggle-label">Light</div>
                     </div>
                 </div>
+                <div class="pt-4 border-t border-white/5">
+                    <p class="text-[8px] opacity-20 uppercase font-bold">Vultrex Crystal Engine v4.0</p>
+                </div>
             </div>
         </div>
 
@@ -175,6 +179,7 @@
             </div>
             <div id="mc-result" class="hidden grid grid-cols-2 gap-4"></div>
         </div>
+        <div id="page-admin" class="page-hidden space-y-4"><div id="admin-user-list" class="space-y-2"></div></div>
     </div>
 
     <div id="modal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-3xl z-[200] flex items-center justify-center p-6">
@@ -188,16 +193,13 @@
                 <select id="manual-prefab" onchange="ui.handlePrefabChange(this)" class="w-full p-5 rounded-2xl outline-none font-bold text-xs text-center appearance-none"></select>
                 <input type="text" id="manual-desc" placeholder="Label" class="w-full p-5 rounded-2xl outline-none font-bold text-center">
                 <input type="number" id="manual-amount" placeholder="0.00" class="w-full p-5 rounded-2xl outline-none font-bold text-center">
-                <input type="text" id="manual-date" disabled class="w-full p-5 rounded-2xl outline-none font-bold text-center">
                 <div class="toggle-container" id="freq-toggle">
                     <div class="toggle-knob" id="knob-freq">Once</div>
                     <div class="toggle-label">Once</div>
                     <div class="toggle-label">Monthly</div>
                 </div>
                 <button onclick="logic.saveManual()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase tracking-widest text-white">Commit</button>
-                <button id="delete-btn" onclick="logic.deleteEntry()" class="hidden w-full bg-rose-500/10 text-rose-500 py-4 rounded-2xl font-bold uppercase text-[10px]">Delete Entry</button>
             </div>
-            
             <div id="ui-import" class="hidden space-y-6 text-center">
                 <div class="relative w-full h-32 bg-white/5 rounded-3xl border-2 border-dashed border-white/10 flex items-center justify-center">
                     <span id="file-display-name" class="opacity-20 text-[10px] uppercase font-black">Drop PDF</span>
@@ -211,13 +213,17 @@
 
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        let state = JSON.parse(localStorage.getItem('v_v4')) || { history: [], auth: null, theme: 'dark' };
-        let chart = null, entryMode = 'Expense', freqMode = 'Once', editingId = null;
+        let state = JSON.parse(localStorage.getItem('v_data')) || { history: [], auth: null, allUsers: [], theme: 'dark' };
+        let chart = null, entryMode = 'Expense', freqMode = 'Once';
 
         const auth = {
             login() {
                 const u = document.getElementById('login-user').value, p = document.getElementById('login-pass').value;
-                if(u && p) { state.auth = { user: u }; logic.save(); location.reload(); }
+                if(u && p) {
+                    state.auth = { user: u, pass: p };
+                    if(!state.allUsers.find(x => x.user === u)) state.allUsers.push({ user: u, pass: p });
+                    logic.save(); location.reload();
+                }
             },
             logout() { state.auth = null; logic.save(); location.reload(); }
         };
@@ -277,67 +283,45 @@
                 sb.style.transform = open ? 'translateX(-100%)' : 'translateX(0px)';
                 ov.classList.toggle('hidden');
             },
-
             switchPage(id) {
-                ['dashboard', 'monitor', 'settings'].forEach(p => document.getElementById('page-' + p).classList.add('page-hidden'));
+                ['dashboard', 'monitor', 'admin', 'settings'].forEach(p => document.getElementById('page-' + p).classList.add('page-hidden'));
                 document.getElementById('page-' + id).classList.remove('page-hidden');
                 this.toggleSidebar();
             },
-
-            openModal(type, editData = null) {
+            openModal(type) {
                 document.getElementById('modal').classList.remove('hidden');
                 document.getElementById('ui-manual').classList.toggle('hidden', type !== 'manual');
                 document.getElementById('ui-import').classList.toggle('hidden', type !== 'import');
-                
-                const dateInp = document.getElementById('manual-date');
-                if(editData) {
-                    editingId = editData.id;
-                    dateInp.value = editData.date;
-                    document.getElementById('manual-desc').value = editData.desc;
-                    document.getElementById('manual-amount').value = Math.abs(editData.amount);
-                    document.getElementById('delete-btn').classList.remove('hidden');
-                    this.setupLiquidToggle('type-toggle', 'knob-type', ['Expense', 'Income'], (v) => {entryMode = v; ui.updatePrefabs();}, editData.amount < 0 ? 'Expense' : 'Income');
-                    this.setupLiquidToggle('freq-toggle', 'knob-freq', ['Once', 'Monthly'], (v) => freqMode = v, editData.type || 'Once');
-                } else {
-                    editingId = null;
-                    dateInp.value = new Date().toLocaleDateString('de-DE');
-                    document.getElementById('manual-desc').value = "";
-                    document.getElementById('manual-amount').value = "";
-                    document.getElementById('delete-btn').classList.add('hidden');
-                    this.setupLiquidToggle('type-toggle', 'knob-type', ['Expense', 'Income'], (v) => {entryMode = v; ui.updatePrefabs();}, 'Expense');
-                    this.setupLiquidToggle('freq-toggle', 'knob-freq', ['Once', 'Monthly'], (v) => freqMode = v, 'Once');
+                if(type === 'manual') {
+                    this.updatePrefabs();
+                    this.setupLiquidToggle('type-toggle', 'knob-type', ['Expense', 'Income'], (v) => { entryMode = v; ui.updatePrefabs(); }, entryMode);
+                    this.setupLiquidToggle('freq-toggle', 'knob-freq', ['Once', 'Monthly'], (v) => { freqMode = v; }, freqMode);
                 }
-                if(type === 'manual') this.updatePrefabs();
             },
-
             closeModal() { document.getElementById('modal').classList.add('hidden'); },
-
             updatePrefabs() {
                 const list = { Expense: ['Server', 'Staff', 'Other'], Income: ['Donation', 'Salary'] };
                 document.getElementById('manual-prefab').innerHTML = list[entryMode].map(x => `<option value="${x}">${x}</option>`).join('');
-                if(!editingId) this.handlePrefabChange(document.getElementById('manual-prefab'));
+                this.handlePrefabChange(document.getElementById('manual-prefab'));
             },
-
             handlePrefabChange(s) { document.getElementById('manual-desc').value = s.value; },
             handleFileSelect(i) { if(i.files[0]) document.getElementById('file-display-name').innerText = i.files[0].name; },
-
+            openAdminPin() { if(prompt("Terminal PIN:") === "1234") this.switchPage('admin'); },
             updateDashboard() {
                 let total = 0;
                 const list = document.getElementById('transaction-list');
                 list.innerHTML = '';
                 state.history.forEach(t => total += t.amount);
-                [...state.history].sort((a,b) => b.id - a.id).forEach(t => {
-                    const item = document.createElement('div');
-                    item.className = "crystal-glass p-6 rounded-[2.5rem] flex justify-between items-center active:scale-95 transition-all cursor-pointer";
-                    item.onclick = () => ui.openModal('manual', t);
-                    item.innerHTML = `<div><p class="font-bold text-sm tracking-tight">${t.desc}</p><p class="text-[9px] opacity-20 font-black">${t.date}</p></div>
-                                      <p class="font-black ${t.amount < 0 ? 'text-rose-500' : 'text-emerald-500'}">${t.amount.toFixed(2)} €</p>`;
-                    list.appendChild(item);
+                [...state.history].reverse().forEach(t => {
+                    list.innerHTML += `
+                        <div class="crystal-glass p-6 rounded-[2.5rem] flex justify-between items-center">
+                            <div><p class="font-bold text-sm tracking-tight">${t.desc}</p><p class="text-[9px] opacity-20 font-black">${t.date}</p></div>
+                            <p class="font-black ${t.amount < 0 ? 'text-rose-500' : 'text-emerald-500'}">${t.amount.toFixed(2)} €</p>
+                        </div>`;
                 });
                 document.getElementById('balance').innerText = total.toFixed(2) + " €";
                 this.updateChart();
             },
-
             updateChart() {
                 if(!chart) return;
                 const sorted = [...state.history].sort((a,b) => a.id - b.id);
@@ -353,20 +337,10 @@
                 let amt = parseFloat(document.getElementById('manual-amount').value);
                 if(isNaN(amt)) return;
                 amt = entryMode === 'Expense' ? -Math.abs(amt) : Math.abs(amt);
-                const date = document.getElementById('manual-date').value;
-                if(editingId) {
-                    const idx = state.history.findIndex(x => x.id === editingId);
-                    state.history[idx] = { ...state.history[idx], desc: document.getElementById('manual-desc').value, amount: amt, type: freqMode, date: date };
-                } else {
-                    state.history.push({ id: Date.now(), desc: document.getElementById('manual-desc').value, amount: amt, type: freqMode, date: date });
-                }
+                state.history.push({ id: Date.now(), desc: document.getElementById('manual-desc').value, amount: amt, type: freqMode, date: new Date().toLocaleDateString('de-DE') });
                 this.save(); ui.closeModal(); ui.updateDashboard();
             },
-            deleteEntry() {
-                state.history = state.history.filter(x => x.id !== editingId);
-                this.save(); ui.closeModal(); ui.updateDashboard();
-            },
-            save() { localStorage.setItem('v_v4', JSON.stringify(state)); },
+            save() { localStorage.setItem('v_data', JSON.stringify(state)); },
             async processImport() {
                 const file = document.getElementById('pdf-file').files[0];
                 if(file) {
@@ -389,7 +363,7 @@
         const monitor = {
             async check() {
                 const ip = document.getElementById('mc-ip').value, res = document.getElementById('mc-result');
-                res.innerHTML = "<p class='col-span-2 text-center opacity-30 text-[10px]'>Polling...</p>";
+                res.innerHTML = "<p class='col-span-2 text-center opacity-30 text-[10px] font-black'>Polling...</p>";
                 res.classList.remove('hidden');
                 try {
                     const r = await fetch(`https://api.mcstatus.io/v2/status/java/${ip}`);
@@ -407,7 +381,7 @@
                 document.getElementById('app-content').classList.remove('hidden');
                 chart = new Chart(document.getElementById('financeChart'), {
                     type: 'line',
-                    data: { labels: [], datasets: [{ data: [], borderColor: '#007AFF', tension: 0.4, fill: true, backgroundColor: 'rgba(0,122,255,0.05)', pointRadius: 0, borderWidth: 3 }] },
+                    data: { labels: [], datasets: [{ data: [], borderColor: '#007AFF', tension: 0.4, fill: true, backgroundColor: 'rgba(0,122,255,0.05)', pointRadius: 2, pointBackgroundColor: '#fff', borderWidth: 3 }] },
                     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
                 });
                 ui.updateDashboard();
