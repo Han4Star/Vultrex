@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vultrex Liquid Full</title>
+    <title>Vultrex Master</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -19,6 +19,7 @@
             background: radial-gradient(circle at top left, #1a1a1a, #000);
             color: #fff;
             -webkit-tap-highlight-color: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
         .liquid-glass {
@@ -53,33 +54,37 @@
         .page-hidden { display: none; }
         #pdf-file { opacity: 0; position: absolute; inset: 0; cursor: pointer; z-index: 10; }
         .tab-active { background: #007AFF; color: white; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 0px; }
     </style>
 </head>
-<body class="min-h-screen overflow-x-hidden font-sans">
+<body class="min-h-screen overflow-x-hidden">
 
     <div id="login-screen" class="fixed inset-0 z-[200] bg-black flex items-center justify-center p-6">
-        <div class="w-full max-w-sm">
-            <h1 class="text-6xl font-black text-white mb-12 italic text-center">V<span class="text-blue-500">.</span></h1>
+        <div class="w-full max-w-sm text-center">
+            <h1 class="text-6xl font-black text-white mb-12 italic tracking-tighter">V<span class="text-blue-500">.</span></h1>
             <div class="liquid-glass p-8 rounded-[3rem]">
                 <input type="text" id="login-user" placeholder="Username" class="w-full bg-white/5 p-5 rounded-2xl mb-4 outline-none border border-white/10 text-center font-bold">
                 <input type="password" id="login-pass" placeholder="Password (Min 7)" class="w-full bg-white/5 p-5 rounded-2xl mb-8 outline-none border border-white/10 text-center font-bold">
-                <button onmousedown="ui.startHold(event, auth.login)" ontouchstart="ui.startHold(event, auth.login)" class="hold-btn w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase tracking-widest">
+                <button onmousedown="ui.startHold(event, auth.login)" ontouchstart="ui.startHold(event, auth.login)" class="hold-btn w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase tracking-widest overflow-hidden">
                     <span class="relative z-10">Hold to Unlock</span>
                     <div class="hold-progress"></div>
                 </button>
+                <p id="login-error" class="text-rose-500 text-[10px] mt-4 font-bold uppercase hidden"></p>
             </div>
         </div>
     </div>
 
-    <div id="sidebar" class="fixed inset-y-0 left-0 w-80 liquid-glass z-[150] sidebar-transition -translate-x-full rounded-r-[4rem]">
+    <div id="sidebar" class="fixed inset-y-0 left-0 w-80 liquid-glass z-[150] sidebar-transition -translate-x-full rounded-r-[4rem] border-r border-white/20">
         <div class="p-10 flex flex-col h-full">
             <h2 class="text-4xl font-black italic mb-16">V<span class="text-blue-500">.</span></h2>
             <nav class="space-y-4 flex-1">
-                <button onclick="ui.switchPage('dashboard')" class="w-full text-left p-6 rounded-3xl hover:bg-white/5 font-bold flex items-center gap-4">📊 Dashboard</button>
-                <button onclick="ui.switchPage('monitor')" class="w-full text-left p-6 rounded-3xl hover:bg-white/5 font-bold flex items-center gap-4">🎮 Monitor</button>
-                <button onclick="ui.openAdminPin()" class="w-full text-left p-6 rounded-3xl hover:bg-white/5 font-bold flex items-center gap-4">🔒 Admin</button>
+                <button onclick="ui.switchPage('dashboard')" class="w-full text-left p-6 rounded-3xl hover:bg-white/5 font-bold flex items-center gap-4 transition-all">📊 Dashboard</button>
+                <button onclick="ui.switchPage('monitor')" class="w-full text-left p-6 rounded-3xl hover:bg-white/5 font-bold flex items-center gap-4 transition-all">🎮 Monitor</button>
+                <button onclick="ui.openAdminPin()" class="w-full text-left p-6 rounded-3xl hover:bg-white/5 font-bold flex items-center gap-4 transition-all">🔒 Admin Panel</button>
             </nav>
-            <button onclick="auth.logout()" class="p-6 rounded-3xl bg-rose-500/10 text-rose-500 font-bold uppercase text-[10px]">Logout</button>
+            <button onclick="auth.logout()" class="p-6 rounded-3xl bg-rose-500/10 text-rose-500 font-bold uppercase text-[10px] tracking-widest">Terminate Session</button>
         </div>
     </div>
     <div id="sidebar-overlay" onclick="ui.toggleSidebar()" class="fixed inset-0 bg-black/60 backdrop-blur-md z-[140] hidden"></div>
@@ -87,111 +92,150 @@
     <div id="app-content" class="hidden p-6 max-w-2xl mx-auto min-h-screen">
         <header class="flex justify-between items-center mb-10 pt-4">
             <button onclick="ui.toggleSidebar()" class="w-14 h-14 liquid-glass rounded-full flex items-center justify-center text-xl">≡</button>
-            <h1 id="page-title-display" class="text-lg font-bold italic tracking-tight">VULTREX</h1>
-            <div class="w-14 h-14 liquid-glass rounded-full p-1"><div class="w-full h-full bg-blue-600 rounded-full"></div></div>
+            <h1 id="page-title-display" class="text-lg font-bold italic tracking-tight uppercase">Vultrex</h1>
+            <div class="w-14 h-14 liquid-glass rounded-full p-1"><div class="w-full h-full bg-gradient-to-tr from-blue-600 to-indigo-400 rounded-full"></div></div>
         </header>
 
         <div id="page-dashboard" class="space-y-6">
-            <div class="liquid-glass p-8 rounded-[3rem]">
-                <p class="text-[10px] uppercase tracking-widest opacity-40 mb-1">Balance</p>
-                <h3 id="balance" class="text-4xl font-bold">0.00 €</h3>
-                <p id="monthly-stats" class="text-rose-500 text-xs font-bold mt-2">Monthly: 0.00 €</p>
+            <div class="liquid-glass p-8 rounded-[3rem] relative overflow-hidden">
+                <div class="absolute -top-24 -right-24 w-48 h-48 bg-blue-600/10 blur-[80px]"></div>
+                <p class="text-[10px] uppercase tracking-widest opacity-40 mb-1">Current Balance</p>
+                <h3 id="balance" class="text-5xl font-bold tracking-tighter">0.00 €</h3>
+                <p id="monthly-stats" class="text-rose-500 text-xs font-bold mt-2 uppercase tracking-tighter">Monthly: 0.00 €</p>
             </div>
-            <div class="liquid-glass p-6 rounded-[3rem] h-64"><canvas id="financeChart"></canvas></div>
+
+            <div class="liquid-glass p-6 rounded-[3rem] h-64">
+                <canvas id="financeChart"></canvas>
+            </div>
+
             <div class="grid grid-cols-2 gap-4">
-                <button onmousedown="ui.startHold(event, () => ui.openModal('manual'))" ontouchstart="ui.startHold(event, () => ui.openModal('manual'))" class="hold-btn liquid-glass py-6 rounded-3xl font-bold text-xs uppercase"><span>New Entry</span><div class="hold-progress"></div></button>
-                <button onmousedown="ui.startHold(event, () => ui.openModal('import'))" ontouchstart="ui.startHold(event, () => ui.openModal('import'))" class="hold-btn bg-white text-black py-6 rounded-3xl font-bold text-xs uppercase"><span>Smart Scan</span><div class="hold-progress"></div></button>
+                <button onmousedown="ui.startHold(event, () => ui.openModal('manual'))" ontouchstart="ui.startHold(event, () => ui.openModal('manual'))" class="hold-btn liquid-glass py-7 rounded-[2.5rem] font-bold text-xs uppercase tracking-widest">
+                    <span class="relative z-10">+ New Entry</span>
+                    <div class="hold-progress"></div>
+                </button>
+                <button onmousedown="ui.startHold(event, () => ui.openModal('import'))" ontouchstart="ui.startHold(event, () => ui.openModal('import'))" class="hold-btn bg-white text-black py-7 rounded-[2.5rem] font-bold text-xs uppercase tracking-widest">
+                    <span class="relative z-10">Smart Scan</span>
+                    <div class="hold-progress"></div>
+                </button>
             </div>
-            <div id="transaction-list" class="space-y-4 pb-10"></div>
+
+            <div id="transaction-list" class="space-y-4 pb-20"></div>
         </div>
 
         <div id="page-monitor" class="page-hidden space-y-6">
-            <div class="liquid-glass p-8 rounded-[3rem]">
-                <h3 class="text-center font-bold mb-6">MINECRAFT MONITOR</h3>
-                <input type="text" id="mc-ip" placeholder="Server IP" class="w-full bg-white/5 p-5 rounded-2xl mb-4 text-center outline-none border border-white/10">
-                <button onclick="monitor.check()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold">Scan Server</button>
+            <div class="liquid-glass p-8 rounded-[3rem] text-center">
+                <h3 class="font-bold mb-6 italic uppercase">Minecraft Status</h3>
+                <input type="text" id="mc-ip" placeholder="Server IP" class="w-full bg-white/5 p-5 rounded-2xl mb-4 text-center outline-none border border-white/10 font-bold text-blue-500">
+                <button onclick="monitor.check()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase tracking-widest">Check Server</button>
             </div>
             <div id="mc-result" class="hidden grid grid-cols-2 gap-4"></div>
         </div>
 
         <div id="page-admin" class="page-hidden space-y-4">
-            <h2 class="text-2xl font-bold mb-6 italic">Terminal Control</h2>
+            <h2 class="text-2xl font-bold mb-6 italic uppercase text-blue-500">Admin Control</h2>
             <div id="admin-user-list" class="space-y-3"></div>
         </div>
     </div>
 
     <div id="modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-xl z-[200] flex items-center justify-center p-6">
-        <div class="liquid-glass w-full max-w-md p-8 rounded-[3.5rem]">
+        <div class="liquid-glass w-full max-w-md p-8 rounded-[3.5rem] relative">
+            
             <div id="ui-manual" class="hidden space-y-4">
                 <div class="flex bg-white/5 p-1 rounded-2xl">
-                    <button id="tab-expense" onclick="ui.setEntryMode('expense')" class="flex-1 py-3 rounded-xl text-xs font-bold tab-active">Expense</button>
-                    <button id="tab-income" onclick="ui.setEntryMode('income')" class="flex-1 py-3 rounded-xl text-xs font-bold">Income</button>
+                    <button id="tab-expense" onclick="ui.setEntryMode('expense')" class="flex-1 py-3 rounded-xl text-xs font-bold tab-active uppercase">Expense</button>
+                    <button id="tab-income" onclick="ui.setEntryMode('income')" class="flex-1 py-3 rounded-xl text-xs font-bold uppercase">Income</button>
                 </div>
                 <select id="manual-prefab" onchange="ui.handlePrefabChange(this)" class="w-full bg-white/5 p-4 rounded-xl outline-none font-bold text-sm border border-white/10"></select>
                 <input type="text" id="manual-desc" placeholder="Name" class="w-full bg-white/5 p-4 rounded-xl outline-none font-bold border border-white/10">
                 <input type="number" id="manual-amount" placeholder="0.00" class="w-full bg-white/5 p-4 rounded-xl outline-none font-bold border border-white/10">
                 <select id="manual-type" class="w-full bg-white/5 p-4 rounded-xl font-bold border border-white/10">
-                    <option value="once">One-time</option><option value="monthly">Monthly</option>
+                    <option value="once">One-time</option>
+                    <option value="monthly">Monthly</option>
                 </select>
-                <button onclick="logic.saveManual()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase">Add Now</button>
+                <button onclick="logic.saveManual()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase tracking-widest">Confirm Entry</button>
             </div>
+
             <div id="ui-import" class="hidden space-y-4 text-center">
-                <h3 class="font-bold text-blue-500">SMART SCAN</h3>
-                <div class="relative w-full h-24 bg-white/5 rounded-2xl flex items-center justify-center border-2 border-dashed border-white/20">
-                    <span id="file-display-name" class="text-[10px] font-bold opacity-50">Drop PDF or Tap</span>
+                <h3 class="font-bold text-blue-500 uppercase tracking-widest">Smart Scan</h3>
+                <div class="relative w-full h-32 bg-white/5 rounded-[2rem] flex items-center justify-center border-2 border-dashed border-white/10 hover:border-blue-500/50 transition-all">
+                    <span id="file-display-name" class="text-[10px] font-bold opacity-40 uppercase px-6">Tap to select PDF Invoice</span>
                     <input type="file" id="pdf-file" accept=".pdf" onchange="ui.handleFileSelect(this)">
                 </div>
-                <textarea id="ai-input" class="w-full h-24 bg-white/5 p-4 rounded-2xl text-xs outline-none border border-white/10" placeholder="Or paste text..."></textarea>
-                <button onclick="logic.processImport()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase">Start Analysis</button>
+                <textarea id="ai-input" class="w-full h-24 bg-white/5 p-4 rounded-2xl text-xs outline-none border border-white/10 font-mono" placeholder="Or paste raw text here..."></textarea>
+                <div id="scan-loading" class="hidden w-full bg-white/10 h-1 rounded-full overflow-hidden">
+                    <div class="bg-blue-500 h-full animate-pulse w-full"></div>
+                </div>
+                <button id="start-scan-btn" onclick="logic.processImport()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase tracking-widest">Analyze Document</button>
             </div>
-            <button onclick="ui.closeModal()" class="w-full text-white/30 font-bold text-[10px] uppercase mt-6 tracking-widest">Close</button>
+
+            <button onclick="ui.closeModal()" class="w-full text-white/20 font-bold text-[10px] uppercase mt-8 tracking-[0.3em]">Close Window</button>
         </div>
     </div>
 
     <script>
+        // PDF Worker Setup
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
         let state = JSON.parse(localStorage.getItem('v_data')) || { history: [], auth: null, allUsers: [] };
-        let chart = null, holdInterval = null, entryMode = 'expense';
+        let chart = null;
+        let holdInterval = null;
+        let entryMode = 'expense';
+        const ADMIN_PIN = "1234";
 
         const auth = {
             login() {
-                const u = document.getElementById('login-user').value, p = document.getElementById('login-pass').value;
+                const u = document.getElementById('login-user').value;
+                const p = document.getElementById('login-pass').value;
                 if(u.length > 2 && p.length >= 7) {
                     state.auth = { user: u, pass: p };
                     if(!state.allUsers.find(x => x.user === u)) state.allUsers.push({ user: u, pass: p });
                     logic.save(); location.reload();
+                } else {
+                    const err = document.getElementById('login-error');
+                    err.innerText = "Invalid (Min 7 Characters)";
+                    err.classList.remove('hidden');
                 }
             },
             logout() { state.auth = null; logic.save(); location.reload(); }
         };
 
         const ui = {
+            // Hold Animation Logic
             startHold(event, callback) {
                 const btn = event.currentTarget;
                 const progress = btn.querySelector('.hold-progress');
                 let start = Date.now();
                 holdInterval = setInterval(() => {
                     let elapsed = Date.now() - start;
-                    let p = (elapsed / 600) * 100;
+                    let p = (elapsed / 650) * 100;
                     progress.style.width = Math.min(p, 100) + '%';
-                    if (elapsed >= 600) { this.clearHold(btn, progress); callback(); }
+                    if (elapsed >= 650) { 
+                        this.clearHold(btn, progress); 
+                        if (window.navigator.vibrate) window.navigator.vibrate(25);
+                        callback(); 
+                    }
                 }, 20);
                 const end = () => { this.clearHold(btn, progress); window.removeEventListener('mouseup', end); window.removeEventListener('touchend', end); };
                 window.addEventListener('mouseup', end); window.addEventListener('touchend', end);
             },
             clearHold(btn, progress) { clearInterval(holdInterval); progress.style.width = '0%'; },
+
             toggleSidebar() {
-                const sb = document.getElementById('sidebar'), ov = document.getElementById('sidebar-overlay');
-                const open = sb.style.transform === 'translateX(0px)';
-                sb.style.transform = open ? 'translateX(-100%)' : 'translateX(0px)';
+                const sb = document.getElementById('sidebar');
+                const ov = document.getElementById('sidebar-overlay');
+                const isOpen = sb.style.transform === 'translateX(0px)';
+                sb.style.transform = isOpen ? 'translateX(-100%)' : 'translateX(0px)';
                 ov.classList.toggle('hidden');
             },
+
             switchPage(id) {
                 ['dashboard', 'monitor', 'admin'].forEach(p => document.getElementById('page-' + p).classList.add('page-hidden'));
                 document.getElementById('page-' + id).classList.remove('page-hidden');
+                document.getElementById('page-title-display').innerText = id === 'dashboard' ? 'Vultrex' : id;
                 if(id === 'admin') this.renderAdmin();
                 this.toggleSidebar();
             },
+
             openModal(type) {
                 document.getElementById('modal').classList.remove('hidden');
                 document.getElementById('ui-manual').classList.toggle('hidden', type !== 'manual');
@@ -199,49 +243,69 @@
                 if(type === 'manual') this.setEntryMode('expense');
             },
             closeModal() { document.getElementById('modal').classList.add('hidden'); },
+
             setEntryMode(m) {
                 entryMode = m;
                 document.getElementById('tab-expense').classList.toggle('tab-active', m === 'expense');
                 document.getElementById('tab-income').classList.toggle('tab-active', m === 'income');
-                const p = { income: ['Ranks', 'Donations', 'Custom'], expense: ['Server', 'Plugins', 'Domain', 'Custom'] };
-                document.getElementById('manual-prefab').innerHTML = p[m].map(x => `<option value="${x}">${x}</option>`).join('');
+                const pref = { 
+                    income: ['Ranks', 'Donations', 'Collabs', 'Partner', 'Custom'], 
+                    expense: ['Server', 'Plugins', 'Domain', 'Advertising', 'Freelancer', 'Custom'] 
+                };
+                document.getElementById('manual-prefab').innerHTML = pref[m].map(x => `<option value="${x}">${x}</option>`).join('');
                 this.handlePrefabChange(document.getElementById('manual-prefab'));
             },
             handlePrefabChange(s) { document.getElementById('manual-desc').value = s.value === 'Custom' ? "" : s.value; },
             handleFileSelect(i) { if(i.files[0]) document.getElementById('file-display-name').innerText = i.files[0].name; },
-            openAdminPin() { if(prompt("PIN:") === "1234") this.switchPage('admin'); },
+
+            openAdminPin() { if(prompt("Terminal PIN:") === ADMIN_PIN) this.switchPage('admin'); },
+
             renderAdmin() {
                 document.getElementById('admin-user-list').innerHTML = state.allUsers.map(u => `
-                    <div class="liquid-glass p-5 rounded-2xl flex justify-between"><b>${u.user}</b><span class="opacity-50 text-xs">${u.pass}</span></div>`).join('');
+                    <div class="liquid-glass p-5 rounded-3xl flex justify-between items-center">
+                        <span class="font-bold text-blue-500">${u.user}</span>
+                        <span class="opacity-40 text-xs font-mono">${u.pass}</span>
+                    </div>`).join('');
             },
+
             updateDashboard() {
                 let total = 0, monthly = 0;
                 const list = document.getElementById('transaction-list');
                 list.innerHTML = '';
+                
                 state.history.sort((a,b) => a.id - b.id);
                 state.history.forEach(t => {
                     total += t.amount;
                     if(t.type === 'monthly' && t.amount < 0) monthly += t.amount;
                 });
+
                 [...state.history].reverse().forEach(t => {
                     list.innerHTML += `
-                        <div class="liquid-glass p-6 rounded-[2rem] flex justify-between items-center">
-                            <div><p class="font-bold text-sm">${t.desc}</p><p class="text-[9px] opacity-40 font-black">${t.date}</p></div>
+                        <div class="liquid-glass p-6 rounded-[2rem] flex justify-between items-center group">
+                            <div>
+                                <p class="font-bold text-sm">${t.desc}</p>
+                                <p class="text-[9px] uppercase opacity-40 font-black">${t.date}</p>
+                            </div>
                             <div class="text-right flex items-center gap-4">
                                 <p class="font-black ${t.amount < 0 ? 'text-rose-500' : 'text-emerald-400'}">${t.amount.toFixed(2)} €</p>
-                                <button onclick="logic.deleteEntry(${t.id})" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center opacity-30 hover:opacity-100 transition-all">×</button>
+                                <button onclick="logic.deleteEntry(${t.id})" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-all">×</button>
                             </div>
                         </div>`;
                 });
+
                 document.getElementById('balance').innerText = total.toFixed(2) + " €";
-                document.getElementById('monthly-stats').innerText = "Monthly: " + Math.abs(monthly).toFixed(2) + " €";
+                document.getElementById('monthly-stats').innerText = "Monthly Costs: " + Math.abs(monthly).toFixed(2) + " €";
                 this.updateChart();
             },
+
             updateChart() {
                 if(!chart) return;
                 const sorted = [...state.history].sort((a,b) => a.id - b.id);
                 let running = 0, lastD = "";
-                chart.data.labels = sorted.map(t => { if(t.date !== lastD) { lastD = t.date; return t.date; } return ""; });
+                chart.data.labels = sorted.map(t => { 
+                    if(t.date !== lastD) { lastD = t.date; return t.date; } 
+                    return ""; 
+                });
                 chart.data.datasets[0].data = sorted.map(t => { running += t.amount; return running; });
                 chart.update();
             }
@@ -249,55 +313,100 @@
 
         const logic = {
             saveManual() {
+                const desc = document.getElementById('manual-desc').value || 'Entry';
                 let amt = parseFloat(document.getElementById('manual-amount').value);
                 if(isNaN(amt)) return;
                 amt = entryMode === 'expense' ? -Math.abs(amt) : Math.abs(amt);
-                state.history.push({ id: Date.now(), desc: document.getElementById('manual-desc').value || 'Entry', amount: amt, type: document.getElementById('manual-type').value, date: new Date().toLocaleDateString('en-GB') });
+                state.history.push({ 
+                    id: Date.now(), 
+                    desc, 
+                    amount: amt, 
+                    type: document.getElementById('manual-type').value, 
+                    date: new Date().toLocaleDateString('en-GB') 
+                });
                 this.save(); ui.closeModal(); ui.updateDashboard();
             },
             deleteEntry(id) { state.history = state.history.filter(t => t.id !== id); this.save(); ui.updateDashboard(); },
             save() { localStorage.setItem('v_data', JSON.stringify(state)); },
+            
             async processImport() {
                 const file = document.getElementById('pdf-file').files[0];
                 const textInput = document.getElementById('ai-input').value;
+                const btn = document.getElementById('start-scan-btn');
+                const loader = document.getElementById('scan-loading');
+
+                if(!file && !textInput) return;
+                
+                btn.classList.add('hidden');
+                loader.classList.remove('hidden');
+
                 if(file) {
                     const reader = new FileReader();
                     reader.onload = async (e) => {
-                        const pdf = await pdfjsLib.getDocument({data: new Uint8Array(e.target.result)}).promise;
-                        let fullText = "";
-                        for (let i = 1; i <= pdf.numPages; i++) {
-                            const page = await pdf.getPage(i);
-                            const content = await page.getTextContent();
-                            fullText += content.items.map(item => item.str).join(" ");
-                        }
-                        this.finalizeScan(fullText);
+                        try {
+                            const pdf = await pdfjsLib.getDocument({data: new Uint8Array(e.target.result)}).promise;
+                            let fullText = "";
+                            for (let i = 1; i <= pdf.numPages; i++) {
+                                const page = await pdf.getPage(i);
+                                const content = await page.getTextContent();
+                                fullText += content.items.map(item => item.str).join(" ");
+                            }
+                            this.finalizeScan(fullText);
+                        } catch (err) { this.finalizeScan(""); }
                     };
                     reader.readAsArrayBuffer(file);
-                } else if(textInput) { this.finalizeScan(textInput); }
+                } else {
+                    setTimeout(() => this.finalizeScan(textInput), 800);
+                }
             },
             finalizeScan(text) {
-                const matches = text.match(/(-?\d+[\.,]\d{2})/g);
+                const moneyRegex = /(-?\d+[\.,]\d{2})/g;
+                const matches = text.match(moneyRegex);
                 let val = matches ? Math.abs(parseFloat(matches[0].replace(',', '.'))) : 10.00;
-                state.history.push({ id: Date.now(), desc: 'Scan', amount: -val, type: 'once', date: new Date().toLocaleDateString('en-GB') });
-                this.save(); ui.closeModal(); ui.updateDashboard();
+                
+                state.history.push({ 
+                    id: Date.now(), 
+                    desc: 'Smart Scan', 
+                    amount: -val, 
+                    type: 'once', 
+                    date: new Date().toLocaleDateString('en-GB') 
+                });
+                
+                this.save();
+                document.getElementById('scan-loading').classList.add('hidden');
+                document.getElementById('start-scan-btn').classList.remove('hidden');
+                ui.closeModal(); ui.updateDashboard();
             }
         };
 
         const monitor = {
             async check() {
-                const ip = document.getElementById('mc-ip').value; if(!ip) return;
+                const ip = document.getElementById('mc-ip').value;
+                if(!ip) return;
                 const resDiv = document.getElementById('mc-result');
-                resDiv.innerHTML = "<p class='col-span-2 text-center animate-pulse'>SCANNING...</p>";
+                resDiv.innerHTML = "<p class='col-span-2 text-center animate-pulse opacity-50'>SCANNING TERMINAL...</p>";
                 resDiv.classList.remove('hidden');
                 try {
                     const r = await fetch(`https://api.mcstatus.io/v2/status/java/${ip}`);
                     const d = await r.json();
                     if(d.online) {
                         resDiv.innerHTML = `
-                            <div class="liquid-glass p-5 rounded-3xl text-center"><p class="text-[8px] text-emerald-500 font-bold">ONLINE</p><p class="text-sm font-bold">${d.players.online}/${d.players.max}</p></div>
-                            <div class="liquid-glass p-5 rounded-3xl text-center"><p class="text-[8px] text-blue-500 font-bold">VERSION</p><p class="text-[10px] truncate font-bold">${d.version.name_clean || 'N/A'}</p></div>`;
-                    } else { resDiv.innerHTML = "<p class='col-span-2 text-rose-500'>OFFLINE</p>"; }
-                } catch (e) { resDiv.innerHTML = "ERROR"; }
+                            <div class="liquid-glass p-6 rounded-[2rem] text-center">
+                                <p class="text-[8px] text-emerald-500 font-bold uppercase mb-1">Status</p>
+                                <p class="text-lg font-bold">ONLINE</p>
+                            </div>
+                            <div class="liquid-glass p-6 rounded-[2rem] text-center">
+                                <p class="text-[8px] text-blue-500 font-bold uppercase mb-1">Players</p>
+                                <p class="text-lg font-bold">${d.players.online}/${d.players.max}</p>
+                            </div>
+                            <div class="liquid-glass p-6 rounded-[2rem] text-center col-span-2">
+                                <p class="text-[8px] text-amber-500 font-bold uppercase mb-1">Version</p>
+                                <p class="text-xs font-bold truncate">${d.version.name_clean || 'N/A'}</p>
+                            </div>`;
+                    } else { 
+                        resDiv.innerHTML = "<p class='col-span-2 text-rose-500 font-bold py-4'>SERVER OFFLINE</p>"; 
+                    }
+                } catch (e) { resDiv.innerHTML = "<p class='col-span-2 text-rose-500 font-bold'>CONNECTION ERROR</p>"; }
             }
         };
 
@@ -305,10 +414,37 @@
             if(state.auth) {
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('app-content').classList.remove('hidden');
-                chart = new Chart(document.getElementById('financeChart'), {
+                
+                const ctx = document.getElementById('financeChart').getContext('2d');
+                chart = new Chart(ctx, {
                     type: 'line',
-                    data: { labels: [], datasets: [{ data: [], borderColor: '#007AFF', borderWidth: 4, pointRadius: 0, tension: 0.4, fill: true, backgroundColor: 'rgba(0, 122, 255, 0.1)' }] },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { color: 'rgba(255,255,255,0.05)' } } } }
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            data: [],
+                            borderColor: '#007AFF',
+                            borderWidth: 4,
+                            pointRadius: 0,
+                            pointHoverRadius: 6,
+                            tension: 0.4,
+                            fill: true,
+                            backgroundColor: (context) => {
+                                const g = context.chart.ctx.createLinearGradient(0, 0, 0, 300);
+                                g.addColorStop(0, 'rgba(0, 122, 255, 0.2)');
+                                g.addColorStop(1, 'rgba(0, 122, 255, 0)');
+                                return g;
+                            }
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.2)', font: { size: 9 } } },
+                            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: 'rgba(255,255,255,0.2)', font: { size: 9 } } }
+                        }
+                    }
                 });
                 ui.updateDashboard();
             }
@@ -316,4 +452,3 @@
     </script>
 </body>
 </html>
-
