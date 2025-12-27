@@ -17,6 +17,7 @@
             --glass-border: rgba(255, 255, 255, 0.15);
             --shadow: rgba(0, 0, 0, 0.8);
             --input-bg: rgba(150, 150, 150, 0.1);
+            --blur: blur(40px) saturate(180%);
         }
 
         .light-mode {
@@ -26,6 +27,15 @@
             --glass-border: rgba(255, 255, 255, 0.8);
             --shadow: rgba(0, 0, 0, 0.05);
             --input-bg: #ffffff;
+        }
+
+        .no-glass {
+            --glass: rgba(30, 30, 30, 0.95);
+            --blur: none;
+        }
+
+        .light-mode.no-glass {
+            --glass: #ffffff;
         }
 
         body {
@@ -40,10 +50,11 @@
 
         .crystal-glass {
             background: var(--glass);
-            backdrop-filter: blur(40px) saturate(180%);
-            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
             border: 1px solid var(--glass-border);
             box-shadow: 0 8px 32px 0 var(--shadow);
+            transition: background 0.3s, backdrop-filter 0.3s;
         }
 
         /* TOGGLE SYSTEM */
@@ -167,6 +178,14 @@
                         <div class="toggle-label">Light</div>
                     </div>
                 </div>
+                <div>
+                    <p class="text-[10px] font-black uppercase opacity-40 mb-4 tracking-widest">Crystal Engine</p>
+                    <div class="toggle-container" id="glass-toggle">
+                        <div class="toggle-knob" id="knob-glass">On</div>
+                        <div class="toggle-label">On</div>
+                        <div class="toggle-label">Off</div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -211,7 +230,7 @@
 
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        let state = JSON.parse(localStorage.getItem('v_data')) || { history: [], auth: null, allUsers: [], theme: 'dark' };
+        let state = JSON.parse(localStorage.getItem('v_data')) || { history: [], auth: null, allUsers: [], theme: 'dark', glass: 'On' };
         let chart = null, entryMode = 'Expense', freqMode = 'Once';
 
         const auth = {
@@ -242,15 +261,10 @@
                     callback(labels[idx]);
                 };
 
-                // Klick-Handler
                 labelEls.forEach((el, idx) => {
-                    el.onclick = (e) => {
-                        e.stopPropagation();
-                        updateUI(idx);
-                    };
+                    el.onclick = (e) => { e.stopPropagation(); updateUI(idx); };
                 });
 
-                // Drag-Handler
                 const onStart = (e) => {
                     isDragging = true;
                     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -261,7 +275,6 @@
 
                 const onMove = (e) => {
                     if (!isDragging) return;
-                    e.preventDefault();
                     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
                     const rect = box.getBoundingClientRect();
                     const max = box.offsetWidth / 2 - 4;
@@ -277,25 +290,30 @@
                 };
 
                 box.onmousedown = box.ontouchstart = onStart;
-                window.addEventListener('mousemove', onMove, {passive: false});
+                window.addEventListener('mousemove', onMove);
                 window.addEventListener('touchmove', onMove, {passive: false});
                 window.addEventListener('mouseup', onEnd);
                 window.addEventListener('touchend', onEnd);
 
-                // Initialisierung
                 const initialIdx = labels.indexOf(initialVal) !== -1 ? labels.indexOf(initialVal) : 0;
                 setTimeout(() => updateUI(initialIdx, false), 10);
             },
 
             applyTheme(theme) {
                 state.theme = theme;
-                document.body.className = theme === 'light' ? 'light-mode' : 'dark-mode';
+                document.body.classList.toggle('light-mode', theme === 'light');
                 if(chart) {
                     const color = theme === 'light' ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.3)';
                     chart.options.scales.x.ticks.color = color;
                     chart.options.scales.y.ticks.color = color;
                     chart.update();
                 }
+                logic.save();
+            },
+
+            applyGlass(val) {
+                state.glass = val;
+                document.body.classList.toggle('no-glass', val === 'Off');
                 logic.save();
             },
 
@@ -316,7 +334,6 @@
                 document.getElementById('ui-import').classList.toggle('hidden', type !== 'import');
                 if(type === 'manual') {
                     this.updatePrefabs();
-                    // Toggles beim Öffnen sauber aufsetzen
                     this.setupLiquidToggle('type-toggle', 'knob-type', ['Expense', 'Income'], (v) => { entryMode = v; ui.updatePrefabs(); }, entryMode);
                     this.setupLiquidToggle('freq-toggle', 'knob-freq', ['Once', 'Monthly'], (v) => { freqMode = v; }, freqMode);
                 }
@@ -411,23 +428,18 @@
                         maintainAspectRatio: false, 
                         plugins: { legend: { display: false } }, 
                         scales: { 
-                            x: { 
-                                display: true, 
-                                grid: { display: false }, 
-                                ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 10 } } 
-                            }, 
-                            y: { 
-                                display: true, 
-                                grid: { color: 'rgba(255,255,255,0.05)' }, 
-                                ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 10 }, callback: v => v + '€' } 
-                            } 
+                            x: { display: true, grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 10 } } }, 
+                            y: { display: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 10 }, callback: v => v + '€' } } 
                         } 
                     }
                 });
 
                 ui.updateDashboard();
                 ui.applyTheme(state.theme || 'dark');
+                ui.applyGlass(state.glass || 'On');
+
                 ui.setupLiquidToggle('theme-toggle', 'knob-theme', ['Dark', 'Light'], (v) => ui.applyTheme(v.toLowerCase()), state.theme === 'light' ? 'Light' : 'Dark');
+                ui.setupLiquidToggle('glass-toggle', 'knob-glass', ['On', 'Off'], (v) => ui.applyGlass(v), state.glass || 'On');
             }
         };
     </script>
