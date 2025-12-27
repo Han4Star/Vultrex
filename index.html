@@ -49,6 +49,7 @@
             box-shadow: 0 8px 32px 0 var(--shadow);
         }
 
+        /* Liquid Toggle */
         .toggle-container {
             position: relative;
             width: 100%;
@@ -106,7 +107,6 @@
         }
         
         #pdf-file { opacity: 0; position: absolute; inset: 0; cursor: pointer; }
-        #sidebar-btn { color: var(--icon-color); }
 
         #profile-menu {
             transform-origin: top right;
@@ -121,7 +121,7 @@
             transform: translate(-50%, 0);
         }
 
-        /* Swipe Container */
+        /* SWIPE STYLES */
         .transaction-wrapper {
             position: relative;
             overflow: hidden;
@@ -130,13 +130,12 @@
             background: transparent;
         }
 
-        /* Das rote Glas-Element im Hintergrund */
         .delete-background {
             position: absolute;
             inset: 0;
             background: var(--delete-red);
             border-radius: 2.5rem;
-            opacity: 0; /* Startet bei 0 */
+            opacity: 0; /* Graduelles Einblenden */
             z-index: 0;
             display: flex;
             align-items: center;
@@ -148,8 +147,7 @@
             color: white;
             font-size: 24px;
             opacity: 0;
-            transform: scale(0.5);
-            transition: transform 0.2s;
+            transform: scale(0.8);
         }
 
         .transaction-card {
@@ -201,7 +199,10 @@
 
         <div id="achievement-toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[300] w-[85%] max-w-sm crystal-glass p-6 rounded-[2.5rem] flex items-center gap-4 pointer-events-none border-emerald-500/30">
             <div class="w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center text-2xl shadow-lg shadow-emerald-500/20">🏆</div>
-            <div><p class="text-[10px] font-black uppercase opacity-40 tracking-widest">Meilenstein</p><p class="font-bold text-xs">Kontostand erreicht > 100€</p></div>
+            <div>
+                <p class="text-[10px] font-black uppercase opacity-40 tracking-widest">Meilenstein</p>
+                <p class="font-bold text-xs">Kontostand erreicht > 100€</p>
+            </div>
         </div>
 
         <div id="page-dashboard" class="space-y-6">
@@ -209,11 +210,16 @@
                 <p class="text-[10px] opacity-40 uppercase font-black tracking-widest mb-1">Total Balance</p>
                 <h3 id="balance" class="text-5xl font-bold tracking-tighter italic">0.00 €</h3>
             </div>
-            <div class="crystal-glass p-6 rounded-[3rem] h-64"><canvas id="financeChart"></canvas></div>
+
+            <div class="crystal-glass p-6 rounded-[3rem] h-64">
+                <canvas id="financeChart"></canvas>
+            </div>
+
             <div class="grid grid-cols-2 gap-4">
                 <button onclick="ui.openModal('manual')" class="crystal-glass py-7 rounded-[2.5rem] font-bold uppercase text-[10px] tracking-widest active:scale-95 transition-all">Manual</button>
                 <button onclick="ui.openModal('import')" class="bg-blue-600 text-white py-7 rounded-[2.5rem] font-bold uppercase text-[10px] tracking-widest active:scale-95 transition-all">AI Scan</button>
             </div>
+
             <div id="transaction-list" class="space-y-4 pb-20"></div>
         </div>
 
@@ -264,6 +270,7 @@
                 </div>
                 <button onclick="logic.saveManual()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase tracking-widest text-white active:scale-95 transition-all">Commit Entry</button>
             </div>
+
             <div id="ui-import" class="hidden space-y-6 text-center">
                 <div class="relative w-full h-40 bg-white/5 rounded-3xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-3">
                     <span id="file-display-name" class="opacity-30 text-[10px] uppercase font-black tracking-widest px-4">Drag & Drop Invoice PDF</span>
@@ -298,19 +305,16 @@
             setupLiquidToggle(boxId, knobId, labels, callback, initialVal) {
                 const box = document.getElementById(boxId), knob = document.getElementById(knobId);
                 const labelEls = box.querySelectorAll('.toggle-label');
-                let isDragging = false, currentX = 0;
                 const updateUI = (idx, animate = true) => {
                     const max = box.offsetWidth / 2 - 4;
-                    currentX = (idx === 0) ? 0 : max;
                     knob.style.transition = animate ? 'transform 0.5s cubic-bezier(0.22, 1, 0.36, 1)' : 'none';
-                    knob.style.transform = `translateX(${currentX}px)`;
+                    knob.style.transform = `translateX(${idx === 0 ? 0 : max}px)`;
                     knob.innerText = labels[idx];
                     labelEls.forEach((l, i) => l.classList.toggle('active-label', i === idx));
                     callback(labels[idx]);
                 };
                 labelEls.forEach((el, idx) => el.onclick = () => updateUI(idx));
-                const initIdx = labels.indexOf(initialVal) !== -1 ? labels.indexOf(initialVal) : 0;
-                setTimeout(() => updateUI(initIdx, false), 10);
+                setTimeout(() => updateUI(labels.indexOf(initialVal) !== -1 ? labels.indexOf(initialVal) : 0, false), 10);
             },
 
             applyTheme(theme) {
@@ -331,6 +335,7 @@
             switchPage(id) {
                 ['dashboard', 'monitor', 'admin', 'settings'].forEach(p => document.getElementById('page-' + p)?.classList.add('page-hidden'));
                 document.getElementById('page-' + id).classList.remove('page-hidden');
+                if(id === 'admin') this.renderAdmin();
                 this.toggleSidebar();
             },
 
@@ -348,7 +353,7 @@
             closeModal() { document.getElementById('modal').classList.add('hidden'); },
 
             updatePrefabs() {
-                const list = { Expense: ['Server Cost', 'Plugins', 'Staff', 'Marketing', 'Others (Custom)'], Income: ['Ranks', 'Donations', 'Coins', 'Others (Custom)'] };
+                const list = { Expense: ['Server Cost', 'Plugins', 'Staff', 'Ads', 'Others (Custom)'], Income: ['Ranks', 'Donations', 'Coins', 'Others (Custom)'] };
                 const select = document.getElementById('manual-prefab');
                 select.innerHTML = list[entryMode].map(x => `<option value="${x}">${x}</option>`).join('');
                 this.handlePrefabChange(select);
@@ -363,7 +368,17 @@
 
             openAdminPin() { if(prompt("Terminal PIN:") === "1234") this.switchPage('admin'); },
 
-            // SWIPE DELETE LOGIC (Fix: Von Rechts nach Links)
+            renderAdmin() {
+                const list = document.getElementById('admin-user-list');
+                list.innerHTML = state.allUsers.map(u => `
+                    <div class="crystal-glass p-4 rounded-2xl flex justify-between items-center">
+                        <span class="font-bold">${u.user}</span>
+                        <span class="opacity-30 text-xs">${u.pass}</span>
+                    </div>
+                `).join('');
+            },
+
+            // SWIPE LOGIC (Von Rechts nach Links + Graduelles Rot)
             handleSwipeStart(e) {
                 touchStartX = e.touches[0].clientX;
                 currentSwipeElem = e.currentTarget;
@@ -374,20 +389,19 @@
                 if (!currentSwipeElem) return;
                 const diff = e.touches[0].clientX - touchStartX;
                 
-                // Nur nach LINKS wischen erlaubt (diff muss negativ sein)
-                if (diff < 0) {
-                    const move = Math.max(diff, -150); // Begrenzung nach links
+                if (diff < 0) { // Nur nach Links wischen
+                    const move = Math.max(diff, -150);
                     currentSwipeElem.style.transform = `translateX(${move}px)`;
                     
                     const wrap = currentSwipeElem.parentElement;
                     const bg = wrap.querySelector('.delete-background');
                     const ind = wrap.querySelector('.delete-indicator');
                     
-                    // Dynamisches Einblenden der Farbe (Opacity steigt je weiter man wischt)
-                    const progress = Math.abs(move) / 120;
+                    // Graduelles Einblenden der Deckkraft (Opacity)
+                    const progress = Math.abs(move) / 100; // Bei 100px voll rot
                     bg.style.opacity = Math.min(progress, 1);
                     ind.style.opacity = Math.min(progress, 1);
-                    ind.style.transform = `scale(${Math.min(progress, 1.2)})`;
+                    ind.style.transform = `scale(${0.8 + (Math.min(progress, 1) * 0.4)})`;
                 }
             },
 
@@ -398,9 +412,9 @@
                 
                 currentSwipeElem.style.transition = 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
                 
-                if (diff < -110) { // Schwellenwert für Löschen nach links
+                if (diff < -100) { // Schwellenwert
                     currentSwipeElem.style.transform = 'translateX(-150%)';
-                    logic.deleteEntry(currentSwipeElem.getAttribute('data-id'));
+                    setTimeout(() => logic.deleteEntry(currentSwipeElem.getAttribute('data-id')), 300);
                 } else {
                     currentSwipeElem.style.transform = 'translateX(0px)';
                     wrap.querySelector('.delete-background').style.opacity = '0';
@@ -418,29 +432,16 @@
                     const wrapper = document.createElement('div');
                     wrapper.className = 'transaction-wrapper';
                     wrapper.innerHTML = `
-                        <div class="delete-background">
-                            <span class="delete-indicator">🗑️</span>
-                        </div>
+                        <div class="delete-background"><span class="delete-indicator">🗑️</span></div>
                         <div class="transaction-card crystal-glass p-6 rounded-[2.5rem] flex justify-between items-center" 
-                             data-id="${t.id}"
-                             ontouchstart="ui.handleSwipeStart(event)" 
-                             ontouchmove="ui.handleSwipeMove(event)" 
-                             ontouchend="ui.handleSwipeEnd(event)">
-                            <div>
-                                <p class="font-bold text-sm tracking-tight">${t.desc}</p>
-                                <p class="text-[9px] opacity-20 font-black tracking-widest">${t.date}</p>
-                            </div>
-                            <p class="font-black ${t.amount < 0 ? 'text-rose-500' : 'text-emerald-500'}">
-                                ${t.amount.toFixed(2)} €
-                            </p>
+                             data-id="${t.id}" ontouchstart="ui.handleSwipeStart(event)" ontouchmove="ui.handleSwipeMove(event)" ontouchend="ui.handleSwipeEnd(event)">
+                            <div><p class="font-bold text-sm">${t.desc}</p><p class="text-[9px] opacity-20 font-black">${t.date}</p></div>
+                            <p class="font-black ${t.amount < 0 ? 'text-rose-500' : 'text-emerald-500'}">${t.amount.toFixed(2)} €</p>
                         </div>`;
                     list.appendChild(wrapper);
                 });
                 document.getElementById('balance').innerText = total.toFixed(2) + " €";
-                if(total >= 100) {
-                    document.getElementById('achievement-toast').classList.add('show');
-                    setTimeout(() => document.getElementById('achievement-toast').classList.remove('show'), 5000);
-                }
+                if(total >= 100) document.getElementById('achievement-toast').classList.add('show');
                 this.updateChart();
             },
 
@@ -448,9 +449,8 @@
                 if(!chart) return;
                 const sorted = [...state.history].sort((a,b) => a.id - b.id);
                 let run = 0;
-                const data = sorted.map(t => { run += t.amount; return run; });
                 chart.data.labels = sorted.map(t => t.date);
-                chart.data.datasets[0].data = data;
+                chart.data.datasets[0].data = sorted.map(t => { run += t.amount; return run; });
                 chart.update();
             }
         };
@@ -459,20 +459,9 @@
             saveManual() {
                 let a = parseFloat(document.getElementById('manual-amount').value);
                 if(isNaN(a)) return;
-                state.history.push({ 
-                    id: Date.now(), 
-                    desc: document.getElementById('manual-desc').value || "Entry", 
-                    amount: entryMode === 'Expense' ? -a : a, 
-                    date: new Date().toLocaleDateString('de-DE') 
-                });
+                state.history.push({ id: Date.now(), desc: document.getElementById('manual-desc').value || "Entry", amount: entryMode === 'Expense' ? -a : a, date: new Date().toLocaleDateString('de-DE') });
                 this.save(); ui.closeModal(); ui.updateDashboard();
                 document.getElementById('manual-amount').value = "";
-            },
-            deleteEntry(id) {
-                setTimeout(() => {
-                    state.history = state.history.filter(t => t.id != id);
-                    this.save(); ui.updateDashboard();
-                }, 300);
             },
             async processImport() {
                 const f = document.getElementById('pdf-file').files[0];
@@ -490,6 +479,10 @@
                     } catch(err) { alert("AI Scan failed."); }
                 };
                 reader.readAsArrayBuffer(f);
+            },
+            deleteEntry(id) {
+                state.history = state.history.filter(t => t.id != id);
+                this.save(); ui.updateDashboard();
             },
             save() { localStorage.setItem('v_data', JSON.stringify(state)); }
         };
@@ -516,8 +509,8 @@
                 document.getElementById('app-content').classList.remove('hidden');
                 chart = new Chart(document.getElementById('financeChart'), {
                     type: 'line',
-                    data: { labels: [], datasets: [{ data: [], tension: 0.4, fill: true, borderColor: '#007AFF', backgroundColor: 'rgba(0,122,255,0.05)' }] },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                    data: { labels: [], datasets: [{ data: [], tension: 0.4, fill: true, borderColor: '#007AFF', backgroundColor: 'rgba(0,122,255,0.05)', pointRadius: 0 }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
                 });
                 ui.updateDashboard();
                 ui.applyTheme(state.theme);
