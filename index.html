@@ -121,7 +121,6 @@
 
     <div id="modal" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 z-50">
         <div class="bg-white dark:bg-slate-900 w-full max-w-md p-8 rounded-[3rem] shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-            
             <div id="ui-import" class="hidden text-center">
                 <h3 class="text-xl font-black mb-6 uppercase italic text-blue-600">Smart Scan</h3>
                 <div class="relative w-full h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mb-6 overflow-hidden border-2 border-transparent focus-within:border-blue-500">
@@ -139,25 +138,19 @@
 
             <div id="ui-manual" class="hidden text-center">
                 <h3 class="text-xl font-black mb-6 uppercase italic text-blue-600">New Entry</h3>
-                
                 <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl mb-6">
                     <button id="tab-expense" onclick="ui.setEntryMode('expense')" class="flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all tab-active">Expense</button>
                     <button id="tab-income" onclick="ui.setEntryMode('income')" class="flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all">Income</button>
                 </div>
-
-                <select id="manual-prefab" onchange="ui.handlePrefabChange(this)" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl mb-4 outline-none font-bold text-sm">
-                    </select>
+                <select id="manual-prefab" onchange="ui.handlePrefabChange(this)" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl mb-4 outline-none font-bold text-sm"></select>
                 <input type="text" id="manual-desc" placeholder="Custom Name" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl mb-4 outline-none font-bold">
                 <input type="number" id="manual-amount" placeholder="0.00" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl mb-4 outline-none font-bold">
-                
                 <select id="manual-type" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl mb-8 font-bold">
                     <option value="once">One-time</option>
                     <option value="monthly">Monthly</option>
                 </select>
-                
                 <button onclick="logic.saveManual()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black uppercase">Add Now</button>
             </div>
-
             <button onclick="ui.closeModal()" class="w-full text-slate-400 py-4 font-bold text-[10px] uppercase tracking-widest mt-2">Close</button>
         </div>
     </div>
@@ -166,7 +159,7 @@
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         let state = JSON.parse(localStorage.getItem('v_data')) || { history: [], auth: null, allUsers: [] };
         let chart = null;
-        let entryMode = 'expense'; // expense or income
+        let entryMode = 'expense';
         const ADMIN_PIN = "1234";
 
         const prefabs = {
@@ -202,7 +195,6 @@
                 entryMode = mode;
                 document.getElementById('tab-expense').classList.toggle('tab-active', mode === 'expense');
                 document.getElementById('tab-income').classList.toggle('tab-active', mode === 'income');
-                
                 const select = document.getElementById('manual-prefab');
                 select.innerHTML = prefabs[mode].map(p => `<option value="${p}">${p}</option>`).join('');
                 this.handlePrefabChange(select);
@@ -281,11 +273,8 @@
                 const desc = document.getElementById('manual-desc').value || 'New Entry';
                 let amt = parseFloat(document.getElementById('manual-amount').value);
                 if(isNaN(amt)) return;
-                
-                // Logic: Einnahme (+) vs Ausgabe (-)
                 if(entryMode === 'expense') amt = -Math.abs(amt);
                 else amt = Math.abs(amt);
-
                 state.history.push({ 
                     id: Date.now(), 
                     desc, 
@@ -303,8 +292,30 @@
             save() { localStorage.setItem('v_data', JSON.stringify(state)); },
             updateChart() {
                 if(!chart) return;
-                chart.data.labels = state.history.map(t => t.date);
-                chart.data.datasets[0].data = state.history.map((t, i) => state.history.slice(0, i+1).reduce((a,b) => a + b.amount, 0));
+                
+                // 1. Sortiere Historie chronologisch
+                const sortedHistory = [...state.history].sort((a, b) => a.id - b.id);
+                
+                let runningBalance = 0;
+                let lastDate = "";
+                const labels = [];
+                const dataPoints = [];
+
+                sortedHistory.forEach(t => {
+                    runningBalance += t.amount;
+                    dataPoints.push(runningBalance);
+                    
+                    // Nur den ersten Eintrag eines neuen Tages beschriften
+                    if (t.date !== lastDate) {
+                        labels.push(t.date);
+                        lastDate = t.date;
+                    } else {
+                        labels.push(""); // Platzhalter für Transaktionen am gleichen Tag
+                    }
+                });
+
+                chart.data.labels = labels;
+                chart.data.datasets[0].data = dataPoints;
                 chart.update();
             },
             async processImport() {
@@ -314,7 +325,6 @@
                 const btn = document.getElementById('start-scan-btn');
                 loader.classList.remove('hidden');
                 btn.classList.add('hidden');
-
                 if(file) {
                     const reader = new FileReader();
                     reader.onload = async (e) => {
@@ -389,7 +399,14 @@
                 chart = new Chart(ctx, {
                     type: 'line',
                     data: { labels: [], datasets: [{ data: [], borderColor: '#3b82f6', tension: 0.4, fill: true, backgroundColor: 'rgba(59, 130, 246, 0.05)', borderWidth: 3 }] },
-                    options: { responsive: true, plugins: { legend: { display: false } } }
+                    options: { 
+                        responsive: true, 
+                        plugins: { legend: { display: false } },
+                        scales: { 
+                            x: { grid: { display: false }, ticks: { autoSkip: false, maxRotation: 0 } }, 
+                            y: { ticks: { stepSize: 5 } } 
+                        }
+                    }
                 });
                 ui.updateDashboard();
             }
