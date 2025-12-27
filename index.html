@@ -3,17 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vultrex Liquid Final</title>
+    <title>Vultrex Liquid Glass</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     
     <style>
-        :root {
-            --apple-blue: #007AFF;
-        }
-
         body {
             background: #000;
             color: #fff;
@@ -30,18 +26,18 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        /* LIQUID TOGGLE SYSTEM */
+        /* LIQUID GLASS TOGGLE */
         .toggle-container {
             position: relative;
             width: 100%;
             height: 60px;
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 22px;
             padding: 5px;
             display: flex;
             align-items: center;
             cursor: pointer;
-            touch-action: none; /* Verhindert Scrolling beim Schieben */
+            touch-action: none;
             user-select: none;
         }
 
@@ -49,20 +45,28 @@
             position: absolute;
             height: 50px;
             width: calc(50% - 5px);
-            background: linear-gradient(145deg, #007AFF, #0055FF);
-            border-radius: 20px;
-            box-shadow: 0 8px 20px rgba(0, 122, 255, 0.4);
+            background: #007AFF;
+            border-radius: 18px;
+            box-shadow: 0 8px 20px rgba(0, 122, 255, 0.3);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 1px;
             z-index: 10;
-            pointer-events: none; /* Knopf ignoriert Events, Container fängt sie */
-            transform: translateX(0);
-            will-change: transform, width;
+            pointer-events: none;
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s, opacity 0.3s, backdrop-filter 0.3s;
+        }
+
+        /* Glass Effect beim Schieben */
+        .toggle-knob.active-drag {
+            opacity: 0.7;
+            background: rgba(0, 122, 255, 0.4);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         }
 
         .toggle-label {
@@ -71,58 +75,56 @@
             font-size: 11px;
             font-weight: 700;
             text-transform: uppercase;
-            opacity: 0.3;
+            opacity: 0.25;
             pointer-events: none;
         }
 
         .sidebar-transition { transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
         .page-hidden { display: none; }
         #pdf-file { opacity: 0; position: absolute; inset: 0; cursor: pointer; z-index: 10; }
-        
-        button:active { transform: scale(0.96); transition: transform 0.1s; }
     </style>
 </head>
 <body>
 
     <div id="login-screen" class="fixed inset-0 z-[200] bg-black flex items-center justify-center p-6 text-center">
         <div>
-            <h1 class="text-7xl font-black mb-10 italic">V<span class="text-blue-500">.</span></h1>
+            <h1 class="text-7xl font-black mb-10 italic tracking-tighter text-white">V<span class="text-blue-500">.</span></h1>
             <div class="liquid-glass p-8 rounded-[3rem] w-80">
-                <input type="text" id="login-user" placeholder="Identity" class="w-full bg-white/5 p-5 rounded-2xl mb-4 border border-white/10 text-center font-bold outline-none">
-                <input type="password" id="login-pass" placeholder="Key" class="w-full bg-white/5 p-5 rounded-2xl mb-8 border border-white/10 text-center font-bold outline-none">
-                <button onclick="auth.login()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase tracking-widest">Connect</button>
+                <input type="text" id="login-user" placeholder="User ID" class="w-full bg-white/5 p-5 rounded-2xl mb-4 border border-white/10 text-center font-bold outline-none">
+                <input type="password" id="login-pass" placeholder="Master Key" class="w-full bg-white/5 p-5 rounded-2xl mb-8 border border-white/10 text-center font-bold outline-none">
+                <button onclick="auth.login()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase tracking-widest active:scale-95 transition-transform">Authorize</button>
             </div>
         </div>
     </div>
 
     <div id="sidebar" class="fixed inset-y-0 left-0 w-72 liquid-glass z-[150] sidebar-transition -translate-x-full rounded-r-[3rem] border-r border-white/20">
         <div class="p-10 flex flex-col h-full">
-            <h2 class="text-3xl font-black italic mb-12">Menu</h2>
+            <h2 class="text-3xl font-black italic mb-12">V<span class="text-blue-500">.</span></h2>
             <nav class="space-y-4 flex-1">
-                <button onclick="ui.switchPage('dashboard')" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold">📊 Dashboard</button>
-                <button onclick="ui.switchPage('monitor')" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold">🎮 Live API</button>
-                <button onclick="ui.openAdminPin()" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold text-white/30">🔒 Admin</button>
+                <button onclick="ui.switchPage('dashboard')" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold">📊 Analytics</button>
+                <button onclick="ui.switchPage('monitor')" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold">🎮 Node Status</button>
+                <button onclick="ui.openAdminPin()" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold text-white/30">🔒 Terminal</button>
             </nav>
-            <button onclick="auth.logout()" class="p-5 rounded-2xl bg-rose-500/10 text-rose-500 font-bold uppercase text-[10px]">Logout</button>
+            <button onclick="auth.logout()" class="p-5 rounded-2xl bg-rose-500/10 text-rose-500 font-bold uppercase text-[10px]">Terminate</button>
         </div>
     </div>
     <div id="sidebar-overlay" onclick="ui.toggleSidebar()" class="fixed inset-0 bg-black/60 backdrop-blur-md z-[140] hidden"></div>
 
     <div id="app-content" class="hidden p-6 max-w-xl mx-auto h-screen overflow-y-auto">
         <header class="flex justify-between items-center mb-8">
-            <button onclick="ui.toggleSidebar()" class="w-12 h-12 liquid-glass rounded-full text-xl">≡</button>
-            <div class="w-12 h-12 bg-blue-600 rounded-full shadow-[0_0_15px_rgba(0,122,255,0.5)]"></div>
+            <button onclick="ui.toggleSidebar()" class="w-12 h-12 liquid-glass rounded-full text-xl flex items-center justify-center">≡</button>
+            <div class="w-12 h-12 bg-blue-600 rounded-full shadow-[0_0_15px_rgba(0,122,255,0.4)]"></div>
         </header>
 
         <div id="page-dashboard" class="space-y-6">
             <div class="liquid-glass p-8 rounded-[3rem]">
-                <p class="text-[10px] opacity-40 uppercase font-black">Balance</p>
-                <h3 id="balance" class="text-5xl font-bold italic tracking-tighter">0.00 €</h3>
+                <p class="text-[10px] opacity-40 uppercase font-black tracking-widest">Total Liquid</p>
+                <h3 id="balance" class="text-5xl font-bold tracking-tighter">0.00 €</h3>
             </div>
-            <div class="liquid-glass p-4 rounded-[2.5rem] h-56"><canvas id="financeChart"></canvas></div>
+            <div class="liquid-glass p-4 rounded-[2.5rem] h-52"><canvas id="financeChart"></canvas></div>
             <div class="grid grid-cols-2 gap-4">
-                <button onclick="ui.openModal('manual')" class="liquid-glass py-6 rounded-[2rem] font-bold uppercase text-xs">Add</button>
-                <button onclick="ui.openModal('import')" class="bg-white text-black py-6 rounded-[2rem] font-bold uppercase text-xs">Scan</button>
+                <button onclick="ui.openModal('manual')" class="liquid-glass py-6 rounded-[2rem] font-bold uppercase text-[10px] tracking-widest">Manual</button>
+                <button onclick="ui.openModal('import')" class="bg-white text-black py-6 rounded-[2rem] font-bold uppercase text-[10px] tracking-widest">Scanner</button>
             </div>
             <div id="transaction-list" class="space-y-4 pb-10"></div>
         </div>
@@ -130,13 +132,13 @@
         <div id="page-monitor" class="page-hidden space-y-6">
             <div class="liquid-glass p-8 rounded-[3rem]">
                 <input type="text" id="mc-ip" placeholder="Server IP" class="w-full bg-white/5 p-5 rounded-2xl mb-4 text-center outline-none border border-white/10 font-bold">
-                <button onclick="monitor.check()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold uppercase">Analyze Server</button>
+                <button onclick="monitor.check()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold uppercase tracking-widest">Request Status</button>
             </div>
             <div id="mc-result" class="hidden grid grid-cols-2 gap-4"></div>
         </div>
 
         <div id="page-admin" class="page-hidden space-y-4">
-            <h2 class="font-bold opacity-30 uppercase tracking-widest">User Database</h2>
+            <h2 class="text-xs font-bold opacity-30 uppercase tracking-[0.2em] mb-4">Terminal Auth Logs</h2>
             <div id="admin-user-list" class="space-y-2"></div>
         </div>
     </div>
@@ -150,7 +152,7 @@
                     <div class="toggle-label">Income</div>
                 </div>
 
-                <select id="manual-prefab" onchange="ui.handlePrefabChange(this)" class="w-full bg-white/5 p-5 rounded-2xl border border-white/10 outline-none font-bold text-sm"></select>
+                <select id="manual-prefab" onchange="ui.handlePrefabChange(this)" class="w-full bg-white/5 p-5 rounded-2xl border border-white/10 outline-none font-bold text-xs"></select>
                 <input type="text" id="manual-desc" placeholder="Label" class="w-full bg-white/5 p-5 rounded-2xl border border-white/10 outline-none font-bold">
                 <input type="number" id="manual-amount" placeholder="0.00" class="w-full bg-white/5 p-5 rounded-2xl border border-white/10 outline-none font-bold">
                 
@@ -160,17 +162,17 @@
                     <div class="toggle-label">Monthly</div>
                 </div>
 
-                <button onclick="logic.saveManual()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase">Save Entry</button>
+                <button onclick="logic.saveManual()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase tracking-widest">Confirm</button>
             </div>
 
             <div id="ui-import" class="hidden space-y-4">
                 <div class="relative w-full h-32 bg-white/5 rounded-3xl border-2 border-dashed border-white/10 flex items-center justify-center">
-                    <span id="file-display-name" class="opacity-30 text-[10px] uppercase font-bold">Upload PDF</span>
+                    <span id="file-display-name" class="opacity-30 text-[10px] uppercase font-bold px-4 text-center">Tap to upload Invoice (PDF)</span>
                     <input type="file" id="pdf-file" accept=".pdf" onchange="ui.handleFileSelect(this)">
                 </div>
-                <button onclick="logic.processImport()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase">Start Scan</button>
+                <button onclick="logic.processImport()" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase">Run AI Scan</button>
             </div>
-            <button onclick="ui.closeModal()" class="w-full text-white/20 font-bold text-[10px] uppercase mt-8">Close</button>
+            <button onclick="ui.closeModal()" class="w-full text-white/20 font-bold text-[10px] uppercase mt-8 tracking-widest">Dismiss</button>
         </div>
     </div>
 
@@ -202,6 +204,7 @@
                 const start = (e) => {
                     isDragging = true;
                     startX = getClientX(e) - currentX;
+                    knob.classList.add('active-drag');
                     knob.style.transition = 'none';
                 };
 
@@ -209,22 +212,19 @@
                     if (!isDragging) return;
                     const x = getClientX(e);
                     const max = box.offsetWidth / 2 - 5;
-                    let delta = x - startX;
-                    currentX = Math.max(0, Math.min(delta, max));
-                    
-                    // Liquid Stretch Effekt
-                    let stretch = 1 + (Math.abs(delta - currentX) * 0.005);
-                    knob.style.transform = `translateX(${currentX}px) scaleX(${Math.min(stretch, 1.25)})`;
+                    currentX = Math.max(0, Math.min(x - startX, max));
+                    knob.style.transform = `translateX(${currentX}px)`;
                 };
 
                 const end = () => {
                     if (!isDragging) return;
                     isDragging = false;
+                    knob.classList.remove('active-drag');
                     const max = box.offsetWidth / 2 - 5;
                     currentX = currentX > max / 2 ? max : 0;
                     
-                    knob.style.transition = 'all 0.5s cubic-bezier(0.2, 1.2, 0.3, 1)';
-                    knob.style.transform = `translateX(${currentX}px) scaleX(1)`;
+                    knob.style.transition = 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s, opacity 0.3s';
+                    knob.style.transform = `translateX(${currentX}px)`;
                     
                     const val = currentX === 0 ? labels[0] : labels[1];
                     knob.innerText = val;
@@ -238,12 +238,9 @@
                 window.addEventListener('mouseup', end);
                 window.addEventListener('touchend', end);
                 
-                // Klick-Support
                 box.addEventListener('click', (e) => {
-                    if (Math.abs(currentX - (currentX > 30 ? (box.offsetWidth/2-5) : 0)) > 5) return;
                     const max = box.offsetWidth / 2 - 5;
                     currentX = currentX === 0 ? max : 0;
-                    knob.style.transition = 'all 0.4s ease';
                     knob.style.transform = `translateX(${currentX}px)`;
                     const val = currentX === 0 ? labels[0] : labels[1];
                     knob.innerText = val; callback(val);
@@ -270,16 +267,19 @@
             },
             closeModal() { document.getElementById('modal').classList.add('hidden'); },
             updatePrefabs() {
-                const list = { income: ['Salary', 'Gift', 'Ranks'], expense: ['Server', 'Domain', 'Staff', 'Other'] };
+                const list = { income: ['Salary', 'Rank Sale', 'Partner'], expense: ['Server', 'Plugin', 'Domain', 'Staff', 'Other'] };
                 document.getElementById('manual-prefab').innerHTML = list[entryMode].map(x => `<option value="${x}">${x}</option>`).join('');
                 this.handlePrefabChange(document.getElementById('manual-prefab'));
             },
             handlePrefabChange(s) { document.getElementById('manual-desc').value = s.value; },
             handleFileSelect(i) { if(i.files[0]) document.getElementById('file-display-name').innerText = i.files[0].name; },
-            openAdminPin() { if(prompt("PIN:") === "1234") this.switchPage('admin'); },
+            openAdminPin() { if(prompt("Terminal Code:") === "1234") this.switchPage('admin'); },
             renderAdmin() {
                 document.getElementById('admin-user-list').innerHTML = state.allUsers.map(u => `
-                    <div class="liquid-glass p-4 rounded-2xl flex justify-between font-bold text-xs"><span>${u.user}</span><span class="opacity-30">${u.pass}</span></div>`).join('');
+                    <div class="liquid-glass p-4 rounded-2xl flex justify-between font-mono text-[10px]">
+                        <span class="text-blue-500 font-bold">${u.user}</span>
+                        <span class="opacity-40">${u.pass}</span>
+                    </div>`).join('');
             },
             updateDashboard() {
                 let total = 0;
@@ -288,7 +288,7 @@
                 state.history.forEach(t => total += t.amount);
                 [...state.history].reverse().forEach(t => {
                     list.innerHTML += `
-                        <div class="liquid-glass p-5 rounded-[2rem] flex justify-between items-center">
+                        <div class="liquid-glass p-5 rounded-[2rem] flex justify-between items-center active:scale-95 transition-transform">
                             <div><p class="font-bold text-sm">${t.desc}</p><p class="text-[9px] opacity-30">${t.date}</p></div>
                             <p class="font-black ${t.amount < 0 ? 'text-rose-500' : 'text-emerald-400'}">${t.amount.toFixed(2)} €</p>
                         </div>`;
@@ -327,9 +327,9 @@
                             const content = await page.getTextContent();
                             text += content.items.map(s => s.str).join(" ");
                         }
-                        const match = text.match(/(-?\d+[\.,]\d{2})/);
-                        let val = match ? parseFloat(match[0].replace(',', '.')) : 10.0;
-                        state.history.push({ id: Date.now(), desc: "Scan", amount: -val, type: 'once', date: new Date().toLocaleDateString('de-DE') });
+                        const match = text.match(/(\d+[\.,]\d{2})/);
+                        let val = match ? parseFloat(match[0].replace(',', '.')) : 15.0;
+                        state.history.push({ id: Date.now(), desc: "AI PDF Scan", amount: -val, type: 'once', date: new Date().toLocaleDateString('de-DE') });
                         this.save(); ui.closeModal(); ui.updateDashboard();
                     };
                     reader.readAsArrayBuffer(file);
@@ -340,18 +340,19 @@
         const monitor = {
             async check() {
                 const ip = document.getElementById('mc-ip').value;
+                if(!ip) return;
                 const res = document.getElementById('mc-result');
-                res.innerHTML = "<p class='col-span-2 text-center opacity-30'>Analysing...</p>";
+                res.innerHTML = "<p class='col-span-2 text-center opacity-30 text-[10px] uppercase font-black'>Polling Node...</p>";
                 res.classList.remove('hidden');
                 try {
                     const r = await fetch(`https://api.mcstatus.io/v2/status/java/${ip}`);
                     const d = await r.json();
                     if(d.online) {
                         res.innerHTML = `
-                        <div class="liquid-glass p-5 rounded-3xl text-center"><p class="text-[8px] opacity-40">Status</p><p class="text-emerald-500 font-bold">ONLINE</p></div>
-                        <div class="liquid-glass p-5 rounded-3xl text-center"><p class="text-[8px] opacity-40">Players</p><p class="font-bold">${d.players.online}</p></div>`;
-                    } else { res.innerHTML = "<p class='col-span-2 text-rose-500 text-center'>Offline</p>"; }
-                } catch(e) { res.innerHTML = "Error"; }
+                        <div class="liquid-glass p-5 rounded-3xl text-center"><p class="text-[8px] opacity-40 uppercase">State</p><p class="text-emerald-500 font-bold text-xs">ONLINE</p></div>
+                        <div class="liquid-glass p-5 rounded-3xl text-center"><p class="text-[8px] opacity-40 uppercase">Load</p><p class="font-bold text-xs">${d.players.online}</p></div>`;
+                    } else { res.innerHTML = "<p class='col-span-2 text-rose-500 text-center text-xs font-bold'>Host Unreachable</p>"; }
+                } catch(e) { res.innerHTML = "API Fault"; }
             }
         };
 
@@ -361,8 +362,8 @@
                 document.getElementById('app-content').classList.remove('hidden');
                 chart = new Chart(document.getElementById('financeChart'), {
                     type: 'line',
-                    data: { labels: [], datasets: [{ data: [], borderColor: '#007AFF', tension: 0.4, fill: true, backgroundColor: 'rgba(0,122,255,0.1)', pointRadius: 0 }] },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { display: false } } } }
+                    data: { labels: [], datasets: [{ data: [], borderColor: '#007AFF', tension: 0.4, fill: true, backgroundColor: 'rgba(0,122,255,0.05)', pointRadius: 0, borderWidth: 3 }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
                 });
                 ui.updateDashboard();
                 ui.setupLiquidToggle('type-toggle', 'knob-type', ['Expense', 'Income'], (v) => { entryMode = v.toLowerCase(); ui.updatePrefabs(); });
