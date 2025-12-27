@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vultrex | Ledger</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>tailwind.config = { darkMode: 'class' }</script>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen font-sans">
+
+    <div class="max-w-5xl mx-auto p-6 pb-24">
+        <header class="flex justify-between items-center mb-10">
+            <h1 class="text-xl font-black tracking-tighter uppercase italic text-blue-600">Vultrex</h1>
+            <div id="date-display" class="text-[10px] font-mono text-slate-400 uppercase tracking-widest"></div>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="bg-white dark:bg-slate-900 p-8 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm">
+                <p class="text-[10px] text-slate-400 uppercase font-black mb-1 tracking-widest">Total Balance</p>
+                <p id="balance" class="text-4xl font-black text-blue-600 tracking-tight">0.00 €</p>
+            </div>
+            <div class="bg-white dark:bg-slate-900 p-8 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm">
+                <p class="text-[10px] text-rose-500 uppercase font-black mb-1 tracking-widest">Monthly Costs</p>
+                <p id="monthly-stats" class="text-3xl font-black text-rose-500 tracking-tight">0.00 €</p>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 mb-8">
+            <canvas id="financeChart" height="120"></canvas>
+        </div>
+
+        <div class="flex flex-col md:flex-row gap-4 mb-10">
+            <button onclick="ui.open('manual')" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-6 rounded-3xl font-black text-sm uppercase tracking-widest shadow-xl transition-all active:scale-95">+ New Entry</button>
+            <button onclick="ui.open('import')" class="flex-1 bg-slate-900 dark:bg-white dark:text-slate-900 text-white py-6 rounded-3xl font-black text-sm uppercase tracking-widest shadow-xl transition-all italic">Smart Scan</button>
+        </div>
+
+        <div id="transaction-list" class="space-y-4"></div>
+    </div>
+
+    <div id="modal" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-md p-8 rounded-[3rem] shadow-2xl border border-slate-200 dark:border-slate-800">
+            <div id="ui-manual" class="hidden">
+                <h3 class="text-xl font-black mb-6 uppercase italic tracking-tighter">New Entry</h3>
+                <label class="text-[10px] font-black uppercase text-slate-400 ml-2">Category</label>
+                <select id="category-select" onchange="ui.toggleCustom('manual')" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl mb-4 outline-none border-2 border-transparent focus:border-blue-500 font-bold appearance-none cursor-pointer">
+                    <option value="Root Server">Root Server</option>
+                    <option value="vServer">vServer</option>
+                    <option value="Domain">Domain</option>
+                    <option value="Webspace">Webspace</option>
+                    <option value="Plugin">Plugin</option>
+                    <option value="Service">Service</option>
+                    <option value="Income">Server Income</option>
+                    <option value="CUSTOM">Custom Name...</option>
+                </select>
+                <div id="custom-name-box" class="hidden">
+                    <input type="text" id="custom-desc" placeholder="Description" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl mb-4 outline-none border-2 border-transparent focus:border-blue-500 font-bold">
+                </div>
+                <label class="text-[10px] font-black uppercase text-slate-400 ml-2">Amount (€)</label>
+                <input type="number" id="amount" placeholder="0.00" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl mb-4 outline-none border-2 border-transparent focus:border-blue-500 font-bold">
+                <label class="text-[10px] font-black uppercase text-slate-400 ml-2">Interval</label>
+                <select id="type-select" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl mb-8 font-bold outline-none cursor-pointer">
+                    <option value="once">One-time</option>
+                    <option value="monthly">Monthly Subscription</option>
+                </select>
+                <button onclick="logic.saveManual()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest transition-all active:scale-95">Add Entry</button>
+            </div>
+
+            <div id="ui-import" class="hidden text-center">
+                <h3 class="text-xl font-black mb-4 uppercase italic text-emerald-500">Scan Engine</h3>
+                <div class="mb-6 p-4 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl text-slate-400">
+                    <input type="file" id="pdf-file" accept=".pdf" class="text-xs block w-full cursor-pointer">
+                </div>
+                <textarea id="ai-input" class="w-full h-32 bg-slate-100 dark:bg-slate-800 p-4 rounded-xl mb-4 text-xs font-mono outline-none border-2 border-transparent focus:border-emerald-500" placeholder="Paste data here..."></textarea>
+                <button id="scan-btn" onclick="logic.processImport()" class="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest transition-all">Start Scan</button>
+            </div>
+
+            <div id="ui-scan-confirm" class="hidden">
+                <h3 class="text-xl font-black mb-4 uppercase italic text-emerald-500">Assign Category</h3>
+                <p id="scan-found-amount" class="text-3xl font-black mb-6 text-blue-600 text-center">0.00 €</p>
+                <select id="scan-cat-select" onchange="ui.toggleCustom('scan')" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl mb-4 outline-none border-2 border-transparent focus:border-emerald-500 font-bold appearance-none cursor-pointer">
+                    <option value="Root Server">Root Server</option>
+                    <option value="vServer">vServer</option>
+                    <option value="Domain">Domain</option>
+                    <option value="Webspace">Webspace</option>
+                    <option value="Plugin">Plugin</option>
+                    <option value="Service">Service</option>
+                    <option value="Income">Server Income</option>
+                    <option value="CUSTOM">Custom Name...</option>
+                </select>
+                <div id="scan-custom-box" class="hidden">
+                    <input type="text" id="scan-custom-desc" placeholder="Custom Name" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl mb-4 outline-none border-2 border-transparent focus:border-emerald-500 font-bold">
+                </div>
+                <button id="scan-confirm-btn" class="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest">Confirm & Next</button>
+            </div>
+
+            <button onclick="ui.close()" class="w-full text-slate-400 py-4 font-bold text-[10px] uppercase tracking-[0.3em] mt-2 text-center">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+
+        let state = { history: [] };
+        let chart = null;
+
+        const ui = {
+            open(type) {
+                document.getElementById('modal').classList.remove('hidden');
+                document.getElementById('ui-manual').classList.toggle('hidden', type !== 'manual');
+                document.getElementById('ui-import').classList.toggle('hidden', type !== 'import');
+                document.getElementById('ui-scan-confirm').classList.add('hidden');
+            },
+            close() { document.getElementById('modal').classList.add('hidden'); },
+            toggleCustom(mode) {
+                const selectId = mode === 'manual' ? 'category-select' : 'scan-cat-select';
+                const boxId = mode === 'manual' ? 'custom-name-box' : 'scan-custom-box';
+                document.getElementById(boxId).classList.toggle('hidden', document.getElementById(selectId).value !== 'CUSTOM');
+            },
+            update() {
+                let total = 0, monthlyExpenses = 0;
+                const list = document.getElementById('transaction-list');
+                list.innerHTML = '';
+
+                state.history.forEach(t => {
+                    total += t.amount;
+                    if(t.type === 'monthly' && t.amount < 0) {
+                        monthlyExpenses += t.amount;
+                    }
+                });
+
+                state.history.slice().reverse().forEach(t => {
+                    list.innerHTML += `
+                    <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 flex justify-between items-center shadow-sm">
+                        <div class="flex items-center gap-4">
+                            <div class="w-1.5 h-10 ${t.amount < 0 ? 'bg-rose-500' : 'bg-emerald-500'} rounded-full"></div>
+                            <div><p class="font-bold text-sm tracking-tight">${t.desc}</p><p class="text-[9px] uppercase font-black text-slate-500">${t.type === 'monthly' ? 'Monthly' : t.date}</p></div>
+                        </div>
+                        <div class="text-right"><p class="font-black ${t.amount < 0 ? 'text-rose-500' : 'text-emerald-500'}">${t.amount.toFixed(2)} €</p><button onclick="logic.delete(${t.id})" class="text-[8px] font-bold text-slate-300 hover:text-rose-500 uppercase">Delete</button></div>
+                    </div>`;
+                });
+
+                document.getElementById('balance').innerText = total.toFixed(2) + " €";
+                document.getElementById('monthly-stats').innerText = monthlyExpenses.toFixed(2) + " €";
+                
+                logic.save();
+                logic.updateChart();
+            }
+        };
+
+        const logic = {
+            saveManual() {
+                const cat = document.getElementById('category-select').value;
+                const custom = document.getElementById('custom-desc').value;
+                const desc = cat === 'CUSTOM' ? (custom || "Custom Item") : cat;
+                const amt = parseFloat(document.getElementById('amount').value);
+                const type = document.getElementById('type-select').value;
+                if(isNaN(amt)) return;
+                this.add(desc, (cat === 'Income' ? Math.abs(amt) : -Math.abs(amt)), type);
+                ui.close(); ui.update();
+                document.getElementById('custom-desc').value = ''; document.getElementById('amount').value = '';
+            },
+            add(desc, amount, type) {
+                state.history.push({ id: Date.now() + Math.random(), desc, amount, type, date: new Date().toLocaleDateString('en-GB', {day:'2-digit', month:'2-digit'}) });
+            },
+            delete(id) { state.history = state.history.filter(t => t.id !== id); ui.update(); },
+            save() { localStorage.setItem('vultrex_data', JSON.stringify(state)); },
+            async processImport() {
+                const file = document.getElementById('pdf-file').files[0];
+                const text = document.getElementById('ai-input').value;
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = async (e) => {
+                        const pdf = await pdfjsLib.getDocument({data: new Uint8Array(e.target.result)}).promise;
+                        let fullText = "";
+                        for (let i = 1; i <= pdf.numPages; i++) {
+                            const page = await pdf.getPage(i);
+                            const content = await page.getTextContent();
+                            fullText += content.items.map(item => item.str).join(" ");
+                        }
+                        this.startScanConfirmation(fullText);
+                    };
+                    reader.readAsArrayBuffer(file);
+                } else { this.startScanConfirmation(text); }
+            },
+            startScanConfirmation(text) {
+                const moneyRegex = /([-−–]?\s?\d+[\d.]*,\d{2}|(?<=\s)\d+[\d.]*,\d{2}\s?[-−–])/g;
+                const matches = text.match(moneyRegex);
+                if(!matches) return alert("No amounts detected.");
+                document.getElementById('ui-import').classList.add('hidden');
+                document.getElementById('ui-scan-confirm').classList.remove('hidden');
+                let index = 0;
+                const showNext = () => {
+                    if (index >= matches.length) { ui.close(); ui.update(); return; }
+                    let m = matches[index];
+                    let isNeg = m.includes('-') || m.includes('−') || m.includes('–');
+                    let val = parseFloat(m.replace(/[^\d,]/g, '').replace(',', '.'));
+                    if(isNeg) val = -Math.abs(val);
+                    document.getElementById('scan-found-amount').innerText = val.toFixed(2) + " €";
+                    document.getElementById('scan-confirm-btn').onclick = () => {
+                        const cat = document.getElementById('scan-cat-select').value;
+                        const desc = cat === 'CUSTOM' ? (document.getElementById('scan-custom-desc').value || "Scanned") : cat;
+                        this.add(desc, val, 'once'); index++;
+                        document.getElementById('scan-custom-desc').value = ''; showNext();
+                    };
+                };
+                showNext();
+            },
+            updateChart() {
+                if(!chart) return;
+                let cumulative = 0;
+                chart.data.labels = state.history.map(t => t.date);
+                chart.data.datasets[0].data = state.history.map(t => { cumulative += t.amount; return cumulative; });
+                chart.update();
+            }
+        };
+
+        window.onload = () => {
+            const s = localStorage.getItem('vultrex_data');
+            if(s) state = JSON.parse(s);
+            document.getElementById('date-display').innerText = new Date().toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short' });
+            const ctx = document.getElementById('financeChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: { labels: [], datasets: [{ data: [], borderColor: '#3b82f6', tension: 0.4, fill: true, backgroundColor: 'rgba(59, 130, 246, 0.03)', borderWidth: 3, pointRadius: 4, pointBackgroundColor: '#3b82f6' }] },
+                options: { 
+                    responsive: true, 
+                    plugins: { legend: { display: false } }, 
+                    scales: { 
+                        x: { grid: { display: false }, ticks: { font: { size: 9 }, color: '#94a3b8' } }, 
+                        y: { grid: { color: 'rgba(226, 232, 240, 0.05)' }, ticks: { font: { size: 9 }, color: '#94a3b8' } } 
+                    } 
+                }
+            });
+            ui.update();
+        };
+    </script>
+</body>
+</html>
