@@ -18,7 +18,7 @@
             --shadow: rgba(0, 0, 0, 0.8);
             --input-bg: rgba(150, 150, 150, 0.1);
             --icon-color: #fff;
-            --delete-red: linear-gradient(90deg, rgba(244, 63, 94, 0.6) 0%, rgba(225, 29, 72, 0.8) 100%);
+            --delete-red: linear-gradient(90deg, #e11d48 0%, #fb7185 100%);
         }
 
         .light-mode {
@@ -109,13 +109,11 @@
         #pdf-file { opacity: 0; position: absolute; inset: 0; cursor: pointer; }
         #sidebar-btn { color: var(--icon-color); }
 
-        /* Profil Menü Animation */
         #profile-menu {
             transform-origin: top right;
             transition: all 0.2s ease-out;
         }
 
-        /* Achievement Animation */
         #achievement-toast {
             transform: translate(-50%, 150px);
             transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
@@ -124,18 +122,28 @@
             transform: translate(-50%, 0);
         }
 
-        /* Swipe Delete Styles */
+        /* Swipe Delete Styles FIXED */
         .transaction-wrapper {
             position: relative;
             overflow: hidden;
             border-radius: 2.5rem;
-            background: var(--delete-red);
+            background: transparent; /* Standardmäßig transparent */
             margin-bottom: 1rem;
+        }
+
+        .delete-background {
+            position: absolute;
+            inset: 0;
+            background: var(--delete-red);
+            border-radius: 2.5rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 0;
         }
 
         .delete-indicator {
             position: absolute;
-            left: 25px;
+            left: 25px; /* Icon erscheint links beim Swipe nach rechts */
             top: 50%;
             transform: translateY(-50%);
             color: white;
@@ -289,10 +297,8 @@
     </div>
 
     <script>
-        // PDF.js Konfiguration
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-        // State Management
         let state = JSON.parse(localStorage.getItem('v_data')) || { 
             history: [], 
             auth: null, 
@@ -305,7 +311,6 @@
         let touchStartX = 0;
         let currentSwipeElem = null;
 
-        // AUTH LOGIC
         const auth = {
             login() {
                 const u = document.getElementById('login-user').value;
@@ -326,7 +331,6 @@
             }
         };
 
-        // UI CONTROLS
         const ui = {
             setupLiquidToggle(boxId, knobId, labels, callback, initialVal) {
                 const box = document.getElementById(boxId);
@@ -464,6 +468,11 @@
                 touchStartX = e.touches[0].clientX;
                 currentSwipeElem = e.currentTarget;
                 currentSwipeElem.style.transition = 'none';
+                
+                // Hintergrund & Icon vorbereiten
+                const wrapper = currentSwipeElem.parentElement;
+                wrapper.querySelector('.delete-background').style.opacity = '1';
+                wrapper.querySelector('.delete-indicator').style.opacity = '0';
             },
 
             handleSwipeMove(e) {
@@ -471,12 +480,16 @@
                 const touchX = e.touches[0].clientX;
                 const diff = touchX - touchStartX;
                 
+                // Nur nach RECHTS wischen (diff > 0)
                 if (diff > 0) {
                     const move = Math.min(diff, 150);
                     currentSwipeElem.style.transform = `translateX(${move}px)`;
                     
                     const indicator = currentSwipeElem.parentElement.querySelector('.delete-indicator');
-                    if(indicator) indicator.style.opacity = move > 40 ? (move / 120) : 0;
+                    if(indicator) {
+                        indicator.style.opacity = move > 40 ? (move / 120) : 0;
+                        indicator.style.transform = `translateY(-50%) scale(${Math.min(1.2, move/100)})`;
+                    }
                 }
             },
 
@@ -484,6 +497,7 @@
                 if (!currentSwipeElem) return;
                 const diff = e.changedTouches[0].clientX - touchStartX;
                 const threshold = 120;
+                const wrapper = currentSwipeElem.parentElement;
                 
                 currentSwipeElem.style.transition = 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
                 
@@ -495,8 +509,8 @@
                     }, 300);
                 } else {
                     currentSwipeElem.style.transform = `translateX(0px)`;
-                    const indicator = currentSwipeElem.parentElement.querySelector('.delete-indicator');
-                    if(indicator) indicator.style.opacity = 0;
+                    wrapper.querySelector('.delete-background').style.opacity = '0';
+                    wrapper.querySelector('.delete-indicator').style.opacity = '0';
                 }
                 currentSwipeElem = null;
             },
@@ -512,6 +526,7 @@
                     const wrapper = document.createElement('div');
                     wrapper.className = 'transaction-wrapper';
                     wrapper.innerHTML = `
+                        <div class="delete-background"></div>
                         <div class="delete-indicator">🗑️</div>
                         <div class="transaction-card crystal-glass p-6 rounded-[2.5rem] flex justify-between items-center" 
                              data-id="${t.id}"
@@ -577,14 +592,11 @@
             }
         };
 
-        // DATA LOGIC
         const logic = {
             saveManual() {
                 let amt = parseFloat(document.getElementById('manual-amount').value);
                 if(isNaN(amt)) return;
-                
                 amt = (entryMode === 'Expense') ? -Math.abs(amt) : Math.abs(amt);
-                
                 state.history.push({ 
                     id: Date.now(), 
                     desc: document.getElementById('manual-desc').value || "Unnamed", 
@@ -592,27 +604,20 @@
                     type: freqMode, 
                     date: new Date().toLocaleDateString('de-DE') 
                 });
-                
                 this.save();
                 ui.closeModal();
                 ui.updateDashboard();
                 document.getElementById('manual-amount').value = "";
             },
-            
-            save() {
-                localStorage.setItem('v_data', JSON.stringify(state));
-            },
-
+            save() { localStorage.setItem('v_data', JSON.stringify(state)); },
             deleteEntry(id) {
                 state.history = state.history.filter(t => t.id != id);
                 this.save();
                 ui.updateDashboard();
             },
-
             async processImport() {
                 const f = document.getElementById('pdf-file').files[0];
                 if(!f) return;
-                
                 const reader = new FileReader();
                 reader.onload = async (e) => {
                     try {
@@ -620,10 +625,8 @@
                         const page = await pdf.getPage(1);
                         const content = await page.getTextContent();
                         const text = content.items.map(s => s.str).join(" ");
-                        
                         const match = text.match(/(\d+[\.,]\d{2})/);
                         let v = match ? parseFloat(match[0].replace(',', '.')) : 10.0;
-                        
                         state.history.push({ 
                             id: Date.now(), 
                             desc: "Scan: " + f.name, 
@@ -631,26 +634,21 @@
                             type: 'Once', 
                             date: new Date().toLocaleDateString('de-DE') 
                         });
-                        
                         this.save();
                         ui.closeModal();
                         ui.updateDashboard();
-                    } catch(err) {
-                        alert("AI Scan failed. Please check PDF format.");
-                    }
+                    } catch(err) { alert("AI Scan failed."); }
                 };
                 reader.readAsArrayBuffer(f);
             }
         };
 
-        // NODE MONITOR LOGIC
         const monitor = {
             async check() {
                 const ip = document.getElementById('mc-ip').value;
                 const res = document.getElementById('mc-result');
                 res.innerHTML = "<p class='col-span-2 text-center opacity-30 text-[10px] font-black tracking-widest'>Polling API...</p>";
                 res.classList.remove('hidden');
-                
                 try {
                     const r = await fetch(`https://api.mcstatus.io/v2/status/java/${ip}`);
                     const d = await r.json();
@@ -667,63 +665,30 @@
                     } else {
                         res.innerHTML = "<p class='col-span-2 text-rose-500 text-center font-bold uppercase'>Node Offline</p>";
                     }
-                } catch(e) {
-                    res.innerHTML = "<p class='col-span-2 text-center text-xs opacity-50'>API Error</p>";
-                }
+                } catch(e) { res.innerHTML = "<p class='col-span-2 text-center text-xs opacity-50'>API Error</p>"; }
             }
         };
 
-        // APP INIT
         window.onload = () => {
             if(state.auth) {
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('app-content').classList.remove('hidden');
-                
                 chart = new Chart(document.getElementById('financeChart'), {
                     type: 'line',
-                    data: {
-                        labels: [],
-                        datasets: [{
-                            data: [],
-                            tension: 0.4,
-                            fill: true,
-                            pointRadius: 4,
-                            borderWidth: 3
-                        }]
-                    },
+                    data: { labels: [], datasets: [{ data: [], tension: 0.4, fill: true, pointRadius: 4, borderWidth: 3 }] },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: { legend: { display: false } },
                         scales: {
-                            x: {
-                                display: true,
-                                grid: { display: false },
-                                ticks: { color: 'rgba(150,150,150,0.3)', font: { size: 10 } }
-                            },
-                            y: {
-                                display: true,
-                                grid: { color: 'rgba(150,150,150,0.05)' },
-                                ticks: { 
-                                    color: 'rgba(150,150,150,0.3)', 
-                                    font: { size: 10 },
-                                    callback: v => v + '€'
-                                }
-                            }
+                            x: { display: true, grid: { display: false }, ticks: { color: 'rgba(150,150,150,0.3)', font: { size: 10 } } },
+                            y: { display: true, grid: { color: 'rgba(150,150,150,0.05)' }, ticks: { color: 'rgba(150,150,150,0.3)', font: { size: 10 }, callback: v => v + '€' } }
                         }
                     }
                 });
-                
                 ui.updateDashboard();
                 ui.applyTheme(state.theme || 'dark');
-                
-                ui.setupLiquidToggle(
-                    'theme-toggle', 
-                    'knob-theme', 
-                    ['Dark', 'Light'], 
-                    (v) => ui.applyTheme(v.toLowerCase()), 
-                    state.theme === 'light' ? 'Light' : 'Dark'
-                );
+                ui.setupLiquidToggle('theme-toggle', 'knob-theme', ['Dark', 'Light'], (v) => ui.applyTheme(v.toLowerCase()), state.theme === 'light' ? 'Light' : 'Dark');
             }
         };
     </script>
