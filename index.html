@@ -315,26 +315,8 @@
 
             updatePrefabs() {
                 const list = { 
-                    Expense: [
-                        'Server Cost', 
-                        'Plugins/Mods', 
-                        'Staff Payment', 
-                        'Marketing/Ads', 
-                        'Domain/Web', 
-                        'Hardware/Upgrade', 
-                        'Sponsorships', 
-                        'Others (Custom)'
-                    ], 
-                    Income: [
-                        'Ranks', 
-                        'Donations', 
-                        'Coins', 
-                        'Partnerships', 
-                        'Investors', 
-                        'Merchandise', 
-                        'Ad Revenue', 
-                        'Others (Custom)'
-                    ] 
+                    Expense: ['Server Cost', 'Plugins/Mods', 'Staff Payment', 'Marketing/Ads', 'Domain/Web', 'Hardware/Upgrade', 'Sponsorships', 'Others (Custom)'], 
+                    Income: ['Ranks', 'Donations', 'Coins', 'Partnerships', 'Investors', 'Merchandise', 'Ad Revenue', 'Others (Custom)'] 
                 };
                 const select = document.getElementById('manual-prefab');
                 select.innerHTML = list[entryMode].map(x => `<option value="${x}">${x}</option>`).join('');
@@ -344,12 +326,8 @@
             handlePrefabChange(s) {
                 const descInput = document.getElementById('manual-desc');
                 if(s.value.includes('Others')) {
-                    descInput.value = "";
-                    descInput.placeholder = "Enter custom label...";
-                    descInput.focus();
-                } else {
-                    descInput.value = s.value;
-                }
+                    descInput.value = ""; descInput.placeholder = "Enter custom label..."; descInput.focus();
+                } else { descInput.value = s.value; }
             },
 
             handleFileSelect(i) { if(i.files[0]) document.getElementById('file-display-name').innerText = i.files[0].name; },
@@ -374,8 +352,18 @@
                 if(!chart) return;
                 const sorted = [...state.history].sort((a,b) => a.id - b.id);
                 let run = 0;
+                const dataPoints = sorted.map(t => { run += t.amount; return run; });
+                
+                // Dynamische Farbwahl basierend auf dem aktuellen Stand
+                const currentBalance = dataPoints.length > 0 ? dataPoints[dataPoints.length - 1] : 0;
+                const color = currentBalance < 0 ? '#f43f5e' : '#10b981'; // Rose-500 vs Emerald-500
+                const bgGradient = currentBalance < 0 ? 'rgba(244, 63, 94, 0.1)' : 'rgba(16, 185, 129, 0.1)';
+
                 chart.data.labels = sorted.map(t => t.date);
-                chart.data.datasets[0].data = sorted.map(t => { run += t.amount; return run; });
+                chart.data.datasets[0].data = dataPoints;
+                chart.data.datasets[0].borderColor = color;
+                chart.data.datasets[0].pointBackgroundColor = color;
+                chart.data.datasets[0].backgroundColor = bgGradient;
                 chart.update();
             }
         };
@@ -433,7 +421,7 @@
                 document.getElementById('app-content').classList.remove('hidden');
                 chart = new Chart(document.getElementById('financeChart'), {
                     type: 'line',
-                    data: { labels: [], datasets: [{ data: [], borderColor: '#007AFF', tension: 0.4, fill: true, backgroundColor: 'rgba(0,122,255,0.05)', pointRadius: 4, pointBackgroundColor: '#007AFF', borderWidth: 3 }] },
+                    data: { labels: [], datasets: [{ data: [], borderColor: '#10b981', tension: 0.4, fill: true, backgroundColor: 'rgba(16,185,129,0.05)', pointRadius: 4, pointBackgroundColor: '#10b981', borderWidth: 3 }] },
                     options: { 
                         responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, 
                         scales: { 
