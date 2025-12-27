@@ -36,19 +36,26 @@
             animation: scan-progress 2s ease-in-out infinite;
         }
 
-        input[type="file"]::file-selector-button {
-            display: none;
+        /* Versteckt den Standard-Button, lässt das Feld aber anklickbar */
+        #pdf-file {
+            opacity: 0;
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            z-index: 10;
         }
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen font-sans overflow-x-hidden">
 
     <div id="login-screen" class="fixed inset-0 z-[100] bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-6">
-        <div class="w-full max-w-sm text-center">
+        <div class="w-full max-sm text-center">
             <h1 class="text-5xl font-black text-blue-600 mb-12 italic tracking-tighter">Vultrex</h1>
             <div class="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-slate-800">
                 <input type="text" id="login-user" placeholder="Username" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl mb-4 outline-none border-2 border-transparent focus:border-blue-500 font-bold">
-                <input type="password" id="login-pass" placeholder="Password (min. 7 chars)" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl mb-6 outline-none border-2 border-transparent focus:border-blue-500 font-bold">
+                <input type="password" id="login-pass" placeholder="Password" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl mb-6 outline-none border-2 border-transparent focus:border-blue-500 font-bold">
                 <button onclick="auth.login()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest active:scale-95 transition-all">Unlock</button>
                 <p id="login-error" class="text-rose-500 text-[10px] mt-4 font-bold uppercase hidden"></p>
             </div>
@@ -115,9 +122,9 @@
         <div class="bg-white dark:bg-slate-900 w-full max-w-md p-8 rounded-[3rem] shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
             <div id="ui-import" class="hidden text-center">
                 <h3 class="text-xl font-black mb-6 uppercase italic text-blue-600">Smart Scan</h3>
-                <div class="relative w-full mb-6">
-                    <input type="file" id="pdf-file" accept=".pdf" class="w-full h-14 bg-slate-100 dark:bg-slate-800 rounded-2xl p-4 text-xs font-bold text-slate-500 cursor-pointer">
-                    <p class="mt-2 text-[10px] text-slate-400 font-bold uppercase">Tap above to select PDF</p>
+                <div class="relative w-full h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mb-6 overflow-hidden border-2 border-transparent focus-within:border-blue-500">
+                    <span id="file-display-name" class="text-xs font-bold text-slate-500 uppercase px-4 truncate">Tap to select PDF</span>
+                    <input type="file" id="pdf-file" accept=".pdf" onchange="ui.handleFileSelect(this)">
                 </div>
                 <textarea id="ai-input" class="w-full h-32 bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl text-xs mb-4 outline-none font-mono" placeholder="Paste raw invoice text here..."></textarea>
                 <div id="scan-loading" class="hidden w-full mb-6">
@@ -164,6 +171,18 @@
         };
 
         const ui = {
+            handleFileSelect(input) {
+                const nameLabel = document.getElementById('file-display-name');
+                if (input.files && input.files[0]) {
+                    nameLabel.innerText = input.files[0].name;
+                    nameLabel.classList.remove('text-slate-500');
+                    nameLabel.classList.add('text-blue-500');
+                } else {
+                    nameLabel.innerText = "Tap to select PDF";
+                    nameLabel.classList.add('text-slate-500');
+                    nameLabel.classList.remove('text-blue-500');
+                }
+            },
             toggleSidebar() {
                 const sb = document.getElementById('sidebar');
                 const ov = document.getElementById('sidebar-overlay');
@@ -186,6 +205,9 @@
                 document.getElementById('modal').classList.remove('hidden');
                 document.getElementById('ui-manual').classList.toggle('hidden', type !== 'manual');
                 document.getElementById('ui-import').classList.toggle('hidden', type !== 'import');
+                // Reset File Display
+                document.getElementById('file-display-name').innerText = "Tap to select PDF";
+                document.getElementById('file-display-name').classList.add('text-slate-500');
             },
             closeModal() { document.getElementById('modal').classList.add('hidden'); },
             openAdminPin() {
@@ -333,4 +355,3 @@
     </script>
 </body>
 </html>
-
