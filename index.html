@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vultrex OS v15.3 - Full & Fixed</title>
+    <title>Vultrex OS v15.4 - Final Logic Fix</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -29,7 +29,6 @@
         html, body { overscroll-behavior: none; background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; overflow: hidden; height: 100vh; margin: 0; transition: background 0.5s ease; user-select: none; }
         .crystal-glass { background: var(--glass); backdrop-filter: blur(50px) saturate(190%); border: 1px solid var(--glass-border); }
 
-        /* --- DRAGGABLE ELEMENTS --- */
         .toggle-container, .lang-container {
             position: relative; width: 100%; height: 60px;
             background: var(--input-fill); border-radius: 1.5rem;
@@ -50,7 +49,6 @@
         .active-label, .active-lang { opacity: 1; transform: scale(1.1); }
         .lang-label { font-size: 18px; }
 
-        /* --- TRANSACTION LIST & SWIPE --- */
         .transaction-wrapper { position: relative; border-radius: 2rem; margin-bottom: 0.75rem; overflow: hidden; touch-action: pan-y; }
         .delete-bg { position: absolute; inset: 0; background: var(--delete-red); display: flex; align-items: center; justify-content: flex-end; padding-right: 25px; opacity: 0; }
         .transaction-card { position: relative; z-index: 5; background: var(--glass); transition: transform 0.4s cubic-bezier(0.1, 0.9, 0.2, 1); }
@@ -86,14 +84,11 @@
                 <p class="text-[10px] opacity-40 uppercase font-black tracking-widest mb-1" data-t="total_assets">Total Assets</p>
                 <h3 id="balance-display" class="text-5xl font-bold tracking-tighter italic">0.00 €</h3>
             </div>
-            
             <div class="crystal-glass p-6 rounded-[2.5rem] h-64"><canvas id="main-chart"></canvas></div>
-
             <div class="grid grid-cols-2 gap-4">
-                <button onclick="ui.openModal('manual')" class="crystal-glass py-7 rounded-[2rem] font-black uppercase text-[10px] tracking-widest" data-t="btn_new">New Entry</button>
-                <button onclick="ui.openModal('import')" class="bg-blue-600 text-white py-7 rounded-[2rem] font-black uppercase text-[10px] tracking-widest shadow-lg" data-t="btn_scan">AI Scan</button>
+                <button onclick="ui.openModal('manual')" class="crystal-glass py-7 rounded-[2rem] font-black uppercase text-[10px]" data-t="btn_new">New Entry</button>
+                <button onclick="ui.openModal('import')" class="bg-blue-600 text-white py-7 rounded-[2rem] font-black uppercase text-[10px]" data-t="btn_scan">AI Scan</button>
             </div>
-
             <div id="transaction-list" class="space-y-3"></div>
         </div>
 
@@ -129,7 +124,6 @@
     <div id="modal-box" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xl z-[1100] flex items-center justify-center p-6">
         <div class="crystal-glass w-full max-w-sm p-8 rounded-[3.5rem] relative">
             <button onclick="ui.closeModal()" class="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-xl bg-black/10 font-bold">✕</button>
-            
             <div id="ui-manual" class="space-y-5 pt-6">
                 <div class="toggle-container" id="type-toggle" data-idx="0" data-keys='["expense","income"]'>
                     <div class="toggle-knob" style="width: calc(50% - 6px)"></div>
@@ -143,7 +137,6 @@
                 <input type="number" id="entry-amount" placeholder="0.00" class="w-full p-5 rounded-2xl font-bold text-center text-4xl bg-white/5 border border-white/10">
                 <button onclick="logic.addEntry()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] text-white shadow-lg" data-t="btn_commit">Commit</button>
             </div>
-
             <div id="ui-import" class="hidden space-y-6 text-center pt-6">
                 <div class="w-full h-40 bg-white/5 rounded-[2rem] border-2 border-dashed border-white/10 flex items-center justify-center relative">
                     <span id="file-label" class="opacity-30 text-[9px] font-black uppercase">PDF</span>
@@ -163,6 +156,7 @@
 
         let state = JSON.parse(localStorage.getItem('v_v15_final')) || { history: [], theme: 'dark', lang: 0 };
         let mainChart = null;
+        let activeDraggables = {};
 
         const ui = {
             toggleSidebar() {
@@ -242,6 +236,7 @@
                 state.history.push({ id: Date.now(), amount: typeIdx === 0 ? -amount : amount, cat: document.getElementById('entry-category').value, date: new Date().toLocaleDateString() });
                 localStorage.setItem('v_v15_final', JSON.stringify(state));
                 ui.renderDashboard(); ui.closeModal();
+                document.getElementById('entry-amount').value = '';
             },
             async scanPDF() {
                 const file = document.getElementById('pdf-in').files[0];
@@ -298,23 +293,28 @@
             }
         };
 
-        function createDraggable(containerId, isThreeWay) {
+        function initDraggable(containerId, isThreeWay) {
             const container = document.getElementById(containerId);
             const knob = container.querySelector('.toggle-knob, .lang-knob');
             const labels = container.querySelectorAll('.toggle-label, .lang-label');
             let isDragging = false, startX = 0, currentX = 0;
 
-            const update = (idx) => {
+            const update = (idx, silent = false) => {
                 const maxX = container.offsetWidth - knob.offsetWidth - 8;
                 currentX = (idx * (maxX / (isThreeWay ? 2 : 1)));
                 knob.style.transform = `translateX(${currentX}px)`;
-                if(isThreeWay) { state.lang = idx; ui.updateAllTexts(); } 
-                else {
+                
+                if(isThreeWay) {
+                    state.lang = idx;
+                    ui.updateAllTexts();
+                } else {
                     container.dataset.idx = idx;
                     const keys = JSON.parse(container.dataset.keys);
                     knob.innerText = i18n[state.lang][keys[idx]];
-                    if(container.id === 'theme-toggle') ui.applyTheme(keys[idx]);
-                    if(container.id === 'type-toggle') logic.updateCategoryDropdown();
+                    if(!silent) {
+                        if(container.id === 'theme-toggle') ui.applyTheme(keys[idx]);
+                        if(container.id === 'type-toggle') logic.updateCategoryDropdown();
+                    }
                 }
                 labels.forEach((l, i) => l.classList.toggle(isThreeWay ? 'active-lang' : 'active-label', i === idx));
                 localStorage.setItem('v_v15_final', JSON.stringify(state));
@@ -332,9 +332,10 @@
             });
             container.onclick = (e) => { if(e.target !== knob) { const i = parseInt(container.dataset.idx || state.lang); update(i === (isThreeWay ? 2 : 1) ? 0 : i + 1); }};
             
-            if(isThreeWay) update(state.lang);
-            else if(containerId === 'theme-toggle') update(state.theme === 'light' ? 1 : 0);
-            else update(0);
+            // Setze initiale Position ohne globale Effekte zu triggern
+            if(isThreeWay) update(state.lang, true);
+            else if(containerId === 'theme-toggle') update(state.theme === 'light' ? 1 : 0, true);
+            else update(0, true);
         }
 
         window.onload = () => {
@@ -342,10 +343,18 @@
                 type: 'line', data: { labels: [], datasets: [{ data: [], borderColor: '#007AFF', tension: 0.4, fill: true, backgroundColor: 'rgba(0,122,255,0.05)', pointRadius: 0, borderWidth: 3 }] },
                 options: { responsive: true, maintainAspectRatio: false, scales: { x: { display: false }, y: { display: false } }, plugins: { legend: { display: false } } }
             });
-            ui.renderDashboard(); ui.updateAllTexts();
-            createDraggable('lang-toggle', true); createDraggable('theme-toggle', false);
-            createDraggable('type-toggle', false); createDraggable('interval-toggle', false);
+            
+            // Erst Draggables initialisieren, dann Texte drüberlegen
+            initDraggable('lang-toggle', true); 
+            initDraggable('theme-toggle', false);
+            initDraggable('type-toggle', false); 
+            initDraggable('interval-toggle', false);
+            
+            ui.renderDashboard(); 
+            ui.updateAllTexts();
+            ui.applyTheme(state.theme);
         };
     </script>
 </body>
 </html>
+
