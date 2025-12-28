@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vultrex OS v15.7 - Adaptive Glow</title>
+    <title>Vultrex OS v15.8 - Glow Fix</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -17,56 +17,55 @@
             --input-fill: rgba(255, 255, 255, 0.05);
             --delete-red: #ff3b30;
             --knob-gradient: linear-gradient(160deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%);
-            --glow-color: rgba(255, 255, 255, 0.2); /* Weiß für Dark Mode */
         }
         .light-mode {
             --bg: #F2F2F7; --text: #1C1C1E;
             --glass: rgba(255, 255, 255, 0.85);
             --glass-border: rgba(0, 0, 0, 0.08);
             --input-fill: rgba(0, 0, 0, 0.05);
-            --glow-color: rgba(0, 122, 255, 0.25); /* Hellblau für Light Mode */
         }
 
         * { -webkit-tap-highlight-color: transparent; outline: none; }
         html, body { overscroll-behavior: none; background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; overflow: hidden; height: 100vh; margin: 0; transition: background 0.5s ease; user-select: none; }
         .crystal-glass { background: var(--glass); backdrop-filter: blur(50px) saturate(190%); border: 1px solid var(--glass-border); }
 
-        /* --- ENHANCED GLOW ANIMATION --- */
+        /* --- STABILER GLOW EFFEKT --- */
         .click-glow {
-            position: fixed; pointer-events: none;
-            width: 250px; height: 250px; /* Größerer Bereich */
-            background: radial-gradient(circle, var(--glow-color) 0%, rgba(255,255,255,0) 75%);
-            border-radius: 50%; z-index: 2000;
+            position: fixed;
+            pointer-events: none;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            z-index: 1; /* Hinter dem Content, vor dem BG */
             transform: translate(-50%, -50%) scale(0);
-            animation: glow-pulse 0.7s cubic-bezier(0.1, 0.4, 0.2, 1) forwards;
+            animation: glow-pulse 0.8s ease-out forwards;
         }
         @keyframes glow-pulse {
-            0% { transform: translate(-50%, -50%) scale(0.1); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(1.2); opacity: 0; }
+            0% { transform: translate(-50%, -50%) scale(0.1); opacity: 0.8; }
+            100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
         }
 
-        /* --- UI COMPONENTS --- */
+        /* Restliche UI Komponenten */
         .toggle-container, .lang-container {
             position: relative; width: 100%; height: 60px;
             background: var(--input-fill); border-radius: 1.5rem;
             padding: 4px; display: flex; align-items: center;
-            border: 1px solid var(--glass-border); touch-action: none;
+            border: 1px solid var(--glass-border); touch-action: none; z-index: 10;
         }
         .toggle-knob, .lang-knob {
             position: absolute; left: 4px; height: 50px;
             background: var(--knob-gradient), var(--accent);
             border-radius: 1.2rem; display: flex; align-items: center;
-            justify-content: center; z-index: 10; cursor: pointer;
+            justify-content: center; z-index: 20; cursor: pointer;
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             color: white !important; font-size: 10px; font-weight: 900; text-transform: uppercase;
         }
-        .toggle-knob.dragging, .lang-knob.dragging { transition: none; }
         .toggle-label, .lang-label { flex: 1; text-align: center; font-size: 10px; font-weight: 800; text-transform: uppercase; opacity: 0.2; transition: 0.3s; z-index: 5; pointer-events: none; }
         .active-label, .active-lang { opacity: 1; transform: scale(1.1); }
         .lang-label { font-size: 18px; }
 
-        .transaction-wrapper { position: relative; border-radius: 2rem; margin-bottom: 0.75rem; overflow: hidden; touch-action: pan-y; }
+        .transaction-wrapper { position: relative; border-radius: 2rem; margin-bottom: 0.75rem; overflow: hidden; touch-action: pan-y; z-index: 10; }
         .delete-bg { position: absolute; inset: 0; background: var(--delete-red); display: flex; align-items: center; justify-content: flex-end; padding-right: 25px; opacity: 0; }
         .transaction-card { position: relative; z-index: 5; background: var(--glass); transition: transform 0.4s cubic-bezier(0.1, 0.9, 0.2, 1); }
 
@@ -76,7 +75,7 @@
         select, input { outline: none; background: transparent; }
     </style>
 </head>
-<body onclick="ui.createGlow(event)">
+<body onmousedown="ui.createGlow(event)">
 
     <div id="sidebar" class="fixed inset-y-0 left-0 w-72 crystal-glass z-[950] -translate-x-full transition-transform duration-500 rounded-r-[2.5rem]">
         <div class="p-10 flex flex-col h-full">
@@ -91,7 +90,7 @@
     <div id="sidebar-overlay" onclick="ui.toggleSidebar()" class="fixed inset-0 bg-black/30 backdrop-blur-sm z-[900] hidden"></div>
 
     <div id="app-content" class="p-6 max-w-lg mx-auto h-screen overflow-y-auto no-scrollbar pb-32">
-        <header class="flex justify-between items-center mb-10 pt-4">
+        <header class="flex justify-between items-center mb-10 pt-4 relative z-20">
             <button onclick="ui.toggleSidebar()" class="w-12 h-12 crystal-glass rounded-2xl flex items-center justify-center text-xl">≡</button>
             <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center font-black text-white shadow-lg">V</div>
         </header>
@@ -176,14 +175,20 @@
 
         const ui = {
             createGlow(e) {
+                // Glow nur, wenn nicht auf interaktive Elemente geklickt wurde
                 if (e.target.closest('button, input, select, .toggle-container, .lang-container')) return;
                 
                 const glow = document.createElement('div');
                 glow.className = 'click-glow';
+                
+                // Farbe basierend auf aktuellem Theme festlegen
+                const color = state.theme === 'light' ? 'rgba(0, 122, 255, 0.4)' : 'rgba(255, 255, 255, 0.3)';
+                glow.style.background = `radial-gradient(circle, ${color} 0%, rgba(255,255,255,0) 70%)`;
+                
                 glow.style.left = e.clientX + 'px';
                 glow.style.top = e.clientY + 'px';
                 document.body.appendChild(glow);
-                setTimeout(() => glow.remove(), 700);
+                setTimeout(() => glow.remove(), 800);
             },
             toggleSidebar() {
                 const sb = document.getElementById('sidebar');
@@ -321,6 +326,7 @@
 
         function initDraggable(containerId, isThreeWay) {
             const container = document.getElementById(containerId);
+            if (!container) return;
             const knob = container.querySelector('.toggle-knob, .lang-knob');
             const labels = container.querySelectorAll('.toggle-label, .lang-label');
             const flags = ["🇩🇪", "🇺🇸", "🇫🇷"];
