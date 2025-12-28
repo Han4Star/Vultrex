@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vultrex OS v16.1 - Precision Glow Edition</title>
+    <title>Vultrex OS v16.2 - Balanced Glow</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -29,7 +29,7 @@
         html, body { overscroll-behavior: none; background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; overflow: hidden; height: 100vh; margin: 0; transition: background 0.5s ease; user-select: none; }
         .crystal-glass { background: var(--glass); backdrop-filter: blur(50px) saturate(190%); border: 1px solid var(--glass-border); }
 
-        /* --- FINAL ADAPTIVE GLOW --- */
+        /* --- REVISED ADAPTIVE GLOW --- */
         .click-glow {
             position: fixed;
             pointer-events: none;
@@ -38,29 +38,29 @@
             transform: translate(-50%, -50%) scale(0);
         }
 
-        /* Dark Mode: Sehr hell und massiv */
+        /* Dark Mode: Jetzt kompakter/kleiner */
         .glow-dark {
-            width: 700px; 
-            height: 700px;
-            animation: glow-pulse-dark 1.1s cubic-bezier(0.1, 0.6, 0.2, 1) forwards;
+            width: 400px; 
+            height: 400px;
+            animation: glow-pulse-dark 0.8s cubic-bezier(0.1, 0.7, 0.3, 1) forwards;
         }
         @keyframes glow-pulse-dark {
-            0% { transform: translate(-50%, -50%) scale(0.02); opacity: 0.95; }
-            100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; }
+            0% { transform: translate(-50%, -50%) scale(0.1); opacity: 0.8; }
+            100% { transform: translate(-50%, -50%) scale(1.2); opacity: 0; }
         }
 
-        /* Light Mode: Klein und präzise */
+        /* Light Mode: Jetzt deutlich heller */
         .glow-light {
-            width: 180px; 
-            height: 180px;
-            animation: glow-pulse-light 0.5s ease-out forwards;
+            width: 250px; 
+            height: 250px;
+            animation: glow-pulse-light 0.6s ease-out forwards;
         }
         @keyframes glow-pulse-light {
-            0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0.5; }
-            100% { transform: translate(-50%, -50%) scale(1.1); opacity: 0; }
+            0% { transform: translate(-50%, -50%) scale(0.2); opacity: 0.85; }
+            100% { transform: translate(-50%, -50%) scale(1.3); opacity: 0; }
         }
 
-        /* UI Komponenten Styling */
+        /* UI Komponenten */
         .toggle-container, .lang-container {
             position: relative; width: 100%; height: 60px;
             background: var(--input-fill); border-radius: 1.5rem;
@@ -115,9 +115,7 @@
                 <p class="text-[10px] opacity-40 uppercase font-black tracking-widest mb-1" data-t="total_assets">Total Assets</p>
                 <h3 id="balance-display" class="text-5xl font-bold tracking-tighter italic">0.00 €</h3>
             </div>
-            <div class="crystal-glass p-6 rounded-[2.5rem] h-64">
-                <canvas id="main-chart"></canvas>
-            </div>
+            <div class="crystal-glass p-6 rounded-[2.5rem] h-64"><canvas id="main-chart"></canvas></div>
             <div class="grid grid-cols-2 gap-4">
                 <button onclick="ui.openModal('manual')" class="crystal-glass py-7 rounded-[2rem] font-black uppercase text-[10px]" data-t="btn_new">New Entry</button>
                 <button onclick="ui.openModal('import')" class="bg-blue-600 text-white py-7 rounded-[2rem] font-black uppercase text-[10px]" data-t="btn_scan">AI Scan</button>
@@ -155,9 +153,8 @@
     </div>
 
     <div id="modal-box" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xl z-[1100] flex items-center justify-center p-6">
-        <div class="crystal-glass w-full max-w-sm p-8 rounded-[3.5rem] relative">
+        <div class="crystal-glass w-full max-sm p-8 rounded-[3.5rem] relative">
             <button onclick="ui.closeModal()" class="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-xl bg-black/10 font-bold">✕</button>
-            
             <div id="ui-manual" class="space-y-5 pt-6">
                 <div class="toggle-container" id="type-toggle" data-idx="0" data-keys='["expense","income"]'>
                     <div class="toggle-knob" style="width: calc(50% - 6px)"></div>
@@ -171,7 +168,6 @@
                 <input type="number" id="entry-amount" placeholder="0.00" class="w-full p-5 rounded-2xl font-bold text-center text-4xl bg-white/5 border border-white/10">
                 <button onclick="logic.addEntry()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] text-white shadow-lg" data-t="btn_commit">Commit</button>
             </div>
-
             <div id="ui-import" class="hidden space-y-6 text-center pt-6">
                 <div class="w-full h-40 bg-white/5 rounded-[2rem] border-2 border-dashed border-white/10 flex items-center justify-center relative">
                     <span id="file-label" class="opacity-30 text-[9px] font-black uppercase">PDF</span>
@@ -198,17 +194,15 @@
                 
                 const glow = document.createElement('div');
                 const isLight = state.theme === 'light';
-                
                 glow.className = `click-glow ${isLight ? 'glow-light' : 'glow-dark'}`;
                 
-                // Dynamische Farbwahl basierend auf Modus
-                const color = isLight ? 'rgba(0, 122, 255, 0.45)' : 'rgba(255, 255, 255, 0.7)';
+                const color = isLight ? 'rgba(0, 122, 255, 0.6)' : 'rgba(255, 255, 255, 0.7)';
                 glow.style.background = `radial-gradient(circle, ${color} 0%, rgba(255,255,255,0) 80%)`;
                 
                 glow.style.left = e.clientX + 'px';
                 glow.style.top = e.clientY + 'px';
                 document.body.appendChild(glow);
-                setTimeout(() => glow.remove(), 1200);
+                setTimeout(() => glow.remove(), 1000);
             },
             toggleSidebar() {
                 const sb = document.getElementById('sidebar');
