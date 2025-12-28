@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vultrex OS v13.8</title>
+    <title>Vultrex OS v13.9</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -51,11 +51,15 @@
             box-shadow: 0 10px 30px var(--card-shadow);
         }
 
-        .light-mode .text-white { color: var(--text) !important; }
-        .light-mode .bg-white\/5 { background-color: rgba(0, 0, 0, 0.05); }
-        .light-mode .border-white\/10 { border-color: rgba(0, 0, 0, 0.12); }
+        /* Responsive Fixes für Buttons & Animationen */
+        button, .transaction-card, .toggle-container {
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        button:active, .transaction-card:active {
+            transform: scale(0.96);
+        }
 
-        /* Slide Toggle */
+        /* Toggle UI */
         .toggle-container {
             position: relative;
             width: 100%;
@@ -85,7 +89,7 @@
             z-index: 10;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             text-transform: uppercase;
-            transition: transform 0.3s cubic-bezier(0.2, 1, 0.3, 1);
+            transition: transform 0.4s cubic-bezier(0.2, 1, 0.3, 1);
         }
 
         .toggle-label {
@@ -100,17 +104,35 @@
         }
         .active-label { opacity: 1; }
 
-        input, select { color: var(--text) !important; outline: none; }
-        
-        /* Animation & Swipe Classes */
-        .transaction-wrapper { position: relative; border-radius: 2rem; margin-bottom: 0.75rem; overflow: hidden; }
-        .delete-bg { position: absolute; inset: 0; background: var(--delete-red); display: flex; align-items: center; justify-content: flex-end; padding-right: 25px; opacity: 0; z-index: 1; }
-        .transaction-card { position: relative; z-index: 5; background: var(--glass); transition: transform 0.4s cubic-bezier(0.1, 0.9, 0.2, 1); cursor: grab; }
+        /* Swipe to Delete Logic */
+        .transaction-wrapper { 
+            position: relative; 
+            border-radius: 2rem; 
+            margin-bottom: 0.75rem; 
+            overflow: hidden;
+            touch-action: pan-y;
+        }
+        .delete-bg { 
+            position: absolute; 
+            inset: 0; 
+            background: var(--delete-red); 
+            display: flex; 
+            align-items: center; 
+            justify-content: flex-end; 
+            padding-right: 30px; 
+            opacity: 0; 
+            z-index: 1; 
+            font-size: 1.5rem;
+        }
+        .transaction-card { 
+            position: relative; 
+            z-index: 5; 
+            background: var(--glass); 
+            transition: transform 0.4s cubic-bezier(0.1, 0.9, 0.2, 1);
+        }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .page-hidden { display: none; }
-        
-        button:active { scale: 0.96; }
     </style>
 </head>
 <body>
@@ -119,9 +141,9 @@
         <div class="p-10 flex flex-col h-full">
             <h2 class="text-2xl font-black italic mb-12 uppercase tracking-tighter">Vultrex</h2>
             <nav class="space-y-4 flex-1">
-                <button onclick="ui.switchPage('dashboard')" class="w-full text-left p-5 rounded-2xl hover:bg-black/5 dark:hover:bg-white/5 font-bold transition-all">📊 Dashboard</button>
-                <button onclick="ui.switchPage('monitor')" class="w-full text-left p-5 rounded-2xl hover:bg-black/5 dark:hover:bg-white/5 font-bold transition-all">🌐 Monitor</button>
-                <button onclick="ui.switchPage('settings')" class="w-full text-left p-5 rounded-2xl hover:bg-black/5 dark:hover:bg-white/5 font-bold transition-all">⚙️ Settings</button>
+                <button onclick="ui.switchPage('dashboard')" class="w-full text-left p-5 rounded-2xl hover:bg-black/5 dark:hover:bg-white/5 font-bold">📊 Dashboard</button>
+                <button onclick="ui.switchPage('monitor')" class="w-full text-left p-5 rounded-2xl hover:bg-black/5 dark:hover:bg-white/5 font-bold">🌐 Monitor</button>
+                <button onclick="ui.switchPage('settings')" class="w-full text-left p-5 rounded-2xl hover:bg-black/5 dark:hover:bg-white/5 font-bold">⚙️ Settings</button>
             </nav>
         </div>
     </div>
@@ -129,7 +151,7 @@
 
     <div id="app-content" class="p-6 max-w-lg mx-auto h-screen overflow-y-auto no-scrollbar pb-32">
         <header class="flex justify-between items-center mb-10 pt-4">
-            <button onclick="ui.toggleSidebar()" class="w-12 h-12 crystal-glass rounded-2xl flex items-center justify-center text-xl transition-all">≡</button>
+            <button onclick="ui.toggleSidebar()" class="w-12 h-12 crystal-glass rounded-2xl flex items-center justify-center text-xl">≡</button>
             <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center font-black text-white shadow-lg">V</div>
         </header>
 
@@ -144,8 +166,8 @@
             </div>
 
             <div class="grid grid-cols-2 gap-4">
-                <button onclick="ui.openModal('manual')" class="crystal-glass py-7 rounded-[2rem] font-black uppercase text-[10px] tracking-widest transition-all">New Entry</button>
-                <button onclick="ui.openModal('import')" class="bg-blue-600 text-white py-7 rounded-[2rem] font-black uppercase text-[10px] tracking-widest shadow-lg transition-all">AI Scan</button>
+                <button onclick="ui.openModal('manual')" class="crystal-glass py-7 rounded-[2rem] font-black uppercase text-[10px] tracking-widest">New Entry</button>
+                <button onclick="ui.openModal('import')" class="bg-blue-600 text-white py-7 rounded-[2rem] font-black uppercase text-[10px] tracking-widest shadow-lg">AI Scan</button>
             </div>
 
             <div id="transaction-list" class="space-y-3"></div>
@@ -165,18 +187,18 @@
 
         <div id="page-monitor" class="page-hidden space-y-4">
             <div class="crystal-glass p-8 rounded-[2.5rem]">
-                <input type="text" id="node-ip" placeholder="SERVER IP" class="w-full p-5 rounded-2xl mb-4 text-center font-bold bg-white/5 border border-white/10 text-[10px] uppercase">
-                <button onclick="monitor.ping()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] text-white transition-all">Refresh Node</button>
+                <input type="text" id="node-ip" placeholder="SERVER IP" class="w-full p-5 rounded-2xl mb-4 text-center font-bold bg-white/5 border border-white/10 text-[10px] uppercase outline-none">
+                <button onclick="monitor.ping()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] text-white">Refresh Node</button>
             </div>
             <div id="monitor-res" class="hidden grid grid-cols-2 gap-4"></div>
         </div>
     </div>
 
     <div id="modal-box" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xl z-[1100] flex items-center justify-center p-6">
-        <div class="crystal-glass w-full max-w-sm p-8 rounded-[3rem] relative">
+        <div class="crystal-glass w-full max-w-sm p-8 rounded-[3.5rem] relative">
             
             <div class="flex justify-end mb-4">
-                <button onclick="ui.closeModal()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-black/10 dark:bg-white/10 border border-white/10 font-bold transition-all">✕</button>
+                <button onclick="ui.closeModal()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 dark:bg-black/10 border border-white/10 font-bold">✕</button>
             </div>
 
             <div id="ui-manual" class="space-y-5">
@@ -190,10 +212,10 @@
                     <div class="toggle-label active-label">Once</div>
                     <div class="toggle-label">Monthly</div>
                 </div>
-                <select id="entry-category" onchange="logic.handleCategoryChange(this)" class="w-full p-5 rounded-2xl font-bold bg-white/5 border border-white/10 uppercase text-[10px] tracking-widest"></select>
-                <input type="text" id="custom-cat-field" placeholder="CATEGORY NAME" class="hidden w-full p-5 rounded-2xl font-bold text-center bg-white/5 border border-blue-500/50 uppercase text-[10px]">
-                <input type="number" id="entry-amount" placeholder="0.00" class="w-full p-5 rounded-2xl font-bold text-center text-4xl bg-white/5 border border-white/10">
-                <button onclick="logic.addEntry()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] text-white shadow-lg transition-all">Commit</button>
+                <select id="entry-category" onchange="logic.handleCategoryChange(this)" class="w-full p-5 rounded-2xl font-bold bg-white/5 border border-white/10 uppercase text-[10px] tracking-widest outline-none"></select>
+                <input type="text" id="custom-cat-field" placeholder="CATEGORY NAME" class="hidden w-full p-5 rounded-2xl font-bold text-center bg-white/5 border border-blue-500/50 uppercase text-[10px] outline-none">
+                <input type="number" id="entry-amount" placeholder="0.00" class="w-full p-5 rounded-2xl font-bold text-center text-4xl bg-white/5 border border-white/10 outline-none">
+                <button onclick="logic.addEntry()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] text-white shadow-lg">Commit</button>
             </div>
 
             <div id="ui-import" class="hidden space-y-6 text-center">
@@ -201,7 +223,7 @@
                     <span id="file-label" class="opacity-30 text-[9px] font-black uppercase">Drop PDF</span>
                     <input type="file" id="pdf-in" accept=".pdf" class="absolute inset-0 opacity-0" onchange="ui.onFile(this)">
                 </div>
-                <button onclick="logic.scanPDF()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] text-white transition-all">Analyze</button>
+                <button onclick="logic.scanPDF()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] text-white">Analyze</button>
             </div>
         </div>
     </div>
@@ -279,30 +301,46 @@
         };
 
         const swipe = {
-            sX: 0, elem: null,
-            start(e) { this.sX = e.touches[0].clientX; this.elem = e.currentTarget; this.elem.style.transition = 'none'; },
+            sX: 0, sY: 0, elem: null, active: false,
+            start(e) { 
+                this.sX = e.touches[0].clientX; 
+                this.sY = e.touches[0].clientY; 
+                this.elem = e.currentTarget; 
+                this.elem.style.transition = 'none';
+                this.active = true;
+            },
             move(e) {
-                if(!this.elem) return;
-                let d = e.touches[0].clientX - this.sX;
-                if(d < 0) {
-                    let m = Math.max(d, -140);
-                    this.elem.style.transform = `translateX(${m}px)`;
-                    this.elem.parentElement.querySelector('.delete-bg').style.opacity = Math.abs(m) / 100;
+                if(!this.elem || !this.active) return;
+                let dX = e.touches[0].clientX - this.sX;
+                let dY = e.touches[0].clientY - this.sY;
+                
+                // Verhindere Wischen, wenn User eigentlich scrollt
+                if(Math.abs(dY) > Math.abs(dX)) { this.active = false; return; }
+
+                if(dX < 0) {
+                    let move = Math.max(dX, -150);
+                    this.elem.style.transform = `translateX(${move}px)`;
+                    this.elem.parentElement.querySelector('.delete-bg').style.opacity = Math.abs(move) / 100;
+                    e.preventDefault();
                 }
             },
             end(e) {
                 if(!this.elem) return;
-                let d = e.changedTouches[0].clientX - this.sX;
+                let dX = e.changedTouches[0].clientX - this.sX;
                 this.elem.style.transition = 'transform 0.4s cubic-bezier(0.1, 0.9, 0.2, 1)';
-                if(d < -100) {
+                
+                if(dX < -110) {
                     this.elem.style.transform = 'translateX(-120%)';
                     const id = this.elem.dataset.id;
-                    setTimeout(() => { state.history = state.history.filter(t => t.id != id); logic.save(); ui.renderDashboard(); }, 300);
+                    setTimeout(() => { 
+                        state.history = state.history.filter(t => t.id != id); 
+                        logic.save(); ui.renderDashboard(); 
+                    }, 300);
                 } else {
                     this.elem.style.transform = 'translateX(0px)';
                     this.elem.parentElement.querySelector('.delete-bg').style.opacity = '0';
                 }
-                this.elem = null;
+                this.elem = null; this.active = false;
             }
         };
 
