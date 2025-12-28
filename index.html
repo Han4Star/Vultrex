@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vultrex OS - Minecraft Infrastructure</title>
+    <title>Vultrex OS - Infinity Infrastructure</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     
     <style>
+        /* --- GLOBAL VARIABLES --- */
         :root {
             --bg: #000000;
             --text: #ffffff;
@@ -20,43 +21,33 @@
             --input-fill: rgba(255, 255, 255, 0.05);
             --card-shadow: rgba(0, 0, 0, 0.9);
             --sidebar-bg: rgba(10, 10, 10, 0.9);
+            --chart-grid: rgba(255, 255, 255, 0.05);
+            --knob-gradient: linear-gradient(160deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%);
         }
 
         .light-mode {
             --bg: #f2f2f7;
             --text: #000000;
-            --glass: rgba(255, 255, 255, 0.85);
+            --glass: rgba(255, 255, 255, 0.9);
             --glass-border: rgba(0, 0, 0, 0.1);
-            --input-fill: #ffffff;
+            --input-fill: #e5e5ea;
             --card-shadow: rgba(0, 0, 0, 0.05);
             --sidebar-bg: rgba(245, 245, 247, 0.95);
+            --chart-grid: rgba(0, 0, 0, 0.1);
         }
 
+        /* --- BASE STYLING --- */
         body {
             background: var(--bg);
             color: var(--text);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             overflow: hidden;
             height: 100vh;
             margin: 0;
-            transition: background 0.6s ease;
+            transition: background 0.6s cubic-bezier(0.4, 0, 0.2, 1);
             user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
-
-        /* --- UI OVERRIDES --- */
-        .light-mode .crystal-glass {
-            background: #ffffff;
-            border-color: rgba(0,0,0,0.05);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.05);
-        }
-        .light-mode input, .light-mode select {
-            background: #ebebed !important;
-            color: black !important;
-            border: 1px solid rgba(0,0,0,0.1) !important;
-        }
-        .light-mode .toggle-container { background: #e5e5ea; }
-        .light-mode .toggle-label { color: #000; }
 
         .crystal-glass {
             background: var(--glass);
@@ -66,18 +57,34 @@
             box-shadow: 0 12px 40px var(--card-shadow);
         }
 
+        /* --- DETAILED LIGHT MODE FIXES --- */
+        .light-mode .crystal-glass {
+            background: white;
+            border-color: rgba(0,0,0,0.05);
+        }
+        .light-mode input, .light-mode select {
+            background: #ffffff !important;
+            color: #000000 !important;
+            border: 1px solid #d1d1d6 !important;
+        }
+        .light-mode .toggle-container {
+            background: #d1d1d6;
+        }
+        .light-mode .toggle-label {
+            color: #000000;
+        }
+
+        /* --- CUSTOM DROPDOWN (NO TEXT) --- */
         select {
             appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='grey' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
             background-repeat: no-repeat;
             background-position: right 1.2rem center;
             background-size: 1.2em;
-        }
-        .light-mode select {
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            padding-right: 3rem;
         }
 
-        /* --- SNAP TOGGLE PHYSICS --- */
+        /* --- SNAP TOGGLE PHYSICS ENGINE --- */
         .toggle-container {
             position: relative;
             width: 100%;
@@ -90,13 +97,14 @@
             border: 1px solid var(--glass-border);
             touch-action: none;
             cursor: pointer;
+            overflow: hidden;
         }
 
         .toggle-knob {
             position: absolute;
             height: 54px;
             width: calc(50% - 7px);
-            background: linear-gradient(160deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%), var(--accent);
+            background: var(--knob-gradient), var(--accent);
             border-radius: 18px;
             display: flex;
             align-items: center;
@@ -107,7 +115,7 @@
             z-index: 10;
             box-shadow: 0 6px 15px rgba(0,0,0,0.3);
             text-transform: uppercase;
-            transition: transform 0.4s cubic-bezier(0.2, 1.1, 0.3, 1.2);
+            transition: transform 0.5s cubic-bezier(0.2, 1.1, 0.3, 1.2);
         }
 
         .toggle-label {
@@ -118,11 +126,11 @@
             text-transform: uppercase;
             opacity: 0.3;
             z-index: 5;
-            transition: opacity 0.3s;
+            transition: opacity 0.3s, color 0.3s;
         }
         .active-label { opacity: 1; }
 
-        /* --- SWIPE TO DELETE --- */
+        /* --- SWIPE TO DELETE SYSTEM --- */
         .transaction-wrapper {
             position: relative;
             border-radius: 2.5rem;
@@ -149,6 +157,13 @@
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .page-hidden { display: none; }
+
+        /* --- CHART STYLING --- */
+        #chart-container {
+            width: 100%;
+            height: 280px;
+            position: relative;
+        }
     </style>
 </head>
 <body>
@@ -157,14 +172,14 @@
         <div class="p-12 flex flex-col h-full">
             <div class="mb-16">
                 <h2 class="text-3xl font-black italic">Vultrex</h2>
-                <p class="text-[9px] font-black opacity-30 uppercase tracking-[0.4em]">Infrastructure Control</p>
+                <p class="text-[9px] font-black opacity-30 uppercase tracking-[0.4em]">Server Infinity v9.0</p>
             </div>
             <nav class="space-y-6 flex-1">
-                <button onclick="ui.switchPage('dashboard')" class="w-full text-left p-6 rounded-3xl hover:bg-white/5 font-bold transition-all flex items-center gap-4"><span>📊</span> Dashboard</button>
-                <button onclick="ui.switchPage('monitor')" class="w-full text-left p-6 rounded-3xl hover:bg-white/5 font-bold transition-all flex items-center gap-4"><span>🌐</span> Node Monitor</button>
-                <button onclick="ui.switchPage('settings')" class="w-full text-left p-6 rounded-3xl hover:bg-white/5 font-bold transition-all flex items-center gap-4"><span>⚙️</span> Settings</button>
+                <button onclick="ui.switchPage('dashboard')" class="w-full text-left p-6 rounded-3xl hover:bg-white/5 font-bold transition-all flex items-center gap-4"><span>📊</span> Analytics</button>
+                <button onclick="ui.switchPage('monitor')" class="w-full text-left p-6 rounded-3xl hover:bg-white/5 font-bold transition-all flex items-center gap-4"><span>🌐</span> Node State</button>
+                <button onclick="ui.switchPage('settings')" class="w-full text-left p-6 rounded-3xl hover:bg-white/5 font-bold transition-all flex items-center gap-4"><span>⚙️</span> Preferences</button>
             </nav>
-            <div class="p-6 opacity-20 text-[8px] font-black uppercase tracking-widest text-center">Admin Mode Active</div>
+            <div class="p-6 opacity-20 text-[8px] font-black uppercase tracking-widest text-center">Encryption Active</div>
         </div>
     </div>
     <div id="sidebar-overlay" onclick="ui.toggleSidebar()" class="fixed inset-0 bg-black/60 backdrop-blur-xl z-[900] hidden"></div>
@@ -183,7 +198,7 @@
                 <h3 id="balance-display" class="text-6xl font-bold tracking-tighter italic">0.00 €</h3>
             </div>
 
-            <div class="crystal-glass p-8 rounded-[3.5rem] h-72">
+            <div class="crystal-glass p-8 rounded-[3.5rem]" id="chart-container">
                 <canvas id="main-chart"></canvas>
             </div>
 
@@ -212,8 +227,8 @@
         <div id="page-monitor" class="page-hidden space-y-6">
             <div class="crystal-glass p-10 rounded-[4rem]">
                 <h3 class="text-center font-black uppercase text-[10px] opacity-30 tracking-[0.3em] mb-8">Node Infrastructure</h3>
-                <input type="text" id="node-ip" placeholder="NODE ADDRESS (e.g. hypixel.net)" class="w-full p-6 rounded-3xl mb-6 text-center font-bold bg-white/5 border border-white/10 text-white">
-                <button onclick="monitor.ping()" class="w-full bg-blue-600 py-6 rounded-3xl font-black uppercase text-[10px] tracking-widest text-white">Refresh Status</button>
+                <input type="text" id="node-ip" placeholder="NODE ADDRESS" class="w-full p-6 rounded-3xl mb-6 text-center font-bold bg-white/5 border border-white/10 text-white">
+                <button onclick="monitor.ping()" class="w-full bg-blue-600 py-6 rounded-3xl font-black uppercase text-[10px] tracking-widest text-white active:scale-95 transition-all">Refresh Status</button>
             </div>
             <div id="monitor-res" class="hidden grid grid-cols-2 gap-5"></div>
         </div>
@@ -221,6 +236,7 @@
 
     <div id="modal-box" class="hidden fixed inset-0 bg-black/95 backdrop-blur-3xl z-[1100] flex items-center justify-center p-8">
         <div class="crystal-glass w-full max-w-sm p-12 rounded-[5rem]">
+            
             <div id="ui-manual" class="space-y-6">
                 <div class="toggle-container" id="type-toggle" data-val="Expense" data-opts='["Expense","Income"]'>
                     <div class="toggle-knob">Expense</div>
@@ -244,10 +260,10 @@
                     <option value="Misc">Misc</option>
                 </select>
 
-                <input type="text" id="entry-name" placeholder="DESCRIPTION" class="w-full p-6 rounded-3xl font-bold text-center bg-white/5 border border-white/10 text-white uppercase text-[10px]">
+                <input type="text" id="entry-name" placeholder="DESCRIPTION" class="w-full p-6 rounded-3xl font-bold text-center bg-white/5 border border-white/10 text-white uppercase text-[10px] tracking-widest">
                 <input type="number" id="entry-amount" placeholder="0.00" class="w-full p-6 rounded-3xl font-bold text-center text-5xl bg-white/5 border border-white/10 text-white">
                 
-                <button onclick="logic.addEntry()" class="w-full bg-blue-600 py-6 rounded-3xl font-black uppercase text-[11px] tracking-widest text-white shadow-xl">Commit Data</button>
+                <button onclick="logic.addEntry()" class="w-full bg-blue-600 py-6 rounded-3xl font-black uppercase text-[11px] tracking-widest text-white shadow-xl active:scale-95 transition-all">Commit Data</button>
             </div>
 
             <div id="ui-import" class="hidden space-y-8 text-center">
@@ -263,8 +279,8 @@
     </div>
 
     <script>
-        /* --- CORE DATA --- */
-        let state = JSON.parse(localStorage.getItem('v_mc_v8')) || { history: [], theme: 'dark' };
+        /* --- CORE DATA STATE --- */
+        let state = JSON.parse(localStorage.getItem('v_infinity_final')) || { history: [], theme: 'dark' };
         let mainChart = null;
 
         /* --- UI ENGINE --- */
@@ -296,7 +312,7 @@
                 state.theme = theme;
                 document.body.className = theme === 'light' ? 'light-mode' : 'dark-mode';
                 logic.save();
-                if(mainChart) this.updateChart();
+                this.updateChartStyles();
             },
 
             renderDashboard() {
@@ -322,31 +338,35 @@
                 });
 
                 document.getElementById('balance-display').innerText = total.toFixed(2) + " €";
-                this.updateChart();
+                this.updateChartData();
             },
 
-            updateChart() {
+            updateChartData() {
                 if(!mainChart) return;
-                const isL = state.theme === 'light';
                 let running = 0;
-                const color = isL ? '#666' : '#999';
-                const grid = isL ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
-
-                mainChart.options.scales.x.ticks.color = color;
-                mainChart.options.scales.y.ticks.color = color;
-                mainChart.options.scales.x.grid.color = grid;
-                mainChart.options.scales.y.grid.color = grid;
-
                 mainChart.data.labels = state.history.map(h => h.date);
                 mainChart.data.datasets[0].data = state.history.map(h => {
                     running += h.amount;
                     return running;
                 });
                 mainChart.update();
+            },
+
+            updateChartStyles() {
+                if(!mainChart) return;
+                const isL = state.theme === 'light';
+                const color = isL ? '#333333' : '#999999';
+                const grid = isL ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.05)';
+
+                mainChart.options.scales.x.ticks.color = color;
+                mainChart.options.scales.y.ticks.color = color;
+                mainChart.options.scales.x.grid.color = grid;
+                mainChart.options.scales.y.grid.color = grid;
+                mainChart.update();
             }
         };
 
-        /* --- LOGIC --- */
+        /* --- LOGIC ENGINE --- */
         const logic = {
             addEntry() {
                 const amount = parseFloat(document.getElementById('entry-amount').value);
@@ -357,7 +377,7 @@
 
                 state.history.push({
                     id: Date.now(),
-                    desc: document.getElementById('entry-name').value || "Unnamed Plugin/Bill",
+                    desc: document.getElementById('entry-name').value || "Server Entry",
                     amount: type === 'Expense' ? -amount : amount,
                     interval: interval,
                     cat: category,
@@ -380,7 +400,7 @@
                     const content = await page.getTextContent();
                     const text = content.items.map(s => s.str).join(" ");
                     const match = text.match(/(\d+[\.,]\d{2})/);
-                    let val = match ? parseFloat(match[0].replace(',', '.')) : 0.00;
+                    let val = match ? parseFloat(match[0].replace(',', '.')) : 20.00;
 
                     state.history.push({
                         id: Date.now(),
@@ -395,11 +415,16 @@
                 reader.readAsArrayBuffer(file);
             },
 
-            delete(id) { state.history = state.history.filter(t => t.id != id); this.save(); ui.renderDashboard(); },
-            save() { localStorage.setItem('v_mc_v8', JSON.stringify(state)); }
+            delete(id) { 
+                state.history = state.history.filter(t => t.id != id); 
+                this.save(); 
+                ui.renderDashboard(); 
+            },
+
+            save() { localStorage.setItem('v_infinity_final', JSON.stringify(state)); }
         };
 
-        /* --- SNAP PHYSICS --- */
+        /* --- SNAP PHYSICS SYSTEM --- */
         const initSnapToggles = () => {
             document.querySelectorAll('.toggle-container').forEach(container => {
                 const knob = container.querySelector('.toggle-knob');
@@ -449,7 +474,7 @@
             });
         };
 
-        /* --- SWIPE SYSTEM --- */
+        /* --- SWIPE ENGINE --- */
         const swipe = {
             sX: 0, elem: null,
             start(e) { this.sX = e.touches[0].clientX; this.elem = e.currentTarget; this.elem.style.transition = 'none'; },
@@ -477,7 +502,7 @@
             }
         };
 
-        /* --- MONITOR --- */
+        /* --- NODE MONITOR --- */
         const monitor = {
             async ping() {
                 const ip = document.getElementById('node-ip').value;
@@ -491,27 +516,38 @@
                         res.innerHTML = `
                             <div class="crystal-glass p-8 rounded-3xl text-center"><p class="text-[9px] opacity-30 mb-2 tracking-widest uppercase">State</p><p class="text-emerald-500 font-black uppercase text-xs">Active</p></div>
                             <div class="crystal-glass p-8 rounded-3xl text-center"><p class="text-[9px] opacity-30 mb-2 tracking-widest uppercase">Players</p><p class="font-black text-2xl">${d.players.online}</p></div>`;
-                    } else { res.innerHTML = "<p class='col-span-2 text-rose-500 text-center font-black p-12'>Server Offline</p>"; }
-                } catch(e) { res.innerHTML = "Error"; }
+                    } else { res.innerHTML = "<p class='col-span-2 text-rose-500 text-center font-black p-12 uppercase text-xs'>Node Offline</p>"; }
+                } catch(e) { res.innerHTML = "Error Connecting"; }
             }
         };
 
-        /* --- STARTUP --- */
+        /* --- INITIALIZATION --- */
         window.onload = () => {
-            mainChart = new Chart(document.getElementById('main-chart').getContext('2d'), {
+            const ctx = document.getElementById('main-chart').getContext('2d');
+            mainChart = new Chart(ctx, {
                 type: 'line',
                 data: { labels: [], datasets: [{ data: [], borderColor: '#007AFF', tension: 0.4, fill: true, backgroundColor: 'rgba(0,122,255,0.05)', pointRadius: 0, borderWidth: 4 }] },
                 options: {
-                    responsive: true, maintainAspectRatio: false,
+                    responsive: true, 
+                    maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: { 
-                        x: { display: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { font: { size: 9 }, maxRotation: 0 } },
-                        y: { display: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { font: { size: 9 } } }
+                        x: { 
+                            display: true, 
+                            grid: { color: 'rgba(255,255,255,0.05)' }, 
+                            ticks: { font: { size: 9 }, color: '#999' } 
+                        },
+                        y: { 
+                            display: true, 
+                            grid: { color: 'rgba(255,255,255,0.05)' }, 
+                            ticks: { font: { size: 9 }, color: '#999' } 
+                        }
                     }
                 }
             });
+
             ui.renderDashboard();
-            if(state.theme) ui.applyTheme(state.theme);
+            ui.applyTheme(state.theme || 'dark');
             initSnapToggles();
         };
     </script>
