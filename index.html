@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vultrex OS v14.3</title>
+    <title>Vultrex OS v14.5 - Clean Chart</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -47,7 +47,9 @@
             background: var(--input-fill); border-radius: 1.5rem;
             padding: 4px; display: flex; align-items: center;
             border: 1px solid var(--glass-border); touch-action: none;
+            transition: transform 0.1s ease;
         }
+        .toggle-container:active { transform: scale(0.97); }
 
         .toggle-knob {
             position: absolute; left: 4px; height: 50px;
@@ -76,7 +78,6 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .page-hidden { display: none; }
         button:active { transform: scale(0.95); }
-        
         select, input { outline: none; background: transparent; }
     </style>
 </head>
@@ -96,7 +97,7 @@
 
     <div id="app-content" class="p-6 max-w-lg mx-auto h-screen overflow-y-auto no-scrollbar pb-32">
         <header class="flex justify-between items-center mb-10 pt-4">
-            <button onclick="ui.toggleSidebar()" class="w-12 h-12 crystal-glass rounded-2xl flex items-center justify-center text-xl">≡</button>
+            <button onclick="ui.toggleSidebar()" class="w-12 h-12 crystal-glass rounded-2xl flex items-center justify-center text-xl transition-all">≡</button>
             <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center font-black text-white shadow-lg">V</div>
         </header>
 
@@ -106,7 +107,7 @@
                 <h3 id="balance-display" class="text-5xl font-bold tracking-tighter italic">0.00 €</h3>
             </div>
             
-            <div class="crystal-glass p-6 rounded-[2.5rem] h-64">
+            <div class="crystal-glass p-6 rounded-[2.5rem] h-64 overflow-hidden">
                 <canvas id="main-chart"></canvas>
             </div>
 
@@ -141,11 +142,9 @@
 
     <div id="modal-box" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xl z-[1100] flex items-center justify-center p-6">
         <div class="crystal-glass w-full max-w-sm p-8 rounded-[3.5rem] relative">
-            
             <div class="flex justify-end mb-4">
-                <button onclick="ui.closeModal()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 dark:bg-black/10 border border-white/10 font-bold">✕</button>
+                <button onclick="ui.closeModal()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-black/10 border border-white/10 font-bold">✕</button>
             </div>
-
             <div id="ui-manual" class="space-y-5">
                 <div class="toggle-container" id="type-toggle" data-val="Expense" data-opts='["Expense","Income"]'>
                     <div class="toggle-knob">Expense</div>
@@ -157,12 +156,11 @@
                     <div class="toggle-label active-label">Once</div>
                     <div class="toggle-label">Monthly</div>
                 </div>
-                <select id="entry-category" onchange="logic.handleCategoryChange(this)" class="w-full p-5 rounded-2xl font-bold bg-white/5 border border-white/10 uppercase text-[10px] tracking-widest"></select>
+                <select id="entry-category" onchange="logic.handleCategoryChange(this)" class="w-full p-5 rounded-2xl font-bold bg-white/5 border border-white/10 uppercase text-[10px]"></select>
                 <input type="text" id="custom-cat-field" placeholder="CATEGORY NAME" class="hidden w-full p-5 rounded-2xl font-bold text-center bg-white/5 border border-blue-500/50 uppercase text-[10px]">
                 <input type="number" id="entry-amount" placeholder="0.00" class="w-full p-5 rounded-2xl font-bold text-center text-4xl bg-white/5 border border-white/10">
                 <button onclick="logic.addEntry()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] text-white shadow-lg">Commit</button>
             </div>
-
             <div id="ui-import" class="hidden space-y-6 text-center">
                 <div class="w-full h-40 bg-white/5 rounded-[2rem] border-2 border-dashed border-white/10 flex items-center justify-center relative">
                     <span id="file-label" class="opacity-30 text-[9px] font-black uppercase">Drop PDF</span>
@@ -174,7 +172,7 @@
     </div>
 
     <script>
-        let state = JSON.parse(localStorage.getItem('v_mc_v14')) || { history: [], theme: 'Dark' };
+        let state = JSON.parse(localStorage.getItem('v_v14_final')) || { history: [], theme: 'Dark' };
         let mainChart = null;
         const categoryMap = {
             Expense: ["Plugins/Mods", "Server Cost", "Domain", "Marketing", "Custom"],
@@ -216,7 +214,7 @@
                     wrap.className = 'transaction-wrapper';
                     wrap.innerHTML = `<div class="delete-bg">🗑️</div>
                         <div class="transaction-card crystal-glass p-6 rounded-3xl flex justify-between items-center" data-id="${item.id}" ontouchstart="swipe.start(event)" ontouchmove="swipe.move(event)" ontouchend="swipe.end(event)">
-                            <div><p class="font-black text-[10px] uppercase">${item.cat}</p><p class="text-[8px] opacity-30 mt-0.5">${item.date} • ${item.interval}</p></div>
+                            <div><p class="font-black text-[10px] uppercase">${item.cat}</p><p class="text-[8px] opacity-30 mt-0.5 uppercase font-bold">${item.date} • ${item.interval}</p></div>
                             <p class="font-black text-lg ${item.amount < 0 ? 'text-rose-500' : 'text-emerald-500'}">${item.amount.toFixed(2)} €</p>
                         </div>`;
                     list.appendChild(wrap);
@@ -274,7 +272,7 @@
                 };
                 reader.readAsArrayBuffer(file);
             },
-            save() { localStorage.setItem('v_mc_v14', JSON.stringify(state)); }
+            save() { localStorage.setItem('v_v14_final', JSON.stringify(state)); }
         };
 
         const swipe = {
@@ -333,10 +331,7 @@
                     updateUI(currentX > (container.offsetWidth / 4) ? 1 : 0);
                 });
                 container.onclick = (e) => { if(e.target !== knob) updateUI(currentX === 0 ? 1 : 0); };
-                
-                // Init position
-                const startIdx = options.indexOf(container.dataset.val);
-                updateUI(startIdx === -1 ? 0 : startIdx);
+                updateUI(options.indexOf(container.dataset.val) === 1 ? 1 : 0);
             });
         };
 
@@ -345,7 +340,7 @@
                 const ip = document.getElementById('node-ip').value;
                 const res = document.getElementById('monitor-res');
                 if(!ip) return;
-                res.innerHTML = "<p class='col-span-2 text-center py-4 opacity-30 uppercase text-[10px] font-black'>Polling...</p>"; 
+                res.innerHTML = "<p class='col-span-2 text-center py-4 opacity-30 font-black uppercase text-[10px]'>Polling...</p>"; 
                 res.classList.remove('hidden');
                 try {
                     const r = await fetch(`https://api.mcstatus.io/v2/status/java/${ip}`);
@@ -361,7 +356,15 @@
             mainChart = new Chart(document.getElementById('main-chart').getContext('2d'), {
                 type: 'line',
                 data: { labels: [], datasets: [{ data: [], borderColor: '#007AFF', tension: 0.4, fill: true, backgroundColor: 'rgba(0,122,255,0.05)', pointRadius: 0, borderWidth: 3 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { legend: { display: false } }, 
+                    scales: { 
+                        x: { display: false, grid: { display: false }, border: { display: false } }, 
+                        y: { display: false, grid: { display: false }, border: { display: false } } 
+                    } 
+                }
             });
             ui.renderDashboard(); 
             ui.applyTheme(state.theme); 
@@ -370,4 +373,3 @@
     </script>
 </body>
 </html>
-
