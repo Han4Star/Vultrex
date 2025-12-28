@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vultrex Crystal OS - No Login Build</title>
+    <title>Vultrex OS - Minecraft Infrastructure</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -44,7 +44,7 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* --- LIGHT MODE ELEMENTS --- */
+        /* --- UI OVERRIDES --- */
         .light-mode .crystal-glass {
             background: #ffffff;
             border-color: rgba(0,0,0,0.05);
@@ -58,7 +58,6 @@
         .light-mode .toggle-container { background: #e5e5ea; }
         .light-mode .toggle-label { color: #000; }
 
-        /* --- UI COMPONENTS --- */
         .crystal-glass {
             background: var(--glass);
             backdrop-filter: blur(60px) saturate(210%);
@@ -67,7 +66,6 @@
             box-shadow: 0 12px 40px var(--card-shadow);
         }
 
-        /* --- DROPDOWN CUSTOM --- */
         select {
             appearance: none;
             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
@@ -159,14 +157,14 @@
         <div class="p-12 flex flex-col h-full">
             <div class="mb-16">
                 <h2 class="text-3xl font-black italic">Vultrex</h2>
-                <p class="text-[9px] font-black opacity-30 uppercase tracking-[0.4em]">Direct Access Build</p>
+                <p class="text-[9px] font-black opacity-30 uppercase tracking-[0.4em]">Infrastructure Control</p>
             </div>
             <nav class="space-y-6 flex-1">
-                <button onclick="ui.switchPage('dashboard')" class="w-full text-left p-6 rounded-3xl hover:bg-white/5 font-bold transition-all flex items-center gap-4"><span>📊</span> Analytics</button>
-                <button onclick="ui.switchPage('monitor')" class="w-full text-left p-6 rounded-3xl hover:bg-white/5 font-bold transition-all flex items-center gap-4"><span>🌐</span> Node State</button>
-                <button onclick="ui.switchPage('settings')" class="w-full text-left p-6 rounded-3xl hover:bg-white/5 font-bold transition-all flex items-center gap-4"><span>⚙️</span> Preferences</button>
+                <button onclick="ui.switchPage('dashboard')" class="w-full text-left p-6 rounded-3xl hover:bg-white/5 font-bold transition-all flex items-center gap-4"><span>📊</span> Dashboard</button>
+                <button onclick="ui.switchPage('monitor')" class="w-full text-left p-6 rounded-3xl hover:bg-white/5 font-bold transition-all flex items-center gap-4"><span>🌐</span> Node Monitor</button>
+                <button onclick="ui.switchPage('settings')" class="w-full text-left p-6 rounded-3xl hover:bg-white/5 font-bold transition-all flex items-center gap-4"><span>⚙️</span> Settings</button>
             </nav>
-            <div class="p-6 opacity-20 text-[8px] font-black uppercase tracking-widest text-center">Encryption Active</div>
+            <div class="p-6 opacity-20 text-[8px] font-black uppercase tracking-widest text-center">Admin Mode Active</div>
         </div>
     </div>
     <div id="sidebar-overlay" onclick="ui.toggleSidebar()" class="fixed inset-0 bg-black/60 backdrop-blur-xl z-[900] hidden"></div>
@@ -214,7 +212,7 @@
         <div id="page-monitor" class="page-hidden space-y-6">
             <div class="crystal-glass p-10 rounded-[4rem]">
                 <h3 class="text-center font-black uppercase text-[10px] opacity-30 tracking-[0.3em] mb-8">Node Infrastructure</h3>
-                <input type="text" id="node-ip" placeholder="NODE ADDRESS" class="w-full p-6 rounded-3xl mb-6 text-center font-bold bg-white/5 border border-white/10 text-white">
+                <input type="text" id="node-ip" placeholder="NODE ADDRESS (e.g. hypixel.net)" class="w-full p-6 rounded-3xl mb-6 text-center font-bold bg-white/5 border border-white/10 text-white">
                 <button onclick="monitor.ping()" class="w-full bg-blue-600 py-6 rounded-3xl font-black uppercase text-[10px] tracking-widest text-white">Refresh Status</button>
             </div>
             <div id="monitor-res" class="hidden grid grid-cols-2 gap-5"></div>
@@ -237,15 +235,16 @@
                 </div>
 
                 <select id="entry-category" class="w-full p-6 rounded-3xl font-bold bg-white/5 border border-white/10 text-white uppercase text-[10px] tracking-widest">
-                    <option value="General">General</option>
                     <option value="Hosting">Hosting</option>
                     <option value="Plugins">Plugins</option>
-                    <option value="Design">Design</option>
-                    <option value="Food">Food</option>
-                    <option value="Salary">Salary</option>
+                    <option value="Domain">Domain</option>
+                    <option value="Marketing">Marketing</option>
+                    <option value="Web">Web Services</option>
+                    <option value="Donation">Donation</option>
+                    <option value="Misc">Misc</option>
                 </select>
 
-                <input type="text" id="entry-name" placeholder="LABEL / DESCRIPTION" class="w-full p-6 rounded-3xl font-bold text-center bg-white/5 border border-white/10 text-white uppercase text-[10px]">
+                <input type="text" id="entry-name" placeholder="DESCRIPTION" class="w-full p-6 rounded-3xl font-bold text-center bg-white/5 border border-white/10 text-white uppercase text-[10px]">
                 <input type="number" id="entry-amount" placeholder="0.00" class="w-full p-6 rounded-3xl font-bold text-center text-5xl bg-white/5 border border-white/10 text-white">
                 
                 <button onclick="logic.addEntry()" class="w-full bg-blue-600 py-6 rounded-3xl font-black uppercase text-[11px] tracking-widest text-white shadow-xl">Commit Data</button>
@@ -265,7 +264,7 @@
 
     <script>
         /* --- CORE DATA --- */
-        let state = JSON.parse(localStorage.getItem('v_direct_v7')) || { history: [], theme: 'dark' };
+        let state = JSON.parse(localStorage.getItem('v_mc_v8')) || { history: [], theme: 'dark' };
         let mainChart = null;
 
         /* --- UI ENGINE --- */
@@ -358,7 +357,7 @@
 
                 state.history.push({
                     id: Date.now(),
-                    desc: document.getElementById('entry-name').value || "Entry",
+                    desc: document.getElementById('entry-name').value || "Unnamed Plugin/Bill",
                     amount: type === 'Expense' ? -amount : amount,
                     interval: interval,
                     cat: category,
@@ -381,14 +380,14 @@
                     const content = await page.getTextContent();
                     const text = content.items.map(s => s.str).join(" ");
                     const match = text.match(/(\d+[\.,]\d{2})/);
-                    let val = match ? parseFloat(match[0].replace(',', '.')) : 25.00;
+                    let val = match ? parseFloat(match[0].replace(',', '.')) : 0.00;
 
                     state.history.push({
                         id: Date.now(),
                         desc: "AI SCAN: " + file.name.substring(0, 10),
                         amount: -val,
                         interval: 'Once',
-                        cat: 'Imported',
+                        cat: 'Hosting',
                         date: new Date().toLocaleDateString('de-DE')
                     });
                     this.save(); ui.renderDashboard(); ui.closeModal();
@@ -397,10 +396,10 @@
             },
 
             delete(id) { state.history = state.history.filter(t => t.id != id); this.save(); ui.renderDashboard(); },
-            save() { localStorage.setItem('v_direct_v7', JSON.stringify(state)); }
+            save() { localStorage.setItem('v_mc_v8', JSON.stringify(state)); }
         };
 
-        /* --- SNAP PHYSICS SYSTEM --- */
+        /* --- SNAP PHYSICS --- */
         const initSnapToggles = () => {
             document.querySelectorAll('.toggle-container').forEach(container => {
                 const knob = container.querySelector('.toggle-knob');
@@ -491,8 +490,8 @@
                     if(d.online) {
                         res.innerHTML = `
                             <div class="crystal-glass p-8 rounded-3xl text-center"><p class="text-[9px] opacity-30 mb-2 tracking-widest uppercase">State</p><p class="text-emerald-500 font-black uppercase text-xs">Active</p></div>
-                            <div class="crystal-glass p-8 rounded-3xl text-center"><p class="text-[9px] opacity-30 mb-2 tracking-widest uppercase">Users</p><p class="font-black text-2xl">${d.players.online}</p></div>`;
-                    } else { res.innerHTML = "<p class='col-span-2 text-rose-500 text-center font-black p-12'>Node Offline</p>"; }
+                            <div class="crystal-glass p-8 rounded-3xl text-center"><p class="text-[9px] opacity-30 mb-2 tracking-widest uppercase">Players</p><p class="font-black text-2xl">${d.players.online}</p></div>`;
+                    } else { res.innerHTML = "<p class='col-span-2 text-rose-500 text-center font-black p-12'>Server Offline</p>"; }
                 } catch(e) { res.innerHTML = "Error"; }
             }
         };
