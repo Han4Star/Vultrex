@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vultrex OS - Infinite Infrastructure v11</title>
+    <title>Vultrex OS - Infinite Infrastructure v12</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     
     <style>
-        /* --- DONT DELETE: COMPLETE CSS VARIABLES --- */
+        /* --- FULL CSS VARIABLES --- */
         :root {
             --bg: #000000;
             --text: #ffffff;
@@ -36,7 +36,7 @@
             --chart-grid: rgba(0, 0, 0, 0.1);
         }
 
-        /* --- DONT DELETE: BASE STYLING --- */
+        /* --- BASE STYLING --- */
         body {
             background: var(--bg);
             color: var(--text);
@@ -57,42 +57,7 @@
             box-shadow: 0 12px 40px var(--card-shadow);
         }
 
-        /* --- DONT DELETE: LIGHT MODE SPECIFICS --- */
-        .light-mode .crystal-glass {
-            background: #ffffff;
-            border-color: rgba(0,0,0,0.05);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-        }
-        .light-mode input, .light-mode select {
-            background: #ffffff !important;
-            color: #000000 !important;
-            border: 1px solid #d1d1d6 !important;
-        }
-        .light-mode .toggle-container {
-            background: #d1d1d6;
-        }
-        .light-mode .toggle-label {
-            color: #000000;
-        }
-        .light-mode .transaction-card {
-            background: #ffffff;
-        }
-
-        /* --- DONT DELETE: DROPDOWN & INPUTS --- */
-        select {
-            appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='grey' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 1.2rem center;
-            background-size: 1.2em;
-        }
-
-        input::placeholder {
-            color: rgba(128, 128, 128, 0.5);
-            font-weight: 400;
-        }
-
-        /* --- DONT DELETE: SNAP TOGGLE PHYSICS --- */
+        /* --- SNAP TOGGLE UI --- */
         .toggle-container {
             position: relative;
             width: 100%;
@@ -122,7 +87,8 @@
             z-index: 10;
             box-shadow: 0 6px 15px rgba(0,0,0,0.3);
             text-transform: uppercase;
-            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), left 0.4s, right 0.4s;
+            pointer-events: none;
         }
 
         .toggle-label {
@@ -137,7 +103,16 @@
         }
         .active-label { opacity: 1; }
 
-        /* --- DONT DELETE: SWIPE TO DELETE --- */
+        /* --- FORM ELEMENTS --- */
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='grey' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1.2rem center;
+            background-size: 1.2em;
+        }
+
+        /* --- SWIPE TO DELETE --- */
         .transaction-wrapper {
             position: relative;
             border-radius: 2.5rem;
@@ -176,7 +151,7 @@
                 <button onclick="ui.switchPage('monitor')" class="w-full text-left p-6 rounded-3xl hover:bg-white/5 font-bold transition-all flex items-center gap-4"><span>🌐</span> Node Monitor</button>
                 <button onclick="ui.switchPage('settings')" class="w-full text-left p-6 rounded-3xl hover:bg-white/5 font-bold transition-all flex items-center gap-4"><span>⚙️</span> Settings</button>
             </nav>
-            <div class="p-6 opacity-20 text-[8px] font-black uppercase text-center tracking-widest">Build v11.Final</div>
+            <div class="p-6 opacity-20 text-[8px] font-black uppercase text-center tracking-widest">Infras Node v12.0</div>
         </div>
     </div>
     <div id="sidebar-overlay" onclick="ui.toggleSidebar()" class="fixed inset-0 bg-black/60 backdrop-blur-xl z-[900] hidden"></div>
@@ -220,7 +195,7 @@
 
         <div id="page-monitor" class="page-hidden space-y-6">
             <div class="crystal-glass p-10 rounded-[4rem]">
-                <input type="text" id="node-ip" placeholder="SERVER IP" class="w-full p-6 rounded-3xl mb-6 text-center font-bold bg-white/5 border border-white/10 text-white uppercase text-[10px]">
+                <input type="text" id="node-ip" placeholder="SERVER IP (e.g. hypixel.net)" class="w-full p-6 rounded-3xl mb-6 text-center font-bold bg-white/5 border border-white/10 text-white uppercase text-[10px]">
                 <button onclick="monitor.ping()" class="w-full bg-blue-600 py-6 rounded-3xl font-black uppercase text-[10px] text-white">Refresh Node</button>
             </div>
             <div id="monitor-res" class="hidden grid grid-cols-2 gap-5"></div>
@@ -244,7 +219,7 @@
                 </div>
 
                 <select id="entry-category" onchange="logic.handleCategoryChange(this)" class="w-full p-6 rounded-3xl font-bold bg-white/5 border border-white/10 text-white uppercase text-[10px] tracking-widest">
-                    </select>
+                </select>
 
                 <input type="text" id="custom-cat-field" placeholder="OWN CATEGORY NAME" class="hidden w-full p-6 rounded-3xl font-bold text-center bg-white/5 border border-blue-500/50 text-white uppercase text-[10px]">
 
@@ -266,8 +241,8 @@
     </div>
 
     <script>
-        /* --- DONT DELETE: CORE DATA --- */
-        let state = JSON.parse(localStorage.getItem('v_mc_v10_final_safe')) || { history: [], theme: 'dark' };
+        /* --- CORE DATA STATE --- */
+        let state = JSON.parse(localStorage.getItem('v_mc_v12_final')) || { history: [], theme: 'dark' };
         let mainChart = null;
 
         const categoryMap = {
@@ -275,7 +250,7 @@
             Income: ["Ranks", "Coins", "Donations", "Collabs", "Custom"]
         };
 
-        /* --- DONT DELETE: UI ENGINE --- */
+        /* --- UI RENDER ENGINE --- */
         const ui = {
             toggleSidebar() {
                 const sb = document.getElementById('sidebar');
@@ -285,8 +260,8 @@
             },
 
             switchPage(id) {
-                const pages = ['dashboard', 'settings', 'monitor'];
-                pages.forEach(p => document.getElementById('page-' + p).classList.add('page-hidden'));
+                const pgs = ['dashboard', 'settings', 'monitor'];
+                pgs.forEach(p => document.getElementById('page-' + p).classList.add('page-hidden'));
                 document.getElementById('page-' + id).classList.remove('page-hidden');
                 this.toggleSidebar();
             },
@@ -349,16 +324,13 @@
             updateChartStyles() {
                 const isL = state.theme === 'light';
                 const color = isL ? '#333' : '#999';
-                const grid = isL ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.05)';
                 mainChart.options.scales.x.ticks.color = color;
                 mainChart.options.scales.y.ticks.color = color;
-                mainChart.options.scales.x.grid.color = grid;
-                mainChart.options.scales.y.grid.color = grid;
                 mainChart.update();
             }
         };
 
-        /* --- DONT DELETE: LOGIC ENGINE --- */
+        /* --- BUSINESS LOGIC --- */
         const logic = {
             updateCategoryDropdown(type) {
                 const select = document.getElementById('entry-category');
@@ -374,11 +346,7 @@
 
             handleCategoryChange(select) {
                 const field = document.getElementById('custom-cat-field');
-                if(select.value === 'Custom') {
-                    field.classList.remove('hidden');
-                } else {
-                    field.classList.add('hidden');
-                }
+                field.classList.toggle('hidden', select.value !== 'Custom');
             },
 
             addEntry() {
@@ -403,8 +371,6 @@
                 this.save(); 
                 ui.renderDashboard(); 
                 ui.closeModal();
-                
-                // Reset inputs
                 document.getElementById('entry-amount').value = '';
                 document.getElementById('custom-cat-field').value = '';
             },
@@ -434,10 +400,10 @@
                 reader.readAsArrayBuffer(file);
             },
 
-            save() { localStorage.setItem('v_mc_v10_final_safe', JSON.stringify(state)); }
+            save() { localStorage.setItem('v_mc_v12_final', JSON.stringify(state)); }
         };
 
-        /* --- DONT DELETE: SNAP PHYSICS ENGINE --- */
+        /* --- SNAP PHYSICS ENGINE --- */
         const initSnapToggles = () => {
             document.querySelectorAll('.toggle-container').forEach(container => {
                 const knob = container.querySelector('.toggle-knob');
@@ -446,44 +412,39 @@
 
                 const snap = (val) => {
                     const idx = options.indexOf(val);
-                    const max = container.offsetWidth - knob.offsetWidth - 10;
-                    const target = idx === 0 ? 0 : max;
                     
-                    knob.style.transform = `translateX(${target}px)`;
+                    // Logic to set absolute left/right based on index
+                    if (idx === 0) {
+                        knob.style.left = '5px';
+                        knob.style.right = 'auto';
+                        knob.style.transform = 'translateX(0)';
+                    } else {
+                        knob.style.left = 'auto';
+                        knob.style.right = '5px';
+                        knob.style.transform = 'translateX(0)';
+                    }
+                    
                     knob.innerText = options[idx];
-                    
-                    labels.forEach((l, i) => {
-                        l.classList.toggle('active-label', i === idx);
-                    });
-                    
+                    labels.forEach((l, i) => l.classList.toggle('active-label', i === idx));
                     container.dataset.val = val;
                     
-                    if(container.id === 'type-toggle') {
-                        logic.updateCategoryDropdown(val);
-                    }
-                    if(container.id === 'theme-toggle') {
-                        ui.applyTheme(val.toLowerCase());
-                    }
+                    if(container.id === 'type-toggle') logic.updateCategoryDropdown(val);
+                    if(container.id === 'theme-toggle') ui.applyTheme(val.toLowerCase());
                 };
 
                 container.addEventListener('click', () => {
-                    const nextVal = container.dataset.val === options[0] ? options[1] : options[0];
-                    snap(nextVal);
+                    const next = container.dataset.val === options[0] ? options[1] : options[0];
+                    snap(next);
                 });
 
-                // Initial Snap
                 snap(container.dataset.val);
             });
         };
 
-        /* --- DONT DELETE: SWIPE SYSTEM --- */
+        /* --- SWIPE ENGINE --- */
         const swipe = {
             sX: 0, elem: null,
-            start(e) { 
-                this.sX = e.touches[0].clientX; 
-                this.elem = e.currentTarget; 
-                this.elem.style.transition = 'none'; 
-            },
+            start(e) { this.sX = e.touches[0].clientX; this.elem = e.currentTarget; this.elem.style.transition = 'none'; },
             move(e) {
                 if(!this.elem) return;
                 let d = e.touches[0].clientX - this.sX;
@@ -513,7 +474,7 @@
             }
         };
 
-        /* --- DONT DELETE: MONITOR --- */
+        /* --- MONITOR SYSTEM --- */
         const monitor = {
             async ping() {
                 const ip = document.getElementById('node-ip').value;
@@ -529,53 +490,32 @@
                             <div class="crystal-glass p-8 rounded-3xl text-center"><p class="text-[9px] opacity-30 mb-1">State</p><p class="text-emerald-500 font-bold">Online</p></div>
                             <div class="crystal-glass p-8 rounded-3xl text-center"><p class="text-[9px] opacity-30 mb-1">Players</p><p class="font-bold">${d.players.online}</p></div>`;
                     } else { 
-                        res.innerHTML = "<p class='col-span-2 text-rose-500 font-bold p-10 text-center uppercase text-xs'>Node Offline</p>"; 
+                        res.innerHTML = "<p class='col-span-2 text-rose-500 font-bold p-10 text-center uppercase text-xs'>Offline</p>"; 
                     }
-                } catch(e) { 
-                    res.innerHTML = "<p class='col-span-2 text-center p-10 opacity-30'>Connection Error</p>"; 
-                }
+                } catch(e) { res.innerHTML = "Error"; }
             }
         };
 
-        /* --- DONT DELETE: INIT --- */
+        /* --- INITIALIZATION --- */
         window.onload = () => {
             const ctx = document.getElementById('main-chart').getContext('2d');
             mainChart = new Chart(ctx, {
                 type: 'line',
-                data: { 
-                    labels: [], 
-                    datasets: [{ 
-                        data: [], 
-                        borderColor: '#007AFF', 
-                        tension: 0.4, 
-                        fill: true, 
-                        backgroundColor: 'rgba(0,122,255,0.05)', 
-                        pointRadius: 0, 
-                        borderWidth: 4 
-                    }] 
-                },
+                data: { labels: [], datasets: [{ data: [], borderColor: '#007AFF', tension: 0.4, fill: true, backgroundColor: 'rgba(0,122,255,0.05)', pointRadius: 0, borderWidth: 4 }] },
                 options: {
-                    responsive: true, 
-                    maintainAspectRatio: false,
+                    responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: { 
-                        x: { 
-                            display: true, 
-                            grid: { color: 'rgba(255,255,255,0.05)' },
-                            ticks: { font: { size: 8 } }
-                        },
-                        y: { 
-                            display: true, 
-                            grid: { color: 'rgba(255,255,255,0.05)' },
-                            ticks: { font: { size: 8 } }
-                        }
+                        x: { display: true, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        y: { display: true, grid: { color: 'rgba(255,255,255,0.05)' } }
                     }
                 }
             });
             ui.renderDashboard();
-            ui.applyTheme(state.theme || 'dark');
+            ui.applyTheme(state.theme);
             initSnapToggles();
         };
     </script>
 </body>
 </html>
+
