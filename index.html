@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vultrex OS v15.2 - Fixed Logic</title>
+    <title>Vultrex OS v15.3 - Full & Fixed</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -29,7 +29,7 @@
         html, body { overscroll-behavior: none; background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; overflow: hidden; height: 100vh; margin: 0; transition: background 0.5s ease; user-select: none; }
         .crystal-glass { background: var(--glass); backdrop-filter: blur(50px) saturate(190%); border: 1px solid var(--glass-border); }
 
-        /* --- TOGGLES --- */
+        /* --- DRAGGABLE ELEMENTS --- */
         .toggle-container, .lang-container {
             position: relative; width: 100%; height: 60px;
             background: var(--input-fill); border-radius: 1.5rem;
@@ -50,7 +50,7 @@
         .active-label, .active-lang { opacity: 1; transform: scale(1.1); }
         .lang-label { font-size: 18px; }
 
-        /* --- LISTS --- */
+        /* --- TRANSACTION LIST & SWIPE --- */
         .transaction-wrapper { position: relative; border-radius: 2rem; margin-bottom: 0.75rem; overflow: hidden; touch-action: pan-y; }
         .delete-bg { position: absolute; inset: 0; background: var(--delete-red); display: flex; align-items: center; justify-content: flex-end; padding-right: 25px; opacity: 0; }
         .transaction-card { position: relative; z-index: 5; background: var(--glass); transition: transform 0.4s cubic-bezier(0.1, 0.9, 0.2, 1); }
@@ -58,6 +58,7 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .page-hidden { display: none; }
         button:active { transform: scale(0.95); }
+        select, input { outline: none; background: transparent; }
     </style>
 </head>
 <body>
@@ -67,6 +68,7 @@
             <h2 class="text-2xl font-black italic mb-12 uppercase tracking-tighter">Vultrex</h2>
             <nav class="space-y-4 flex-1">
                 <button onclick="ui.switchPage('dashboard')" class="w-full text-left p-5 rounded-2xl font-bold" data-t="nav_dash">📊 Dashboard</button>
+                <button onclick="ui.switchPage('monitor')" class="w-full text-left p-5 rounded-2xl font-bold" data-t="nav_monitor">🌐 Monitor</button>
                 <button onclick="ui.switchPage('settings')" class="w-full text-left p-5 rounded-2xl font-bold" data-t="nav_set">⚙️ Settings</button>
             </nav>
         </div>
@@ -76,7 +78,7 @@
     <div id="app-content" class="p-6 max-w-lg mx-auto h-screen overflow-y-auto no-scrollbar pb-32">
         <header class="flex justify-between items-center mb-10 pt-4">
             <button onclick="ui.toggleSidebar()" class="w-12 h-12 crystal-glass rounded-2xl flex items-center justify-center text-xl">≡</button>
-            <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center font-black text-white">V</div>
+            <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center font-black text-white shadow-lg">V</div>
         </header>
 
         <div id="page-dashboard" class="space-y-6">
@@ -84,11 +86,14 @@
                 <p class="text-[10px] opacity-40 uppercase font-black tracking-widest mb-1" data-t="total_assets">Total Assets</p>
                 <h3 id="balance-display" class="text-5xl font-bold tracking-tighter italic">0.00 €</h3>
             </div>
+            
             <div class="crystal-glass p-6 rounded-[2.5rem] h-64"><canvas id="main-chart"></canvas></div>
+
             <div class="grid grid-cols-2 gap-4">
-                <button onclick="ui.openModal('manual')" class="crystal-glass py-7 rounded-[2rem] font-black uppercase text-[10px]" data-t="btn_new">New Entry</button>
-                <button onclick="ui.openModal('import')" class="bg-blue-600 text-white py-7 rounded-[2rem] font-black uppercase text-[10px]" data-t="btn_scan">AI Scan</button>
+                <button onclick="ui.openModal('manual')" class="crystal-glass py-7 rounded-[2rem] font-black uppercase text-[10px] tracking-widest" data-t="btn_new">New Entry</button>
+                <button onclick="ui.openModal('import')" class="bg-blue-600 text-white py-7 rounded-[2rem] font-black uppercase text-[10px] tracking-widest shadow-lg" data-t="btn_scan">AI Scan</button>
             </div>
+
             <div id="transaction-list" class="space-y-3"></div>
         </div>
 
@@ -99,49 +104,61 @@
                     <p class="text-[9px] font-black opacity-30 uppercase mb-4 text-center" data-t="set_lang">Language</p>
                     <div class="lang-container" id="lang-toggle">
                         <div class="lang-knob" id="l-knob" style="width: calc(33.33% - 6px)">🇩🇪</div>
-                        <div class="lang-label">🇩🇪</div>
-                        <div class="lang-label">🇺🇸</div>
-                        <div class="lang-label">🇫🇷</div>
+                        <div class="lang-label">🇩🇪</div><div class="lang-label">🇺🇸</div><div class="lang-label">🇫🇷</div>
                     </div>
                 </div>
                 <div>
                     <p class="text-[9px] font-black opacity-30 uppercase mb-4 text-center" data-t="set_theme">Appearance</p>
                     <div class="toggle-container" id="theme-toggle" data-idx="0" data-keys='["dark","light"]'>
-                        <div class="toggle-knob" style="width: calc(50% - 6px)">Dark</div>
-                        <div class="toggle-label">Dark</div>
-                        <div class="toggle-label">Light</div>
+                        <div class="toggle-knob" style="width: calc(50% - 6px)"></div>
+                        <div class="toggle-label"></div><div class="toggle-label"></div>
                     </div>
                 </div>
             </div>
+        </div>
+
+        <div id="page-monitor" class="page-hidden space-y-4">
+            <div class="crystal-glass p-8 rounded-[2.5rem]">
+                <input type="text" id="node-ip" placeholder="SERVER IP" class="w-full p-5 rounded-2xl mb-4 text-center font-bold bg-white/5 border border-white/10 text-[10px] uppercase">
+                <button onclick="monitor.ping()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] text-white" data-t="btn_refresh">Refresh Node</button>
+            </div>
+            <div id="monitor-res" class="hidden grid grid-cols-2 gap-4"></div>
         </div>
     </div>
 
     <div id="modal-box" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xl z-[1100] flex items-center justify-center p-6">
         <div class="crystal-glass w-full max-w-sm p-8 rounded-[3.5rem] relative">
-            <button onclick="ui.closeModal()" class="absolute top-6 right-6 w-10 h-10 crystal-glass rounded-xl font-bold">✕</button>
-            <div id="ui-manual" class="space-y-5 pt-4">
+            <button onclick="ui.closeModal()" class="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-xl bg-black/10 font-bold">✕</button>
+            
+            <div id="ui-manual" class="space-y-5 pt-6">
                 <div class="toggle-container" id="type-toggle" data-idx="0" data-keys='["expense","income"]'>
-                    <div class="toggle-knob" style="width: calc(50% - 6px)">Expense</div>
-                    <div class="toggle-label">Expense</div>
-                    <div class="toggle-label">Income</div>
+                    <div class="toggle-knob" style="width: calc(50% - 6px)"></div>
+                    <div class="toggle-label"></div><div class="toggle-label"></div>
                 </div>
                 <div class="toggle-container" id="interval-toggle" data-idx="0" data-keys='["once","monthly"]'>
-                    <div class="toggle-knob" style="width: calc(50% - 6px)">Once</div>
-                    <div class="toggle-label">Once</div>
-                    <div class="toggle-label">Monthly</div>
+                    <div class="toggle-knob" style="width: calc(50% - 6px)"></div>
+                    <div class="toggle-label"></div><div class="toggle-label"></div>
                 </div>
                 <select id="entry-category" class="w-full p-5 rounded-2xl font-bold bg-white/5 border border-white/10 uppercase text-[10px]"></select>
                 <input type="number" id="entry-amount" placeholder="0.00" class="w-full p-5 rounded-2xl font-bold text-center text-4xl bg-white/5 border border-white/10">
-                <button onclick="logic.addEntry()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] text-white" data-t="btn_commit">Commit</button>
+                <button onclick="logic.addEntry()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] text-white shadow-lg" data-t="btn_commit">Commit</button>
+            </div>
+
+            <div id="ui-import" class="hidden space-y-6 text-center pt-6">
+                <div class="w-full h-40 bg-white/5 rounded-[2rem] border-2 border-dashed border-white/10 flex items-center justify-center relative">
+                    <span id="file-label" class="opacity-30 text-[9px] font-black uppercase">PDF</span>
+                    <input type="file" id="pdf-in" accept=".pdf" class="absolute inset-0 opacity-0" onchange="ui.onFile(this)">
+                </div>
+                <button onclick="logic.scanPDF()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] text-white">Scan</button>
             </div>
         </div>
     </div>
 
     <script>
         const i18n = {
-            0: { nav_dash: "📊 Dashboard", nav_set: "⚙️ Einstellungen", total_assets: "Gesamtvermögen", btn_new: "Eintrag", btn_scan: "KI Scan", set_lang: "Sprache", set_theme: "Design", btn_commit: "Speichern", expense: "Ausgabe", income: "Einnahme", once: "Einmalig", monthly: "Monatlich", dark: "Dunkel", light: "Hell" },
-            1: { nav_dash: "📊 Dashboard", nav_set: "⚙️ Settings", total_assets: "Total Assets", btn_new: "New Entry", btn_scan: "AI Scan", set_lang: "Language", set_theme: "Appearance", btn_commit: "Commit", expense: "Expense", income: "Income", once: "Once", monthly: "Monthly", dark: "Dark", light: "Light" },
-            2: { nav_dash: "📊 Dashboard", nav_set: "⚙️ Réglages", total_assets: "Total Actifs", btn_new: "Nouveau", btn_scan: "Scan IA", set_lang: "Langue", set_theme: "Apparence", btn_commit: "Valider", expense: "Dépense", income: "Revenu", once: "Une fois", monthly: "Mensuel", dark: "Sombre", light: "Clair" }
+            0: { nav_dash: "📊 Dashboard", nav_monitor: "🌐 Monitor", nav_set: "⚙️ Einstellungen", total_assets: "Gesamtvermögen", btn_new: "Eintrag", btn_scan: "KI Scan", set_lang: "Sprache", set_theme: "Design", btn_commit: "Speichern", btn_refresh: "Refresh", expense: "Ausgabe", income: "Einnahme", once: "Einmal", monthly: "Monat", dark: "Dunkel", light: "Hell" },
+            1: { nav_dash: "📊 Dashboard", nav_monitor: "🌐 Monitor", nav_set: "⚙️ Settings", total_assets: "Total Assets", btn_new: "New Entry", btn_scan: "AI Scan", set_lang: "Language", set_theme: "Appearance", btn_commit: "Commit", btn_refresh: "Refresh", expense: "Expense", income: "Income", once: "Once", monthly: "Monthly", dark: "Dark", light: "Light" },
+            2: { nav_dash: "📊 Dashboard", nav_monitor: "🌐 Moniteur", nav_set: "⚙️ Réglages", total_assets: "Total Actifs", btn_new: "Nouveau", btn_scan: "Scan IA", set_lang: "Langue", set_theme: "Apparence", btn_commit: "Valider", btn_refresh: "Refresh", expense: "Dépense", income: "Revenu", once: "Une fois", monthly: "Mensuel", dark: "Sombre", light: "Clair" }
         };
 
         let state = JSON.parse(localStorage.getItem('v_v15_final')) || { history: [], theme: 'dark', lang: 0 };
@@ -155,36 +172,35 @@
                 document.getElementById('sidebar-overlay').classList.toggle('hidden');
             },
             switchPage(id) {
-                ['dashboard', 'settings'].forEach(p => document.getElementById('page-' + p).classList.add('page-hidden'));
+                ['dashboard', 'settings', 'monitor'].forEach(p => document.getElementById('page-' + p).classList.add('page-hidden'));
                 document.getElementById('page-' + id).classList.remove('page-hidden');
                 this.toggleSidebar();
             },
-            openModal() { 
+            openModal(type) {
                 document.getElementById('modal-box').classList.remove('hidden');
+                document.getElementById('ui-manual').classList.toggle('hidden', type !== 'manual');
+                document.getElementById('ui-import').classList.toggle('hidden', type !== 'import');
                 logic.updateCategoryDropdown();
             },
             closeModal() { document.getElementById('modal-box').classList.add('hidden'); },
+            onFile(input) { if(input.files[0]) document.getElementById('file-label').innerText = input.files[0].name; },
             applyTheme(themeKey) {
                 state.theme = themeKey;
                 document.body.className = themeKey === 'light' ? 'light-mode' : '';
                 localStorage.setItem('v_v15_final', JSON.stringify(state));
             },
             updateAllTexts() {
-                // Statische Texte
                 document.querySelectorAll('[data-t]').forEach(el => {
                     el.innerText = i18n[state.lang][el.getAttribute('data-t')];
                 });
-                // Toggles aktualisieren
                 document.querySelectorAll('.toggle-container').forEach(container => {
                     const keys = JSON.parse(container.dataset.keys);
                     const labels = container.querySelectorAll('.toggle-label');
                     const knob = container.querySelector('.toggle-knob');
                     const idx = parseInt(container.dataset.idx);
-                    
                     labels[0].innerText = i18n[state.lang][keys[0]];
                     labels[1].innerText = i18n[state.lang][keys[1]];
                     knob.innerText = i18n[state.lang][keys[idx]];
-                    
                     labels.forEach((l, i) => l.classList.toggle('active-label', i === idx));
                 });
             },
@@ -194,12 +210,21 @@
                 list.innerHTML = '';
                 state.history.slice().reverse().forEach(item => {
                     total += item.amount;
-                    list.innerHTML += `<div class="p-6 crystal-glass rounded-3xl mb-3 flex justify-between items-center">
-                        <div><p class="font-black text-[10px] uppercase">${item.cat}</p><p class="text-[8px] opacity-30 uppercase font-bold">${item.date}</p></div>
-                        <p class="font-bold ${item.amount < 0 ? 'text-rose-500' : 'text-emerald-500'}">${item.amount.toFixed(2)} €</p>
-                    </div>`;
+                    list.innerHTML += `<div class="transaction-wrapper"><div class="delete-bg">🗑️</div>
+                        <div class="transaction-card crystal-glass p-6 rounded-3xl flex justify-between items-center" data-id="${item.id}" ontouchstart="swipe.start(event)" ontouchmove="swipe.move(event)" ontouchend="swipe.end(event)">
+                            <div><p class="font-black text-[10px] uppercase">${item.cat}</p><p class="text-[8px] opacity-30 uppercase font-bold">${item.date}</p></div>
+                            <p class="font-bold ${item.amount < 0 ? 'text-rose-500' : 'text-emerald-500'}">${item.amount.toFixed(2)} €</p>
+                        </div></div>`;
                 });
                 document.getElementById('balance-display').innerText = total.toFixed(2) + " €";
+                this.updateChart();
+            },
+            updateChart() {
+                if(!mainChart) return;
+                let run = 0;
+                mainChart.data.labels = state.history.map(h => h.date);
+                mainChart.data.datasets[0].data = state.history.map(h => { run += h.amount; return run; });
+                mainChart.update();
             }
         };
 
@@ -214,18 +239,65 @@
                 const amount = parseFloat(document.getElementById('entry-amount').value);
                 const typeIdx = parseInt(document.getElementById('type-toggle').dataset.idx);
                 if(isNaN(amount)) return;
-                state.history.push({ 
-                    id: Date.now(), 
-                    amount: typeIdx === 0 ? -amount : amount, 
-                    cat: document.getElementById('entry-category').value, 
-                    date: new Date().toLocaleDateString() 
-                });
+                state.history.push({ id: Date.now(), amount: typeIdx === 0 ? -amount : amount, cat: document.getElementById('entry-category').value, date: new Date().toLocaleDateString() });
                 localStorage.setItem('v_v15_final', JSON.stringify(state));
                 ui.renderDashboard(); ui.closeModal();
+            },
+            async scanPDF() {
+                const file = document.getElementById('pdf-in').files[0];
+                if(!file) return;
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    const typedarray = new Uint8Array(e.target.result);
+                    const pdf = await pdfjsLib.getDocument(typedarray).promise;
+                    const page = await pdf.getPage(1);
+                    const content = await page.getTextContent();
+                    const text = content.items.map(s => s.str).join(" ");
+                    const match = text.match(/(\d+[\.,]\d{2})/);
+                    let val = match ? parseFloat(match[0].replace(',', '.')) : 0.00;
+                    state.history.push({ id: Date.now(), amount: -val, cat: 'AI Scan', date: new Date().toLocaleDateString() });
+                    localStorage.setItem('v_v15_final', JSON.stringify(state));
+                    ui.renderDashboard(); ui.closeModal();
+                };
+                reader.readAsArrayBuffer(file);
             }
         };
 
-        // --- UNIFIED DRAG LOGIC ---
+        const swipe = {
+            sX: 0, elem: null,
+            start(e) { this.sX = e.touches[0].clientX; this.elem = e.currentTarget; this.elem.style.transition = 'none'; },
+            move(e) {
+                let d = e.touches[0].clientX - this.sX;
+                if(d < 0) {
+                    this.elem.style.transform = `translateX(${Math.max(d, -120)}px)`;
+                    this.elem.parentElement.querySelector('.delete-bg').style.opacity = Math.abs(d)/100;
+                }
+            },
+            end(e) {
+                let d = e.changedTouches[0].clientX - this.sX;
+                this.elem.style.transition = 'transform 0.4s cubic-bezier(0.1, 0.9, 0.2, 1)';
+                if(d < -100) {
+                    state.history = state.history.filter(t => t.id != this.elem.dataset.id);
+                    localStorage.setItem('v_v15_final', JSON.stringify(state));
+                    ui.renderDashboard();
+                } else { this.elem.style.transform = 'translateX(0)'; }
+            }
+        };
+
+        const monitor = {
+            async ping() {
+                const ip = document.getElementById('node-ip').value;
+                const res = document.getElementById('monitor-res');
+                if(!ip) return;
+                res.innerHTML = "..."; res.classList.remove('hidden');
+                try {
+                    const r = await fetch(`https://api.mcstatus.io/v2/status/java/${ip}`);
+                    const d = await r.json();
+                    res.innerHTML = d.online ? `<div class="crystal-glass p-4 rounded-2xl text-center"><p class="text-emerald-500 font-bold">Online</p></div><div class="crystal-glass p-4 rounded-2xl text-center"><p class="font-bold">${d.players.online}</p></div>` : "Offline";
+                } catch(e) { res.innerHTML = "Error"; }
+            }
+        };
+
         function createDraggable(containerId, isThreeWay) {
             const container = document.getElementById(containerId);
             const knob = container.querySelector('.toggle-knob, .lang-knob');
@@ -233,15 +305,11 @@
             let isDragging = false, startX = 0, currentX = 0;
 
             const update = (idx) => {
-                const steps = isThreeWay ? 3 : 2;
                 const maxX = container.offsetWidth - knob.offsetWidth - 8;
-                currentX = (idx * (maxX / (steps - 1)));
+                currentX = (idx * (maxX / (isThreeWay ? 2 : 1)));
                 knob.style.transform = `translateX(${currentX}px)`;
-                
-                if(isThreeWay) {
-                    state.lang = idx;
-                    ui.updateAllTexts();
-                } else {
+                if(isThreeWay) { state.lang = idx; ui.updateAllTexts(); } 
+                else {
                     container.dataset.idx = idx;
                     const keys = JSON.parse(container.dataset.keys);
                     knob.innerText = i18n[state.lang][keys[idx]];
@@ -255,41 +323,28 @@
             knob.addEventListener('touchstart', (e) => { isDragging = true; startX = e.touches[0].clientX - currentX; knob.classList.add('dragging'); });
             window.addEventListener('touchmove', (e) => {
                 if(!isDragging) return;
-                let x = e.touches[0].clientX - startX;
-                currentX = Math.max(0, Math.min(x, container.offsetWidth - knob.offsetWidth - 8));
+                currentX = Math.max(0, Math.min(e.touches[0].clientX - startX, container.offsetWidth - knob.offsetWidth - 8));
                 knob.style.transform = `translateX(${currentX}px)`;
             });
             window.addEventListener('touchend', () => {
-                if(!isDragging) return;
-                isDragging = false; knob.classList.remove('dragging');
-                const steps = isThreeWay ? 3 : 2;
-                const idx = Math.round(currentX / ((container.offsetWidth - 8) / (steps - 1)));
-                update(idx);
+                if(!isDragging) return; isDragging = false; knob.classList.remove('dragging');
+                update(Math.round(currentX / ((container.offsetWidth - 8) / (isThreeWay ? 2 : 1))));
             });
-            container.onclick = (e) => { if(e.target !== knob) {
-                const idx = parseInt(container.dataset.idx || state.lang);
-                update(idx === (isThreeWay ? 2 : 1) ? 0 : idx + 1);
-            }};
+            container.onclick = (e) => { if(e.target !== knob) { const i = parseInt(container.dataset.idx || state.lang); update(i === (isThreeWay ? 2 : 1) ? 0 : i + 1); }};
             
-            // Initial position
             if(isThreeWay) update(state.lang);
             else if(containerId === 'theme-toggle') update(state.theme === 'light' ? 1 : 0);
             else update(0);
         }
 
         window.onload = () => {
-            ui.updateAllTexts();
-            ui.renderDashboard();
-            createDraggable('lang-toggle', true);
-            createDraggable('theme-toggle', false);
-            createDraggable('type-toggle', false);
-            createDraggable('interval-toggle', false);
-            
             mainChart = new Chart(document.getElementById('main-chart').getContext('2d'), {
-                type: 'line',
-                data: { labels: ["1","2","3"], datasets: [{ data: [5,12,8], borderColor: '#007AFF', tension: 0.4, pointRadius: 0, borderWidth: 3 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
+                type: 'line', data: { labels: [], datasets: [{ data: [], borderColor: '#007AFF', tension: 0.4, fill: true, backgroundColor: 'rgba(0,122,255,0.05)', pointRadius: 0, borderWidth: 3 }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { x: { display: false }, y: { display: false } }, plugins: { legend: { display: false } } }
             });
+            ui.renderDashboard(); ui.updateAllTexts();
+            createDraggable('lang-toggle', true); createDraggable('theme-toggle', false);
+            createDraggable('type-toggle', false); createDraggable('interval-toggle', false);
         };
     </script>
 </body>
