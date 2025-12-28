@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vultrex Crystal OS - Absolute Full Build</title>
+    <title>Vultrex Crystal OS - Ultra Full Build</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -18,47 +18,64 @@
             --accent: #007AFF;
             --delete-red: #ff3b30;
             --input-fill: rgba(255, 255, 255, 0.05);
-            --shadow-color: rgba(0, 0, 0, 0.9);
+            --card-shadow: rgba(0, 0, 0, 0.9);
+            --sidebar-bg: rgba(10, 10, 10, 0.8);
         }
 
         .light-mode {
             --bg: #f2f2f7;
             --text: #1c1c1e;
-            --glass: rgba(255, 255, 255, 0.8);
-            --glass-border: rgba(0, 0, 0, 0.08);
+            --glass: rgba(255, 255, 255, 0.9);
+            --glass-border: rgba(0, 0, 0, 0.1);
             --input-fill: #ffffff;
-            --shadow-color: rgba(0, 0, 0, 0.05);
+            --card-shadow: rgba(0, 0, 0, 0.05);
+            --sidebar-bg: rgba(255, 255, 255, 0.9);
         }
 
         body {
             background: var(--bg);
             color: var(--text);
-            font-family: -apple-system, system-ui, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
             overflow: hidden;
             height: 100vh;
             margin: 0;
-            transition: background 0.5s ease;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* --- UI ELEMENTS --- */
-        .crystal-glass {
-            background: var(--glass);
-            backdrop-filter: blur(50px) saturate(200%);
-            -webkit-backdrop-filter: blur(50px) saturate(200%);
-            border: 1px solid var(--glass-border);
-            box-shadow: 0 10px 30px var(--shadow-color);
+        /* --- LIGHT MODE SPECIFIC OVERRIDES --- */
+        .light-mode .crystal-glass {
+            background: #ffffff;
+            border-color: rgba(0,0,0,0.05);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.04);
+        }
+        .light-mode input {
+            background: #f9f9f9 !important;
+            color: #000 !important;
+            border: 1px solid #ddd !important;
+        }
+        .light-mode .toggle-container {
+            background: #e5e5ea;
         }
 
-        /* --- SNAP TOGGLE LOGIC --- */
+        /* --- UNIVERSAL UI --- */
+        .crystal-glass {
+            background: var(--glass);
+            backdrop-filter: blur(50px) saturate(210%);
+            -webkit-backdrop-filter: blur(50px) saturate(210%);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 10px 30px var(--card-shadow);
+        }
+
+        /* --- SNAP TOGGLES --- */
         .toggle-container {
             position: relative;
             width: 100%;
-            height: 66px;
+            height: 60px;
             background: var(--input-fill);
-            border-radius: 22px;
-            padding: 5px;
+            border-radius: 20px;
+            padding: 4px;
             display: flex;
             align-items: center;
             border: 1px solid var(--glass-border);
@@ -68,40 +85,40 @@
 
         .toggle-knob {
             position: absolute;
-            height: 54px;
-            width: calc(50% - 8px);
-            background: linear-gradient(145deg, rgba(255,255,255,0.4), rgba(255,255,255,0)), var(--accent);
-            border-radius: 18px;
+            height: 52px;
+            width: calc(50% - 6px);
+            background: linear-gradient(145deg, rgba(255,255,255,0.3), rgba(255,255,255,0)), var(--accent);
+            border-radius: 17px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 900;
             color: white;
             z-index: 10;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
             text-transform: uppercase;
-            transition: transform 0.4s cubic-bezier(0.2, 1.2, 0.3, 1);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .toggle-label {
             flex: 1;
             text-align: center;
-            font-size: 10px;
+            font-size: 9px;
             font-weight: 800;
             text-transform: uppercase;
-            opacity: 0.2;
+            opacity: 0.3;
             z-index: 5;
             transition: opacity 0.3s;
         }
 
-        .active-label { opacity: 1; }
+        .active-label { opacity: 1; color: var(--text); }
 
         /* --- TRANSACTION SWIPE --- */
         .transaction-wrapper {
             position: relative;
-            border-radius: 2.5rem;
-            margin-bottom: 1rem;
+            border-radius: 2rem;
+            margin-bottom: 0.75rem;
             overflow: hidden;
         }
 
@@ -115,41 +132,45 @@
             padding-right: 30px;
             opacity: 0;
             z-index: 1;
+            border-radius: 2rem;
         }
 
         .transaction-card {
             position: relative;
             z-index: 5;
             background: var(--glass);
-            transition: transform 0.3s ease;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .page-hidden { display: none; }
     </style>
 </head>
-<body>
+<body class="dark-mode">
 
     <div id="login-screen" class="fixed inset-0 z-[1000] bg-black flex items-center justify-center p-8">
         <div class="w-full max-w-sm text-center">
-            <h1 class="text-7xl font-black mb-12 italic text-white">V.</h1>
+            <h1 class="text-7xl font-black mb-12 italic text-white tracking-tighter">V<span class="text-blue-600">.</span></h1>
             <div class="crystal-glass p-10 rounded-[3.5rem]">
                 <input type="text" id="login-user" placeholder="IDENTITY" class="w-full p-5 rounded-2xl mb-4 text-center font-bold bg-white/5 border border-white/10 text-white uppercase text-xs">
                 <input type="password" id="login-pass" placeholder="PASSKEY" class="w-full p-5 rounded-2xl mb-8 text-center font-bold bg-white/5 border border-white/10 text-white">
-                <button onclick="auth.handleLogin()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-xs text-white">Establish Link</button>
+                <button onclick="auth.login()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-xs text-white shadow-xl shadow-blue-600/20">Establish Link</button>
             </div>
         </div>
     </div>
 
-    <div id="sidebar" class="fixed inset-y-0 left-0 w-72 crystal-glass z-[950] -translate-x-full transition-transform duration-500 rounded-r-[3rem]">
+    <div id="sidebar" class="fixed inset-y-0 left-0 w-72 crystal-glass z-[950] -translate-x-full transition-transform duration-700 rounded-r-[3rem]">
         <div class="p-10 flex flex-col h-full">
-            <h2 class="text-2xl font-black italic mb-10">Vultrex OS</h2>
+            <div class="mb-10">
+                <h2 class="text-2xl font-black italic">Vultrex</h2>
+                <p class="text-[8px] opacity-30 font-bold uppercase tracking-widest">Core Interface v5.2</p>
+            </div>
             <nav class="space-y-4 flex-1">
-                <button onclick="ui.switchPage('dashboard')" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold">Dashboard</button>
-                <button onclick="ui.switchPage('monitor')" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold">Monitor</button>
-                <button onclick="ui.switchPage('settings')" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold">Settings</button>
+                <button onclick="ui.switchPage('dashboard')" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold transition-all">Analytics</button>
+                <button onclick="ui.switchPage('monitor')" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold transition-all">Node State</button>
+                <button onclick="ui.switchPage('settings')" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold transition-all">Settings</button>
             </nav>
-            <button onclick="auth.handleLogout()" class="p-5 rounded-2xl bg-rose-500/10 text-rose-500 font-bold uppercase text-[10px]">Disconnect</button>
+            <button onclick="auth.logout()" class="p-5 rounded-2xl bg-rose-500/10 text-rose-500 font-bold uppercase text-[10px] tracking-widest">Terminate</button>
         </div>
     </div>
     <div id="sidebar-overlay" onclick="ui.toggleSidebar()" class="fixed inset-0 bg-black/60 backdrop-blur-md z-[900] hidden"></div>
@@ -158,31 +179,32 @@
         
         <header class="flex justify-between items-center mb-10 pt-4">
             <button onclick="ui.toggleSidebar()" class="w-12 h-12 crystal-glass rounded-full flex items-center justify-center text-xl font-bold">≡</button>
-            <div id="status-dot" class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center font-bold border-2 border-white/20 shadow-lg">V</div>
+            <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center font-bold border-2 border-white/20 text-white">V</div>
         </header>
 
         <div id="page-dashboard" class="space-y-6">
-            <div class="crystal-glass p-10 rounded-[4rem]">
-                <p class="text-[10px] opacity-40 uppercase font-black tracking-widest mb-1">Total Assets</p>
+            <div class="crystal-glass p-10 rounded-[3.5rem] relative overflow-hidden">
+                <div class="absolute right-[-10%] top-[-20%] text-[120px] font-black italic opacity-[0.03] pointer-events-none">CASH</div>
+                <p class="text-[10px] opacity-40 uppercase font-black tracking-widest mb-1">Current Balance</p>
                 <h3 id="balance-display" class="text-6xl font-bold tracking-tighter italic">0.00 €</h3>
             </div>
 
-            <div class="crystal-glass p-4 rounded-[3rem] h-60">
-                <canvas id="finance-chart"></canvas>
+            <div class="crystal-glass p-6 rounded-[3rem] h-64">
+                <canvas id="main-chart"></canvas>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
-                <button onclick="ui.openModal('manual')" class="crystal-glass py-8 rounded-[2.5rem] font-bold uppercase text-[10px] tracking-widest">Add Record</button>
-                <button onclick="ui.openModal('import')" class="bg-blue-600 text-white py-8 rounded-[2.5rem] font-bold uppercase text-[10px] tracking-widest">AI PDF Scan</button>
+                <button onclick="ui.openModal('manual')" class="crystal-glass py-8 rounded-[2.5rem] font-bold uppercase text-[10px] tracking-widest active:scale-95 transition-all">Manual</button>
+                <button onclick="ui.openModal('import')" class="bg-blue-600 text-white py-8 rounded-[2.5rem] font-bold uppercase text-[10px] tracking-widest shadow-lg shadow-blue-600/20">AI Scan</button>
             </div>
 
-            <div id="transaction-list" class="space-y-3"></div>
+            <div id="transaction-list" class="space-y-1"></div>
         </div>
 
         <div id="page-settings" class="page-hidden space-y-6">
-            <h2 class="text-2xl font-black italic mb-8">System</h2>
+            <h2 class="text-3xl font-black italic mb-8">System</h2>
             <div class="crystal-glass p-8 rounded-[3rem]">
-                <p class="text-[10px] font-black uppercase opacity-40 mb-4 tracking-widest text-center">Color Mode</p>
+                <p class="text-[10px] font-black uppercase opacity-40 mb-5 tracking-widest text-center">Appearance</p>
                 <div class="toggle-container" id="theme-toggle" data-val="dark" data-opts='["Dark","Light"]'>
                     <div class="toggle-knob">Dark</div>
                     <div class="toggle-label active-label">Dark</div>
@@ -192,7 +214,7 @@
         </div>
 
         <div id="page-monitor" class="page-hidden space-y-6">
-            <div class="crystal-glass p-8 rounded-[3rem]">
+            <div class="crystal-glass p-8 rounded-[3.5rem]">
                 <input type="text" id="node-ip" placeholder="NODE IP" class="w-full p-5 rounded-2xl mb-4 text-center font-bold bg-white/5 border-none outline-none text-white">
                 <button onclick="monitor.ping()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold uppercase text-white tracking-widest text-[10px]">Refresh Node</button>
             </div>
@@ -200,7 +222,7 @@
         </div>
     </div>
 
-    <div id="modal-box" class="hidden fixed inset-0 bg-black/90 backdrop-blur-3xl z-[1100] flex items-center justify-center p-6">
+    <div id="modal-box" class="hidden fixed inset-0 bg-black/95 backdrop-blur-3xl z-[1100] flex items-center justify-center p-6">
         <div class="crystal-glass w-full max-w-sm p-10 rounded-[4rem]">
             <div id="ui-manual" class="space-y-6">
                 <div class="toggle-container" id="type-toggle" data-val="Expense" data-opts='["Expense","Income"]'>
@@ -208,58 +230,57 @@
                     <div class="toggle-label active-label">Expense</div>
                     <div class="toggle-label">Income</div>
                 </div>
-                <input type="text" id="entry-name" placeholder="LABEL" class="w-full p-5 rounded-2xl font-bold text-center bg-white/5 border border-white/10 text-white uppercase text-xs">
-                <input type="number" id="entry-amount" placeholder="0.00" class="w-full p-5 rounded-2xl font-bold text-center text-4xl bg-white/5 border border-white/10 text-white">
-                <button onclick="logic.addEntry()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest text-white">Commit Data</button>
-            </div>
-            
-            <div id="ui-import" class="hidden space-y-6 text-center">
-                <div class="w-full h-40 bg-white/5 rounded-[2.5rem] border-2 border-dashed border-white/10 flex items-center justify-center relative">
-                    <span id="file-label" class="opacity-20 text-[10px] font-black uppercase">Select PDF</span>
-                    <input type="file" id="pdf-in" accept=".pdf" class="absolute inset-0 opacity-0" onchange="ui.onFile(this)">
+
+                <div class="toggle-container" id="interval-toggle" data-val="Once" data-opts='["Once","Monthly"]'>
+                    <div class="toggle-knob">Once</div>
+                    <div class="toggle-label active-label">Once</div>
+                    <div class="toggle-label">Monthly</div>
                 </div>
-                <button onclick="logic.scanPDF()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest text-white">Analyze</button>
+
+                <input type="text" id="entry-name" placeholder="DESCRIPTION" class="w-full p-5 rounded-2xl font-bold text-center bg-white/5 border border-white/10 text-white uppercase text-xs">
+                <input type="number" id="entry-amount" placeholder="0.00" class="w-full p-5 rounded-2xl font-bold text-center text-4xl bg-white/5 border border-white/10 text-white">
+                
+                <button onclick="logic.addEntry()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest text-white">Save Entry</button>
             </div>
 
-            <button onclick="ui.closeModal()" class="w-full text-white/20 font-bold text-[10px] uppercase mt-10 tracking-widest">Back</button>
+            <div id="ui-import" class="hidden space-y-6 text-center">
+                <div class="w-full h-44 bg-white/5 rounded-[3rem] border-2 border-dashed border-white/10 flex items-center justify-center relative">
+                    <span id="file-label" class="opacity-20 text-[10px] font-black uppercase">Drop PDF Invoice</span>
+                    <input type="file" id="pdf-in" accept=".pdf" class="absolute inset-0 opacity-0" onchange="ui.onFile(this)">
+                </div>
+                <button onclick="logic.scanPDF()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest text-white">AI Analysis</button>
+            </div>
+
+            <button onclick="ui.closeModal()" class="w-full text-white/20 font-bold text-[10px] uppercase mt-10 tracking-[0.3em]">Back to Core</button>
         </div>
     </div>
 
     <script>
-        /* --- CORE DATA STATE --- */
-        let state = JSON.parse(localStorage.getItem('v_vault_v4')) || { history: [], auth: null, theme: 'dark' };
-        let financeChart = null;
+        /* --- STATE & STORAGE --- */
+        let state = JSON.parse(localStorage.getItem('v_vault_v5')) || { history: [], auth: null, theme: 'dark' };
+        let mainChart = null;
 
-        /* --- AUTH MODULE --- */
+        /* --- AUTH --- */
         const auth = {
-            handleLogin() {
+            login() {
                 const u = document.getElementById('login-user').value;
                 const p = document.getElementById('login-pass').value;
-                if(u && p) {
-                    state.auth = { user: u };
-                    logic.save();
-                    location.reload();
-                }
+                if(u && p) { state.auth = { user: u }; logic.save(); location.reload(); }
             },
-            handleLogout() {
-                state.auth = null;
-                logic.save();
-                location.reload();
-            }
+            logout() { state.auth = null; logic.save(); location.reload(); }
         };
 
-        /* --- UI & INTERFACE --- */
+        /* --- UI ENGINE --- */
         const ui = {
             toggleSidebar() {
                 const sb = document.getElementById('sidebar');
-                const isOpen = sb.style.transform === 'translateX(0px)';
-                sb.style.transform = isOpen ? 'translateX(-100%)' : 'translateX(0px)';
+                const open = sb.style.transform === 'translateX(0px)';
+                sb.style.transform = open ? 'translateX(-100%)' : 'translateX(0px)';
                 document.getElementById('sidebar-overlay').classList.toggle('hidden');
             },
 
             switchPage(id) {
-                const pages = ['dashboard', 'settings', 'monitor'];
-                pages.forEach(p => document.getElementById('page-' + p).classList.add('page-hidden'));
+                ['dashboard', 'settings', 'monitor'].forEach(p => document.getElementById('page-' + p).classList.add('page-hidden'));
                 document.getElementById('page-' + id).classList.remove('page-hidden');
                 this.toggleSidebar();
             },
@@ -272,14 +293,13 @@
 
             closeModal() { document.getElementById('modal-box').classList.add('hidden'); },
 
-            onFile(input) {
-                if(input.files[0]) document.getElementById('file-label').innerText = input.files[0].name;
-            },
+            onFile(input) { if(input.files[0]) document.getElementById('file-label').innerText = input.files[0].name; },
 
             applyTheme(theme) {
                 state.theme = theme;
                 document.body.className = theme === 'light' ? 'light-mode' : 'dark-mode';
                 logic.save();
+                if(mainChart) this.updateChart(); // Refresh chart colors
             },
 
             renderDashboard() {
@@ -289,25 +309,19 @@
                 
                 state.history.slice().reverse().forEach(item => {
                     sum += item.amount;
-                    const container = document.createElement('div');
-                    container.className = 'transaction-wrapper';
-                    container.innerHTML = `
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'transaction-wrapper';
+                    wrapper.innerHTML = `
                         <div class="delete-bg">🗑️</div>
-                        <div class="transaction-card crystal-glass p-6 rounded-[2.5rem] flex justify-between items-center" 
-                             data-id="${item.id}"
-                             ontouchstart="swipe.start(event)" 
-                             ontouchmove="swipe.move(event)" 
-                             ontouchend="swipe.end(event)">
+                        <div class="transaction-card crystal-glass p-7 rounded-[2.5rem] flex justify-between items-center" 
+                             data-id="${item.id}" ontouchstart="swipe.start(event)" ontouchmove="swipe.move(event)" ontouchend="swipe.end(event)">
                             <div>
-                                <p class="font-bold text-sm text-white">${item.desc}</p>
+                                <p class="font-bold text-sm text-white">${item.desc} ${item.interval === 'Monthly' ? '🔄' : ''}</p>
                                 <p class="text-[9px] opacity-20 font-black tracking-widest uppercase">${item.date}</p>
                             </div>
-                            <p class="font-black ${item.amount < 0 ? 'text-rose-500' : 'text-emerald-500'}">
-                                ${item.amount.toFixed(2)} €
-                            </p>
-                        </div>
-                    `;
-                    list.appendChild(container);
+                            <p class="font-black text-lg ${item.amount < 0 ? 'text-rose-500' : 'text-emerald-500'}">${item.amount.toFixed(2)} €</p>
+                        </div>`;
+                    list.appendChild(wrapper);
                 });
 
                 document.getElementById('balance-display').innerText = sum.toFixed(2) + " €";
@@ -315,18 +329,75 @@
             },
 
             updateChart() {
-                if(!financeChart) return;
-                let current = 0;
-                financeChart.data.labels = state.history.map(h => h.date);
-                financeChart.data.datasets[0].data = state.history.map(h => {
-                    current += h.amount;
-                    return current;
+                if(!mainChart) return;
+                const isLight = state.theme === 'light';
+                let runningTotal = 0;
+
+                mainChart.options.scales.x.ticks.color = isLight ? '#888' : '#444';
+                mainChart.options.scales.y.ticks.color = isLight ? '#888' : '#444';
+                mainChart.options.scales.x.grid.color = isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
+                mainChart.options.scales.y.grid.color = isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
+
+                mainChart.data.labels = state.history.map(h => h.date);
+                mainChart.data.datasets[0].data = state.history.map(h => {
+                    runningTotal += h.amount;
+                    return runningTotal;
                 });
-                financeChart.update();
+                mainChart.update();
             }
         };
 
-        /* --- SNAP TOGGLE PHYSICS --- */
+        /* --- LOGIC & DATA --- */
+        const logic = {
+            addEntry() {
+                const amount = parseFloat(document.getElementById('entry-amount').value);
+                const type = document.getElementById('type-toggle').dataset.val;
+                const interval = document.getElementById('interval-toggle').dataset.val;
+                if(isNaN(amount)) return;
+
+                state.history.push({
+                    id: Date.now(),
+                    desc: document.getElementById('entry-name').value || "Entry",
+                    amount: type === 'Expense' ? -amount : amount,
+                    interval: interval,
+                    date: new Date().toLocaleDateString('de-DE')
+                });
+
+                this.save(); ui.renderDashboard(); ui.closeModal();
+                document.getElementById('entry-amount').value = '';
+                document.getElementById('entry-name').value = '';
+            },
+
+            async scanPDF() {
+                const file = document.getElementById('pdf-in').files[0];
+                if(!file) return;
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    const typedarray = new Uint8Array(e.target.result);
+                    const pdf = await pdfjsLib.getDocument(typedarray).promise;
+                    const page = await pdf.getPage(1);
+                    const content = await page.getTextContent();
+                    const text = content.items.map(s => s.str).join(" ");
+                    const match = text.match(/(\d+[\.,]\d{2})/);
+                    let val = match ? parseFloat(match[0].replace(',', '.')) : 29.99;
+
+                    state.history.push({
+                        id: Date.now(),
+                        desc: "AI: " + file.name.substring(0, 12),
+                        amount: -val,
+                        interval: 'Once',
+                        date: new Date().toLocaleDateString('de-DE')
+                    });
+                    this.save(); ui.renderDashboard(); ui.closeModal();
+                };
+                reader.readAsArrayBuffer(file);
+            },
+
+            delete(id) { state.history = state.history.filter(t => t.id != id); this.save(); ui.renderDashboard(); },
+            save() { localStorage.setItem('v_vault_v5', JSON.stringify(state)); }
+        };
+
+        /* --- SNAP PHYSICS SYSTEM --- */
         const initSnapToggles = () => {
             document.querySelectorAll('.toggle-container').forEach(container => {
                 const knob = container.querySelector('.toggle-knob');
@@ -336,17 +407,17 @@
 
                 const snap = (val) => {
                     const idx = options.indexOf(val);
-                    const targetPos = idx === 0 ? 0 : (container.offsetWidth / 2 - 4);
+                    const max = container.offsetWidth / 2 - 4;
+                    const target = idx === 0 ? 0 : max;
                     knob.style.transition = 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-                    knob.style.transform = `translateX(${targetPos}px)`;
+                    knob.style.transform = `translateX(${target}px)`;
                     knob.innerText = options[idx];
                     labels.forEach((l, i) => l.classList.toggle('active-label', i === idx));
                     container.dataset.val = val;
                     if(container.id === 'theme-toggle') ui.applyTheme(val.toLowerCase());
                 };
 
-                // Init Position
-                setTimeout(() => snap(container.dataset.val), 50);
+                setTimeout(() => snap(container.dataset.val), 100);
 
                 container.addEventListener('touchstart', (e) => {
                     startX = e.touches[0].clientX;
@@ -371,37 +442,31 @@
                 });
 
                 container.addEventListener('click', () => {
-                    const next = container.dataset.val === options[0] ? options[1] : options[0];
-                    snap(next);
+                    snap(container.dataset.val === options[0] ? options[1] : options[0]);
                 });
             });
         };
 
-        /* --- SWIPE TO DELETE --- */
+        /* --- SWIPE SYSTEM --- */
         const swipe = {
-            startX: 0, 
-            elem: null,
-            start(e) {
-                this.startX = e.touches[0].clientX;
-                this.elem = e.currentTarget;
-                this.elem.style.transition = 'none';
-            },
+            sX: 0, elem: null,
+            start(e) { this.sX = e.touches[0].clientX; this.elem = e.currentTarget; this.elem.style.transition = 'none'; },
             move(e) {
                 if(!this.elem) return;
-                let diff = e.touches[0].clientX - this.startX;
-                if(diff < 0) {
-                    let move = Math.max(diff, -150);
-                    this.elem.style.transform = `translateX(${move}px)`;
-                    this.elem.parentElement.querySelector('.delete-bg').style.opacity = Math.abs(move) / 100;
+                let d = e.touches[0].clientX - this.sX;
+                if(d < 0) {
+                    let m = Math.max(d, -150);
+                    this.elem.style.transform = `translateX(${m}px)`;
+                    this.elem.parentElement.querySelector('.delete-bg').style.opacity = Math.abs(m) / 100;
                 }
             },
             end(e) {
                 if(!this.elem) return;
-                let diff = e.changedTouches[0].clientX - this.startX;
+                let d = e.changedTouches[0].clientX - this.sX;
                 this.elem.style.transition = 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
-                if(diff < -110) {
+                if(d < -110) {
                     this.elem.style.transform = 'translateX(-150%)';
-                    setTimeout(() => logic.remove(this.elem.dataset.id), 300);
+                    setTimeout(() => logic.delete(this.elem.dataset.id), 300);
                 } else {
                     this.elem.style.transform = 'translateX(0px)';
                     this.elem.parentElement.querySelector('.delete-bg').style.opacity = '0';
@@ -410,114 +475,41 @@
             }
         };
 
-        /* --- DATA LOGIC --- */
-        const logic = {
-            addEntry() {
-                const amount = parseFloat(document.getElementById('entry-amount').value);
-                const type = document.getElementById('type-toggle').dataset.val;
-                if(isNaN(amount)) return;
-
-                state.history.push({
-                    id: Date.now(),
-                    desc: document.getElementById('entry-name').value || "Unnamed",
-                    amount: type === 'Expense' ? -amount : amount,
-                    date: new Date().toLocaleDateString('de-DE')
-                });
-
-                this.save();
-                ui.renderDashboard();
-                ui.closeModal();
-                document.getElementById('entry-amount').value = '';
-            },
-
-            async scanPDF() {
-                const file = document.getElementById('pdf-in').files[0];
-                if(!file) return;
-
-                const reader = new FileReader();
-                reader.onload = async (e) => {
-                    const typedarray = new Uint8Array(e.target.result);
-                    const pdf = await pdfjsLib.getDocument(typedarray).promise;
-                    const page = await pdf.getPage(1);
-                    const content = await page.getTextContent();
-                    const text = content.items.map(s => s.str).join(" ");
-                    
-                    const match = text.match(/(\d+[\.,]\d{2})/);
-                    let val = match ? parseFloat(match[0].replace(',', '.')) : 15.50;
-
-                    state.history.push({
-                        id: Date.now(),
-                        desc: "PDF: " + file.name.substring(0, 10),
-                        amount: -val,
-                        date: new Date().toLocaleDateString('de-DE')
-                    });
-
-                    this.save();
-                    ui.renderDashboard();
-                    ui.closeModal();
-                };
-                reader.readAsArrayBuffer(file);
-            },
-
-            remove(id) {
-                state.history = state.history.filter(t => t.id != id);
-                this.save();
-                ui.renderDashboard();
-            },
-
-            save() { localStorage.setItem('v_vault_v4', JSON.stringify(state)); }
-        };
-
-        /* --- MONITOR MODULE --- */
+        /* --- MONITOR --- */
         const monitor = {
             async ping() {
                 const ip = document.getElementById('node-ip').value;
                 const res = document.getElementById('monitor-res');
-                if(!ip) return;
-
-                res.innerHTML = "<p class='col-span-2 text-center py-10 opacity-30 text-[10px] font-black'>Polling Node...</p>";
+                res.innerHTML = "<p class='col-span-2 text-center py-10 opacity-30 text-[10px] font-bold'>Polling...</p>";
                 res.classList.remove('hidden');
-
                 try {
                     const r = await fetch(`https://api.mcstatus.io/v2/status/java/${ip}`);
                     const d = await r.json();
                     if(d.online) {
                         res.innerHTML = `
-                            <div class="crystal-glass p-6 rounded-3xl text-center"><p class="text-[8px] opacity-20 mb-1">STATE</p><p class="text-emerald-500 font-bold uppercase">Active</p></div>
-                            <div class="crystal-glass p-6 rounded-3xl text-center"><p class="text-[8px] opacity-20 mb-1">LOAD</p><p class="font-bold text-xl">${d.players.online}</p></div>
-                        `;
-                    } else {
-                        res.innerHTML = "<p class='col-span-2 text-rose-500 text-center font-bold p-10'>Node Unreachable</p>";
-                    }
+                            <div class="crystal-glass p-6 rounded-3xl text-center"><p class="text-[8px] opacity-20 mb-1 tracking-widest">STATE</p><p class="text-emerald-500 font-bold uppercase text-xs">Active</p></div>
+                            <div class="crystal-glass p-6 rounded-3xl text-center"><p class="text-[8px] opacity-20 mb-1 tracking-widest">LOAD</p><p class="font-bold text-xl">${d.players.online}</p></div>`;
+                    } else { res.innerHTML = "<p class='col-span-2 text-rose-500 text-center font-bold p-10'>Offline</p>"; }
                 } catch(e) { res.innerHTML = "Error"; }
             }
         };
 
-        /* --- INITIALIZATION --- */
+        /* --- INIT --- */
         window.onload = () => {
             if(state.auth) {
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('app-content').classList.remove('hidden');
                 
-                financeChart = new Chart(document.getElementById('finance-chart').getContext('2d'), {
+                mainChart = new Chart(document.getElementById('main-chart').getContext('2d'), {
                     type: 'line',
-                    data: {
-                        labels: [],
-                        datasets: [{
-                            data: [],
-                            borderColor: '#007AFF',
-                            tension: 0.4,
-                            fill: true,
-                            backgroundColor: 'rgba(0,122,255,0.05)',
-                            pointRadius: 0,
-                            borderWidth: 3
-                        }]
-                    },
+                    data: { labels: [], datasets: [{ data: [], borderColor: '#007AFF', tension: 0.4, fill: true, backgroundColor: 'rgba(0,122,255,0.05)', pointRadius: 0, borderWidth: 3 }] },
                     options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
+                        responsive: true, maintainAspectRatio: false,
                         plugins: { legend: { display: false } },
-                        scales: { x: { display: false }, y: { display: false } }
+                        scales: { 
+                            x: { display: true, title: { display: true, text: 'Date', font: { size: 8 } }, ticks: { font: { size: 7 } }, grid: { display: false } },
+                            y: { display: true, title: { display: true, text: 'EUR', font: { size: 8 } }, ticks: { font: { size: 7 } }, grid: { drawBorder: false } }
+                        }
                     }
                 });
 
