@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vultrex OS v13.9</title>
+    <title>Vultrex OS v14.3</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -11,35 +11,26 @@
     
     <style>
         :root {
-            --bg: #000000;
-            --text: #ffffff;
+            --bg: #000000; --text: #ffffff; --accent: #007AFF;
             --glass: rgba(255, 255, 255, 0.03);
             --glass-border: rgba(255, 255, 255, 0.12);
-            --accent: #007AFF;
-            --delete-red: #ff3b30;
             --input-fill: rgba(255, 255, 255, 0.05);
-            --card-shadow: rgba(0, 0, 0, 0.9);
+            --delete-red: #ff3b30;
             --knob-gradient: linear-gradient(160deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%);
         }
 
         .light-mode {
-            --bg: #F2F2F7;
-            --text: #1C1C1E;
+            --bg: #F2F2F7; --text: #1C1C1E;
             --glass: rgba(255, 255, 255, 0.85);
             --glass-border: rgba(0, 0, 0, 0.08);
             --input-fill: rgba(0, 0, 0, 0.05);
-            --card-shadow: rgba(0, 0, 0, 0.08);
         }
 
         body {
-            background: var(--bg);
-            color: var(--text);
+            background: var(--bg); color: var(--text);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            overflow: hidden;
-            height: 100vh;
-            margin: 0;
-            transition: background 0.5s ease;
-            user-select: none;
+            overflow: hidden; height: 100vh; margin: 0;
+            transition: background 0.5s ease; user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -48,91 +39,45 @@
             backdrop-filter: blur(50px) saturate(190%);
             -webkit-backdrop-filter: blur(50px) saturate(190%);
             border: 1px solid var(--glass-border);
-            box-shadow: 0 10px 30px var(--card-shadow);
         }
 
-        /* Responsive Fixes für Buttons & Animationen */
-        button, .transaction-card, .toggle-container {
-            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        button:active, .transaction-card:active {
-            transform: scale(0.96);
-        }
-
-        /* Toggle UI */
+        /* --- DRAGGABLE TOGGLE --- */
         .toggle-container {
-            position: relative;
-            width: 100%;
-            height: 60px;
-            background: var(--input-fill);
-            border-radius: 1.5rem;
-            padding: 4px;
-            display: flex;
-            align-items: center;
-            border: 1px solid var(--glass-border);
-            cursor: pointer;
+            position: relative; width: 100%; height: 60px;
+            background: var(--input-fill); border-radius: 1.5rem;
+            padding: 4px; display: flex; align-items: center;
+            border: 1px solid var(--glass-border); touch-action: none;
         }
 
         .toggle-knob {
-            position: absolute;
-            left: 4px;
-            height: 50px;
-            width: calc(50% - 6px);
-            background: var(--knob-gradient), var(--accent);
-            border-radius: 1.2rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            font-weight: 900;
-            color: white !important;
-            z-index: 10;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            position: absolute; left: 4px; height: 50px;
+            width: calc(50% - 6px); background: var(--knob-gradient), var(--accent);
+            border-radius: 1.2rem; display: flex; align-items: center;
+            justify-content: center; font-size: 10px; font-weight: 900;
+            color: white !important; z-index: 10; cursor: grab;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: transform 0.3s cubic-bezier(0.2, 1, 0.3, 1);
             text-transform: uppercase;
-            transition: transform 0.4s cubic-bezier(0.2, 1, 0.3, 1);
         }
+        .toggle-knob.dragging { transition: none; }
 
         .toggle-label {
-            flex: 1;
-            text-align: center;
-            font-size: 10px;
-            font-weight: 800;
-            text-transform: uppercase;
-            opacity: 0.3;
-            z-index: 5;
-            color: var(--text);
+            flex: 1; text-align: center; font-size: 10px; font-weight: 800;
+            text-transform: uppercase; opacity: 0.2; transition: 0.2s;
+            color: var(--text); z-index: 5;
         }
         .active-label { opacity: 1; }
 
-        /* Swipe to Delete Logic */
-        .transaction-wrapper { 
-            position: relative; 
-            border-radius: 2rem; 
-            margin-bottom: 0.75rem; 
-            overflow: hidden;
-            touch-action: pan-y;
-        }
-        .delete-bg { 
-            position: absolute; 
-            inset: 0; 
-            background: var(--delete-red); 
-            display: flex; 
-            align-items: center; 
-            justify-content: flex-end; 
-            padding-right: 30px; 
-            opacity: 0; 
-            z-index: 1; 
-            font-size: 1.5rem;
-        }
-        .transaction-card { 
-            position: relative; 
-            z-index: 5; 
-            background: var(--glass); 
-            transition: transform 0.4s cubic-bezier(0.1, 0.9, 0.2, 1);
-        }
+        /* --- SWIPE TO DELETE --- */
+        .transaction-wrapper { position: relative; border-radius: 2rem; margin-bottom: 0.75rem; overflow: hidden; touch-action: pan-y; }
+        .delete-bg { position: absolute; inset: 0; background: var(--delete-red); display: flex; align-items: center; justify-content: flex-end; padding-right: 25px; opacity: 0; }
+        .transaction-card { position: relative; z-index: 5; background: var(--glass); transition: transform 0.4s cubic-bezier(0.1, 0.9, 0.2, 1); }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .page-hidden { display: none; }
+        button:active { transform: scale(0.95); }
+        
+        select, input { outline: none; background: transparent; }
     </style>
 </head>
 <body>
@@ -141,9 +86,9 @@
         <div class="p-10 flex flex-col h-full">
             <h2 class="text-2xl font-black italic mb-12 uppercase tracking-tighter">Vultrex</h2>
             <nav class="space-y-4 flex-1">
-                <button onclick="ui.switchPage('dashboard')" class="w-full text-left p-5 rounded-2xl hover:bg-black/5 dark:hover:bg-white/5 font-bold">📊 Dashboard</button>
-                <button onclick="ui.switchPage('monitor')" class="w-full text-left p-5 rounded-2xl hover:bg-black/5 dark:hover:bg-white/5 font-bold">🌐 Monitor</button>
-                <button onclick="ui.switchPage('settings')" class="w-full text-left p-5 rounded-2xl hover:bg-black/5 dark:hover:bg-white/5 font-bold">⚙️ Settings</button>
+                <button onclick="ui.switchPage('dashboard')" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold transition-all">📊 Dashboard</button>
+                <button onclick="ui.switchPage('monitor')" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold transition-all">🌐 Monitor</button>
+                <button onclick="ui.switchPage('settings')" class="w-full text-left p-5 rounded-2xl hover:bg-white/5 font-bold transition-all">⚙️ Settings</button>
             </nav>
         </div>
     </div>
@@ -177,7 +122,7 @@
             <h2 class="text-3xl font-black italic uppercase">System</h2>
             <div class="crystal-glass p-8 rounded-[2.5rem]">
                 <p class="text-[9px] font-black opacity-30 uppercase mb-4 text-center">Appearance</p>
-                <div class="toggle-container" id="theme-toggle" data-val="dark" data-opts='["Dark","Light"]'>
+                <div class="toggle-container" id="theme-toggle" data-val="Dark" data-opts='["Dark","Light"]'>
                     <div class="toggle-knob">Dark</div>
                     <div class="toggle-label active-label">Dark</div>
                     <div class="toggle-label">Light</div>
@@ -187,7 +132,7 @@
 
         <div id="page-monitor" class="page-hidden space-y-4">
             <div class="crystal-glass p-8 rounded-[2.5rem]">
-                <input type="text" id="node-ip" placeholder="SERVER IP" class="w-full p-5 rounded-2xl mb-4 text-center font-bold bg-white/5 border border-white/10 text-[10px] uppercase outline-none">
+                <input type="text" id="node-ip" placeholder="SERVER IP" class="w-full p-5 rounded-2xl mb-4 text-center font-bold bg-white/5 border border-white/10 text-[10px] uppercase">
                 <button onclick="monitor.ping()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] text-white">Refresh Node</button>
             </div>
             <div id="monitor-res" class="hidden grid grid-cols-2 gap-4"></div>
@@ -212,9 +157,9 @@
                     <div class="toggle-label active-label">Once</div>
                     <div class="toggle-label">Monthly</div>
                 </div>
-                <select id="entry-category" onchange="logic.handleCategoryChange(this)" class="w-full p-5 rounded-2xl font-bold bg-white/5 border border-white/10 uppercase text-[10px] tracking-widest outline-none"></select>
-                <input type="text" id="custom-cat-field" placeholder="CATEGORY NAME" class="hidden w-full p-5 rounded-2xl font-bold text-center bg-white/5 border border-blue-500/50 uppercase text-[10px] outline-none">
-                <input type="number" id="entry-amount" placeholder="0.00" class="w-full p-5 rounded-2xl font-bold text-center text-4xl bg-white/5 border border-white/10 outline-none">
+                <select id="entry-category" onchange="logic.handleCategoryChange(this)" class="w-full p-5 rounded-2xl font-bold bg-white/5 border border-white/10 uppercase text-[10px] tracking-widest"></select>
+                <input type="text" id="custom-cat-field" placeholder="CATEGORY NAME" class="hidden w-full p-5 rounded-2xl font-bold text-center bg-white/5 border border-blue-500/50 uppercase text-[10px]">
+                <input type="number" id="entry-amount" placeholder="0.00" class="w-full p-5 rounded-2xl font-bold text-center text-4xl bg-white/5 border border-white/10">
                 <button onclick="logic.addEntry()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] text-white shadow-lg">Commit</button>
             </div>
 
@@ -229,7 +174,7 @@
     </div>
 
     <script>
-        let state = JSON.parse(localStorage.getItem('v_mc_v13')) || { history: [], theme: 'dark' };
+        let state = JSON.parse(localStorage.getItem('v_mc_v14')) || { history: [], theme: 'Dark' };
         let mainChart = null;
         const categoryMap = {
             Expense: ["Plugins/Mods", "Server Cost", "Domain", "Marketing", "Custom"],
@@ -258,15 +203,8 @@
             onFile(input) { if(input.files[0]) document.getElementById('file-label').innerText = input.files[0].name; },
             applyTheme(theme) {
                 state.theme = theme;
-                document.body.className = theme === 'light' ? 'light-mode' : 'dark-mode';
+                document.body.className = theme === 'Light' ? 'light-mode' : '';
                 logic.save();
-                if(mainChart) this.updateChartStyles();
-            },
-            updateChartStyles() {
-                const isL = state.theme === 'light';
-                mainChart.options.scales.x.grid.color = isL ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
-                mainChart.options.scales.y.grid.color = isL ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
-                mainChart.update();
             },
             renderDashboard() {
                 let total = 0;
@@ -276,71 +214,22 @@
                     total += item.amount;
                     const wrap = document.createElement('div');
                     wrap.className = 'transaction-wrapper';
-                    wrap.innerHTML = `
-                        <div class="delete-bg">🗑️</div>
-                        <div class="transaction-card crystal-glass p-6 rounded-3xl flex justify-between items-center" 
-                             data-id="${item.id}" 
-                             ontouchstart="swipe.start(event)" 
-                             ontouchmove="swipe.move(event)" 
-                             ontouchend="swipe.end(event)">
-                            <div><p class="font-black text-[10px] uppercase">${item.cat}</p><p class="text-[8px] opacity-30 font-black uppercase mt-0.5">${item.date} • ${item.interval}</p></div>
+                    wrap.innerHTML = `<div class="delete-bg">🗑️</div>
+                        <div class="transaction-card crystal-glass p-6 rounded-3xl flex justify-between items-center" data-id="${item.id}" ontouchstart="swipe.start(event)" ontouchmove="swipe.move(event)" ontouchend="swipe.end(event)">
+                            <div><p class="font-black text-[10px] uppercase">${item.cat}</p><p class="text-[8px] opacity-30 mt-0.5">${item.date} • ${item.interval}</p></div>
                             <p class="font-black text-lg ${item.amount < 0 ? 'text-rose-500' : 'text-emerald-500'}">${item.amount.toFixed(2)} €</p>
                         </div>`;
                     list.appendChild(wrap);
                 });
                 document.getElementById('balance-display').innerText = total.toFixed(2) + " €";
-                this.updateChartData();
+                this.updateChart();
             },
-            updateChartData() {
+            updateChart() {
                 if(!mainChart) return;
-                let running = 0;
+                let run = 0;
                 mainChart.data.labels = state.history.map(h => h.date);
-                mainChart.data.datasets[0].data = state.history.map(h => { running += h.amount; return running; });
+                mainChart.data.datasets[0].data = state.history.map(h => { run += h.amount; return run; });
                 mainChart.update();
-            }
-        };
-
-        const swipe = {
-            sX: 0, sY: 0, elem: null, active: false,
-            start(e) { 
-                this.sX = e.touches[0].clientX; 
-                this.sY = e.touches[0].clientY; 
-                this.elem = e.currentTarget; 
-                this.elem.style.transition = 'none';
-                this.active = true;
-            },
-            move(e) {
-                if(!this.elem || !this.active) return;
-                let dX = e.touches[0].clientX - this.sX;
-                let dY = e.touches[0].clientY - this.sY;
-                
-                // Verhindere Wischen, wenn User eigentlich scrollt
-                if(Math.abs(dY) > Math.abs(dX)) { this.active = false; return; }
-
-                if(dX < 0) {
-                    let move = Math.max(dX, -150);
-                    this.elem.style.transform = `translateX(${move}px)`;
-                    this.elem.parentElement.querySelector('.delete-bg').style.opacity = Math.abs(move) / 100;
-                    e.preventDefault();
-                }
-            },
-            end(e) {
-                if(!this.elem) return;
-                let dX = e.changedTouches[0].clientX - this.sX;
-                this.elem.style.transition = 'transform 0.4s cubic-bezier(0.1, 0.9, 0.2, 1)';
-                
-                if(dX < -110) {
-                    this.elem.style.transform = 'translateX(-120%)';
-                    const id = this.elem.dataset.id;
-                    setTimeout(() => { 
-                        state.history = state.history.filter(t => t.id != id); 
-                        logic.save(); ui.renderDashboard(); 
-                    }, 300);
-                } else {
-                    this.elem.style.transform = 'translateX(0px)';
-                    this.elem.parentElement.querySelector('.delete-bg').style.opacity = '0';
-                }
-                this.elem = null; this.active = false;
             }
         };
 
@@ -360,10 +249,11 @@
             addEntry() {
                 const amount = parseFloat(document.getElementById('entry-amount').value);
                 const type = document.getElementById('type-toggle').dataset.val;
+                const interval = document.getElementById('interval-toggle').dataset.val;
                 let category = document.getElementById('entry-category').value;
                 if(category === 'Custom') category = document.getElementById('custom-cat-field').value || "Custom";
                 if(isNaN(amount)) return;
-                state.history.push({ id: Date.now(), amount: type === 'Expense' ? -amount : amount, interval: document.getElementById('interval-toggle').dataset.val, cat: category, date: new Date().toLocaleDateString('de-DE') });
+                state.history.push({ id: Date.now(), amount: type === 'Expense' ? -amount : amount, interval: interval, cat: category, date: new Date().toLocaleDateString('de-DE') });
                 this.save(); ui.renderDashboard(); ui.closeModal();
                 document.getElementById('entry-amount').value = '';
             },
@@ -379,32 +269,74 @@
                     const text = content.items.map(s => s.str).join(" ");
                     const match = text.match(/(\d+[\.,]\d{2})/);
                     let val = match ? parseFloat(match[0].replace(',', '.')) : 0.00;
-                    state.history.push({ id: Date.now(), amount: -val, interval: 'Once', cat: 'Hosting (AI)', date: new Date().toLocaleDateString('de-DE') });
+                    state.history.push({ id: Date.now(), amount: -val, interval: 'Once', cat: 'AI Scan', date: new Date().toLocaleDateString('de-DE') });
                     this.save(); ui.renderDashboard(); ui.closeModal();
                 };
                 reader.readAsArrayBuffer(file);
             },
-            save() { localStorage.setItem('v_mc_v13', JSON.stringify(state)); }
+            save() { localStorage.setItem('v_mc_v14', JSON.stringify(state)); }
         };
 
-        const initSnapToggles = () => {
+        const swipe = {
+            sX: 0, elem: null,
+            start(e) { this.sX = e.touches[0].clientX; this.elem = e.currentTarget; this.elem.style.transition = 'none'; },
+            move(e) {
+                let d = e.touches[0].clientX - this.sX;
+                if(d < 0) {
+                    this.elem.style.transform = `translateX(${Math.max(d, -120)}px)`;
+                    this.elem.parentElement.querySelector('.delete-bg').style.opacity = Math.abs(d)/100;
+                }
+            },
+            end(e) {
+                let d = e.changedTouches[0].clientX - this.sX;
+                this.elem.style.transition = 'transform 0.4s cubic-bezier(0.1, 0.9, 0.2, 1)';
+                if(d < -100) {
+                    state.history = state.history.filter(t => t.id != this.elem.dataset.id);
+                    logic.save(); ui.renderDashboard();
+                } else { this.elem.style.transform = 'translateX(0)'; }
+            }
+        };
+
+        const initDraggableToggles = () => {
             document.querySelectorAll('.toggle-container').forEach(container => {
                 const knob = container.querySelector('.toggle-knob');
+                const labels = container.querySelectorAll('.toggle-label');
                 const options = JSON.parse(container.dataset.opts);
-                const updateUI = (val) => {
-                    const idx = options.indexOf(val);
-                    knob.style.transform = `translateX(${idx === 0 ? 0 : container.offsetWidth / 2 - 4}px)`;
-                    container.querySelectorAll('.toggle-label').forEach((l, i) => l.classList.toggle('active-label', i === idx));
-                    container.dataset.val = val;
-                    knob.innerText = val;
-                    if(container.id === 'type-toggle') logic.updateCategoryDropdown(val);
-                    if(container.id === 'theme-toggle') ui.applyTheme(val.toLowerCase());
+                let isDragging = false, startX = 0, currentX = 0;
+
+                const updateUI = (idx) => {
+                    const maxX = container.offsetWidth - knob.offsetWidth - 8;
+                    currentX = idx === 0 ? 0 : maxX;
+                    knob.style.transform = `translateX(${currentX}px)`;
+                    knob.innerText = options[idx];
+                    labels[0].classList.toggle('active-label', idx === 0);
+                    labels[1].classList.toggle('active-label', idx === 1);
+                    container.dataset.val = options[idx];
+                    if(container.id === 'type-toggle') logic.updateCategoryDropdown(options[idx]);
+                    if(container.id === 'theme-toggle') ui.applyTheme(options[idx]);
                 };
-                container.onclick = (e) => {
-                    const rect = container.getBoundingClientRect();
-                    updateUI((e.clientX - rect.left) > rect.width / 2 ? options[1] : options[0]);
-                };
-                updateUI(container.dataset.val);
+
+                knob.addEventListener('touchstart', (e) => {
+                    isDragging = true; startX = e.touches[0].clientX - currentX;
+                    knob.classList.add('dragging');
+                });
+                window.addEventListener('touchmove', (e) => {
+                    if(!isDragging) return;
+                    let x = e.touches[0].clientX - startX;
+                    let maxX = container.offsetWidth - knob.offsetWidth - 8;
+                    currentX = Math.max(0, Math.min(x, maxX));
+                    knob.style.transform = `translateX(${currentX}px)`;
+                });
+                window.addEventListener('touchend', () => {
+                    if(!isDragging) return;
+                    isDragging = false; knob.classList.remove('dragging');
+                    updateUI(currentX > (container.offsetWidth / 4) ? 1 : 0);
+                });
+                container.onclick = (e) => { if(e.target !== knob) updateUI(currentX === 0 ? 1 : 0); };
+                
+                // Init position
+                const startIdx = options.indexOf(container.dataset.val);
+                updateUI(startIdx === -1 ? 0 : startIdx);
             });
         };
 
@@ -413,13 +345,13 @@
                 const ip = document.getElementById('node-ip').value;
                 const res = document.getElementById('monitor-res');
                 if(!ip) return;
-                res.innerHTML = "<p class='col-span-2 text-center py-4 opacity-30'>Polling...</p>"; 
+                res.innerHTML = "<p class='col-span-2 text-center py-4 opacity-30 uppercase text-[10px] font-black'>Polling...</p>"; 
                 res.classList.remove('hidden');
                 try {
                     const r = await fetch(`https://api.mcstatus.io/v2/status/java/${ip}`);
                     const d = await r.json();
                     if(d.online) {
-                        res.innerHTML = `<div class="crystal-glass p-6 rounded-2xl text-center"><p class="text-[8px] opacity-30">Status</p><p class="text-emerald-500 font-bold">Online</p></div><div class="crystal-glass p-6 rounded-2xl text-center"><p class="text-[8px] opacity-30">Players</p><p class="font-bold">${d.players.online}</p></div>`;
+                        res.innerHTML = `<div class="crystal-glass p-6 rounded-2xl text-center"><p class="text-[8px] opacity-30 font-black uppercase">Status</p><p class="text-emerald-500 font-bold">Online</p></div><div class="crystal-glass p-6 rounded-2xl text-center"><p class="text-[8px] opacity-30 font-black uppercase">Players</p><p class="font-bold">${d.players.online}</p></div>`;
                     } else { res.innerHTML = "<p class='col-span-2 text-rose-500 font-bold text-center'>Offline</p>"; }
                 } catch(e) { res.innerHTML = "Error"; }
             }
@@ -429,10 +361,13 @@
             mainChart = new Chart(document.getElementById('main-chart').getContext('2d'), {
                 type: 'line',
                 data: { labels: [], datasets: [{ data: [], borderColor: '#007AFF', tension: 0.4, fill: true, backgroundColor: 'rgba(0,122,255,0.05)', pointRadius: 0, borderWidth: 3 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: true }, y: { display: true } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
             });
-            ui.renderDashboard(); ui.applyTheme(state.theme); initSnapToggles();
+            ui.renderDashboard(); 
+            ui.applyTheme(state.theme); 
+            initDraggableToggles();
         };
     </script>
 </body>
 </html>
+
