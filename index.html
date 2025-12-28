@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" class="light">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vultrex OS - Infinite Infrastructure v13.5</title>
+    <title>Vultrex OS - Infinite Infrastructure v13.6</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -20,15 +20,17 @@
             --input-fill: rgba(255, 255, 255, 0.05);
             --card-shadow: rgba(0, 0, 0, 0.9);
             --knob-gradient: linear-gradient(160deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%);
+            --radius-lg: 2.5rem;
+            --radius-xl: 3.5rem;
         }
 
         .light-mode {
             --bg: #F2F2F7;
             --text: #1C1C1E;
-            --glass: rgba(255, 255, 255, 0.8);
+            --glass: rgba(255, 255, 255, 0.85);
             --glass-border: rgba(0, 0, 0, 0.08);
             --input-fill: rgba(0, 0, 0, 0.05);
-            --card-shadow: rgba(0, 0, 0, 0.1);
+            --card-shadow: rgba(0, 0, 0, 0.08);
         }
 
         body {
@@ -51,46 +53,44 @@
             box-shadow: 0 10px 30px var(--card-shadow);
         }
 
-        /* Theme Fixes */
-        .light-mode .text-white { color: #1C1C1E !important; }
+        /* Automatischer Kontrast für Text-Klassen */
+        .light-mode .text-white { color: var(--text) !important; }
         .light-mode .bg-white\/5 { background-color: rgba(0, 0, 0, 0.05); }
-        .light-mode .border-white\/10 { border-color: rgba(0, 0, 0, 0.1); }
-        .light-mode .opacity-20, .light-mode .opacity-30, .light-mode .opacity-40 { opacity: 0.7; color: var(--text); }
+        .light-mode .border-white\/10 { border-color: rgba(0, 0, 0, 0.12); }
+        .light-mode .opacity-30, .light-mode .opacity-40 { opacity: 0.6; color: var(--text); }
 
         /* Slide Toggle */
         .toggle-container {
             position: relative;
             width: 100%;
-            height: 64px;
+            height: 60px;
             background: var(--input-fill);
-            border-radius: 22px;
-            padding: 5px;
+            border-radius: 1.5rem;
+            padding: 4px;
             display: flex;
             align-items: center;
             border: 1px solid var(--glass-border);
             touch-action: none;
             cursor: pointer;
-            overflow: hidden;
         }
 
         .toggle-knob {
             position: absolute;
-            left: 5px;
-            height: 54px;
-            width: calc(50% - 7px);
+            left: 4px;
+            height: 50px;
+            width: calc(50% - 6px);
             background: var(--knob-gradient), var(--accent);
-            border-radius: 18px;
+            border-radius: 1.2rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 900;
             color: white !important;
             z-index: 10;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             text-transform: uppercase;
-            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-            pointer-events: none;
+            transition: transform 0.3s cubic-bezier(0.2, 1, 0.3, 1);
         }
 
         .toggle-label {
@@ -101,26 +101,15 @@
             text-transform: uppercase;
             opacity: 0.3;
             z-index: 5;
-            transition: opacity 0.3s;
             color: var(--text);
         }
         .active-label { opacity: 1; }
 
-        select, input {
-            color: var(--text) !important;
-        }
-
-        select {
-            appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='grey' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 1.2rem center;
-            background-size: 1.2em;
-        }
-
-        .transaction-wrapper { position: relative; border-radius: 2.5rem; margin-bottom: 1rem; overflow: hidden; }
-        .delete-bg { position: absolute; inset: 0; background: var(--delete-red); display: flex; align-items: center; justify-content: flex-end; padding-right: 35px; opacity: 0; z-index: 1; }
-        .transaction-card { position: relative; z-index: 5; background: var(--glass); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        input, select { color: var(--text) !important; outline: none; }
+        
+        .transaction-wrapper { position: relative; border-radius: 2rem; margin-bottom: 0.75rem; overflow: hidden; }
+        .delete-bg { position: absolute; inset: 0; background: var(--delete-red); display: flex; align-items: center; justify-content: flex-end; padding-right: 25px; opacity: 0; }
+        .transaction-card { position: relative; z-index: 5; background: var(--glass); transition: transform 0.4s cubic-bezier(0.1, 0.9, 0.2, 1); }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .page-hidden { display: none; }
@@ -128,43 +117,46 @@
 </head>
 <body>
 
-    <div id="sidebar" class="fixed inset-y-0 left-0 w-80 crystal-glass z-[950] -translate-x-full transition-transform duration-700 rounded-r-[3.5rem]">
-        <div class="p-12 flex flex-col h-full">
-            <h2 class="text-3xl font-black italic mb-16">Vultrex</h2>
-            <nav class="space-y-6 flex-1">
-                <button onclick="ui.switchPage('dashboard')" class="w-full text-left p-6 rounded-3xl hover:bg-black/5 font-bold transition-all flex items-center gap-4">📊 Dashboard</button>
-                <button onclick="ui.switchPage('monitor')" class="w-full text-left p-6 rounded-3xl hover:bg-black/5 font-bold transition-all flex items-center gap-4">🌐 Monitor</button>
-                <button onclick="ui.switchPage('settings')" class="w-full text-left p-6 rounded-3xl hover:bg-black/5 font-bold transition-all flex items-center gap-4">⚙️ Settings</button>
+    <div id="sidebar" class="fixed inset-y-0 left-0 w-72 crystal-glass z-[950] -translate-x-full transition-transform duration-500 rounded-r-[2.5rem]">
+        <div class="p-10 flex flex-col h-full">
+            <h2 class="text-2xl font-black italic mb-12 uppercase tracking-tighter">Vultrex</h2>
+            <nav class="space-y-4 flex-1">
+                <button onclick="ui.switchPage('dashboard')" class="w-full text-left p-5 rounded-2xl hover:bg-black/5 dark:hover:bg-white/5 font-bold transition-all">📊 Dashboard</button>
+                <button onclick="ui.switchPage('monitor')" class="w-full text-left p-5 rounded-2xl hover:bg-black/5 dark:hover:bg-white/5 font-bold transition-all">🌐 Monitor</button>
+                <button onclick="ui.switchPage('settings')" class="w-full text-left p-5 rounded-2xl hover:bg-black/5 dark:hover:bg-white/5 font-bold transition-all">⚙️ Settings</button>
             </nav>
         </div>
     </div>
-    <div id="sidebar-overlay" onclick="ui.toggleSidebar()" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[900] hidden"></div>
+    <div id="sidebar-overlay" onclick="ui.toggleSidebar()" class="fixed inset-0 bg-black/30 backdrop-blur-sm z-[900] hidden"></div>
 
-    <div id="app-content" class="p-6 max-w-xl mx-auto h-screen overflow-y-auto no-scrollbar pb-44">
-        <header class="flex justify-between items-center mb-12 pt-6">
-            <button onclick="ui.toggleSidebar()" class="w-14 h-14 crystal-glass rounded-full flex items-center justify-center text-2xl font-bold">≡</button>
-            <div class="w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center font-black border-2 border-white/20 text-white shadow-lg">V</div>
+    <div id="app-content" class="p-6 max-w-lg mx-auto h-screen overflow-y-auto no-scrollbar pb-32">
+        <header class="flex justify-between items-center mb-10 pt-4">
+            <button onclick="ui.toggleSidebar()" class="w-12 h-12 crystal-glass rounded-2xl flex items-center justify-center text-xl">≡</button>
+            <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center font-black text-white shadow-lg">V</div>
         </header>
 
-        <div id="page-dashboard" class="space-y-8">
-            <div class="crystal-glass p-12 rounded-[4.5rem] relative overflow-hidden text-center">
-                <p class="text-[11px] opacity-40 uppercase font-black tracking-widest mb-1">Total Assets</p>
-                <h3 id="balance-display" class="text-6xl font-bold tracking-tighter italic">0.00 €</h3>
+        <div id="page-dashboard" class="space-y-6">
+            <div class="crystal-glass p-10 rounded-[3rem] text-center">
+                <p class="text-[10px] opacity-40 uppercase font-black tracking-widest mb-1">Total Assets</p>
+                <h3 id="balance-display" class="text-5xl font-bold tracking-tighter italic">0.00 €</h3>
             </div>
-            <div class="crystal-glass p-8 rounded-[3.5rem] h-72">
+            
+            <div class="crystal-glass p-6 rounded-[2.5rem] h-64">
                 <canvas id="main-chart"></canvas>
             </div>
-            <div class="grid grid-cols-2 gap-5">
-                <button onclick="ui.openModal('manual')" class="crystal-glass py-9 rounded-[3rem] font-black uppercase text-[10px] tracking-widest active:scale-95 transition-all">New Entry</button>
-                <button onclick="ui.openModal('import')" class="bg-blue-600 text-white py-9 rounded-[3rem] font-black uppercase text-[10px] tracking-widest shadow-2xl active:scale-95 transition-all">AI Scan</button>
+
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="ui.openModal('manual')" class="crystal-glass py-7 rounded-[2rem] font-black uppercase text-[10px] tracking-widest active:scale-95">New Entry</button>
+                <button onclick="ui.openModal('import')" class="bg-blue-600 text-white py-7 rounded-[2rem] font-black uppercase text-[10px] tracking-widest shadow-lg active:scale-95">AI Scan</button>
             </div>
-            <div id="transaction-list" class="space-y-4"></div>
+
+            <div id="transaction-list" class="space-y-3"></div>
         </div>
 
-        <div id="page-settings" class="page-hidden space-y-8">
-            <h2 class="text-4xl font-black italic">System</h2>
-            <div class="crystal-glass p-10 rounded-[4rem]">
-                <p class="text-[10px] font-black opacity-30 uppercase mb-4 text-center">Color Theme</p>
+        <div id="page-settings" class="page-hidden space-y-6">
+            <h2 class="text-3xl font-black italic uppercase">System</h2>
+            <div class="crystal-glass p-8 rounded-[2.5rem]">
+                <p class="text-[9px] font-black opacity-30 uppercase mb-4 text-center">Appearance</p>
                 <div class="toggle-container" id="theme-toggle" data-val="dark" data-opts='["Dark","Light"]'>
                     <div class="toggle-knob">Dark</div>
                     <div class="toggle-label active-label">Dark</div>
@@ -173,21 +165,21 @@
             </div>
         </div>
 
-        <div id="page-monitor" class="page-hidden space-y-6">
-            <div class="crystal-glass p-10 rounded-[4rem]">
-                <input type="text" id="node-ip" placeholder="SERVER IP" class="w-full p-6 rounded-3xl mb-6 text-center font-bold bg-white/5 border border-white/10 text-[10px] uppercase">
-                <button onclick="monitor.ping()" class="w-full bg-blue-600 py-6 rounded-3xl font-black uppercase text-[10px] text-white">Refresh Node</button>
+        <div id="page-monitor" class="page-hidden space-y-4">
+            <div class="crystal-glass p-8 rounded-[2.5rem]">
+                <input type="text" id="node-ip" placeholder="SERVER IP" class="w-full p-5 rounded-2xl mb-4 text-center font-bold bg-white/5 border border-white/10 text-[10px] uppercase">
+                <button onclick="monitor.ping()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] text-white">Refresh Node</button>
             </div>
-            <div id="monitor-res" class="hidden grid grid-cols-2 gap-5"></div>
+            <div id="monitor-res" class="hidden grid grid-cols-2 gap-4"></div>
         </div>
     </div>
 
-    <div id="modal-box" class="hidden fixed inset-0 bg-black/80 backdrop-blur-2xl z-[1100] flex items-center justify-center p-8">
-        <div class="crystal-glass w-full max-w-sm p-12 rounded-[5rem] relative">
+    <div id="modal-box" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xl z-[1100] flex items-center justify-center p-6">
+        <div class="crystal-glass w-full max-w-sm p-10 rounded-[3rem] relative">
             
-            <button onclick="ui.closeModal()" class="absolute top-8 right-10 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 font-bold text-xl border border-white/10">✕</button>
+            <button onclick="ui.closeModal()" class="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-2xl bg-black/10 dark:bg-white/10 font-bold border border-white/10">✕</button>
 
-            <div id="ui-manual" class="space-y-6 pt-6">
+            <div id="ui-manual" class="space-y-5 pt-4">
                 <div class="toggle-container" id="type-toggle" data-val="Expense" data-opts='["Expense","Income"]'>
                     <div class="toggle-knob">Expense</div>
                     <div class="toggle-label active-label">Expense</div>
@@ -198,18 +190,18 @@
                     <div class="toggle-label active-label">Once</div>
                     <div class="toggle-label">Monthly</div>
                 </div>
-                <select id="entry-category" onchange="logic.handleCategoryChange(this)" class="w-full p-6 rounded-3xl font-bold bg-white/5 border border-white/10 uppercase text-[10px] tracking-widest"></select>
-                <input type="text" id="custom-cat-field" placeholder="CATEGORY NAME" class="hidden w-full p-6 rounded-3xl font-bold text-center bg-white/5 border border-blue-500/50 uppercase text-[10px]">
-                <input type="number" id="entry-amount" placeholder="0.00" class="w-full p-6 rounded-3xl font-bold text-center text-5xl bg-white/5 border border-white/10">
-                <button onclick="logic.addEntry()" class="w-full bg-blue-600 py-6 rounded-3xl font-black uppercase text-[11px] text-white shadow-xl">Commit Data</button>
+                <select id="entry-category" onchange="logic.handleCategoryChange(this)" class="w-full p-5 rounded-2xl font-bold bg-white/5 border border-white/10 uppercase text-[10px] tracking-widest"></select>
+                <input type="text" id="custom-cat-field" placeholder="CATEGORY NAME" class="hidden w-full p-5 rounded-2xl font-bold text-center bg-white/5 border border-blue-500/50 uppercase text-[10px]">
+                <input type="number" id="entry-amount" placeholder="0.00" class="w-full p-5 rounded-2xl font-bold text-center text-4xl bg-white/5 border border-white/10">
+                <button onclick="logic.addEntry()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] text-white shadow-lg">Commit</button>
             </div>
 
-            <div id="ui-import" class="hidden space-y-8 text-center pt-6">
-                <div class="w-full h-48 bg-white/5 rounded-[3.5rem] border-2 border-dashed border-white/10 flex items-center justify-center relative">
-                    <span id="file-label" class="opacity-30 text-[10px] font-black uppercase">Drop PDF</span>
+            <div id="ui-import" class="hidden space-y-6 text-center pt-4">
+                <div class="w-full h-40 bg-white/5 rounded-[2rem] border-2 border-dashed border-white/10 flex items-center justify-center relative">
+                    <span id="file-label" class="opacity-30 text-[9px] font-black uppercase">Drop PDF</span>
                     <input type="file" id="pdf-in" accept=".pdf" class="absolute inset-0 opacity-0" onchange="ui.onFile(this)">
                 </div>
-                <button onclick="logic.scanPDF()" class="w-full bg-blue-600 py-6 rounded-3xl font-black uppercase text-[11px] text-white">Analyze PDF</button>
+                <button onclick="logic.scanPDF()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] text-white">Analyze</button>
             </div>
         </div>
     </div>
@@ -252,8 +244,6 @@
                 const isL = state.theme === 'light';
                 mainChart.options.scales.x.grid.color = isL ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
                 mainChart.options.scales.y.grid.color = isL ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
-                mainChart.options.scales.x.ticks.color = isL ? '#1C1C1E' : '#999';
-                mainChart.options.scales.y.ticks.color = isL ? '#1C1C1E' : '#999';
                 mainChart.update();
             },
             renderDashboard() {
@@ -266,9 +256,9 @@
                     wrap.className = 'transaction-wrapper';
                     wrap.innerHTML = `
                         <div class="delete-bg">🗑️</div>
-                        <div class="transaction-card crystal-glass p-8 rounded-[3rem] flex justify-between items-center" data-id="${item.id}" ontouchstart="swipe.start(event)" ontouchmove="swipe.move(event)" ontouchend="swipe.end(event)">
-                            <div><p class="font-black text-xs uppercase">${item.cat}</p><p class="text-[9px] opacity-30 font-black uppercase mt-1">${item.date} • ${item.interval}</p></div>
-                            <p class="font-black text-xl ${item.amount < 0 ? 'text-rose-500' : 'text-emerald-500'}">${item.amount.toFixed(2)} €</p>
+                        <div class="transaction-card crystal-glass p-6 rounded-3xl flex justify-between items-center" data-id="${item.id}" ontouchstart="swipe.start(event)" ontouchmove="swipe.move(event)" ontouchend="swipe.end(event)">
+                            <div><p class="font-black text-[10px] uppercase">${item.cat}</p><p class="text-[8px] opacity-30 font-black uppercase mt-0.5">${item.date} • ${item.interval}</p></div>
+                            <p class="font-black text-lg ${item.amount < 0 ? 'text-rose-500' : 'text-emerald-500'}">${item.amount.toFixed(2)} €</p>
                         </div>`;
                     list.appendChild(wrap);
                 });
@@ -303,13 +293,7 @@
                 let category = document.getElementById('entry-category').value;
                 if(category === 'Custom') category = document.getElementById('custom-cat-field').value || "Custom";
                 if(isNaN(amount)) return;
-                state.history.push({
-                    id: Date.now(),
-                    amount: type === 'Expense' ? -amount : amount,
-                    interval: document.getElementById('interval-toggle').dataset.val,
-                    cat: category,
-                    date: new Date().toLocaleDateString('de-DE')
-                });
+                state.history.push({ id: Date.now(), amount: type === 'Expense' ? -amount : amount, interval: document.getElementById('interval-toggle').dataset.val, cat: category, date: new Date().toLocaleDateString('de-DE') });
                 this.save(); ui.renderDashboard(); ui.closeModal();
                 document.getElementById('entry-amount').value = '';
             },
@@ -337,31 +321,19 @@
             document.querySelectorAll('.toggle-container').forEach(container => {
                 const knob = container.querySelector('.toggle-knob');
                 const options = JSON.parse(container.dataset.opts);
-                let startX = 0;
-
                 const updateUI = (val) => {
                     const idx = options.indexOf(val);
-                    const moveX = idx === 0 ? 0 : container.offsetWidth / 2 - 5;
-                    knob.style.transform = `translateX(${moveX}px)`;
+                    knob.style.transform = `translateX(${idx === 0 ? 0 : container.offsetWidth / 2 - 4}px)`;
                     container.querySelectorAll('.toggle-label').forEach((l, i) => l.classList.toggle('active-label', i === idx));
                     container.dataset.val = val;
                     knob.innerText = val;
                     if(container.id === 'type-toggle') logic.updateCategoryDropdown(val);
                     if(container.id === 'theme-toggle') ui.applyTheme(val.toLowerCase());
                 };
-
-                container.addEventListener('click', (e) => {
+                container.onclick = (e) => {
                     const rect = container.getBoundingClientRect();
-                    const clickX = e.clientX - rect.left;
-                    updateUI(clickX > rect.width / 2 ? options[1] : options[0]);
-                });
-
-                container.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; }, {passive: true});
-                container.addEventListener('touchend', (e) => {
-                    const diff = e.changedTouches[0].clientX - startX;
-                    if(Math.abs(diff) > 30) updateUI(diff > 0 ? options[1] : options[0]);
-                }, {passive: true});
-
+                    updateUI((e.clientX - rect.left) > rect.width / 2 ? options[1] : options[0]);
+                };
                 updateUI(container.dataset.val);
             });
         };
@@ -373,17 +345,17 @@
                 if(!this.elem) return;
                 let d = e.touches[0].clientX - this.sX;
                 if(d < 0) {
-                    let m = Math.max(d, -160);
+                    let m = Math.max(d, -140);
                     this.elem.style.transform = `translateX(${m}px)`;
-                    this.elem.parentElement.querySelector('.delete-bg').style.opacity = Math.abs(m) / 120;
+                    this.elem.parentElement.querySelector('.delete-bg').style.opacity = Math.abs(m) / 100;
                 }
             },
             end(e) {
                 if(!this.elem) return;
                 let d = e.changedTouches[0].clientX - this.sX;
-                this.elem.style.transition = 'transform 0.4s ease';
-                if(d < -110) {
-                    this.elem.style.transform = 'translateX(-150%)';
+                this.elem.style.transition = 'transform 0.4s cubic-bezier(0.1, 0.9, 0.2, 1)';
+                if(d < -100) {
+                    this.elem.style.transform = 'translateX(-120%)';
                     const id = this.elem.dataset.id;
                     setTimeout(() => { state.history = state.history.filter(t => t.id != id); logic.save(); ui.renderDashboard(); }, 300);
                 } else {
@@ -405,7 +377,7 @@
                     const r = await fetch(`https://api.mcstatus.io/v2/status/java/${ip}`);
                     const d = await r.json();
                     if(d.online) {
-                        res.innerHTML = `<div class="crystal-glass p-8 rounded-3xl text-center"><p class="text-[9px] opacity-30">Status</p><p class="text-emerald-500 font-bold">Online</p></div><div class="crystal-glass p-8 rounded-3xl text-center"><p class="text-[9px] opacity-30">Players</p><p class="font-bold">${d.players.online}</p></div>`;
+                        res.innerHTML = `<div class="crystal-glass p-6 rounded-2xl text-center"><p class="text-[8px] opacity-30">Status</p><p class="text-emerald-500 font-bold">Online</p></div><div class="crystal-glass p-6 rounded-2xl text-center"><p class="text-[8px] opacity-30">Players</p><p class="font-bold">${d.players.online}</p></div>`;
                     } else { res.innerHTML = "<p class='col-span-2 text-rose-500 font-bold text-center'>Offline</p>"; }
                 } catch(e) { res.innerHTML = "Error"; }
             }
@@ -414,7 +386,7 @@
         window.onload = () => {
             mainChart = new Chart(document.getElementById('main-chart').getContext('2d'), {
                 type: 'line',
-                data: { labels: [], datasets: [{ data: [], borderColor: '#007AFF', tension: 0.4, fill: true, backgroundColor: 'rgba(0,122,255,0.05)', pointRadius: 0, borderWidth: 4 }] },
+                data: { labels: [], datasets: [{ data: [], borderColor: '#007AFF', tension: 0.4, fill: true, backgroundColor: 'rgba(0,122,255,0.05)', pointRadius: 0, borderWidth: 3 }] },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: true }, y: { display: true } } }
             });
             ui.renderDashboard(); ui.applyTheme(state.theme); initSnapToggles();
