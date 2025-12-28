@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vultrex Crystal OS - Infinity Build</title>
+    <title>Vultrex Crystal OS - No Login Build</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -20,7 +20,6 @@
             --input-fill: rgba(255, 255, 255, 0.05);
             --card-shadow: rgba(0, 0, 0, 0.9);
             --sidebar-bg: rgba(10, 10, 10, 0.9);
-            --chart-grid: rgba(255, 255, 255, 0.05);
         }
 
         .light-mode {
@@ -31,52 +30,50 @@
             --input-fill: #ffffff;
             --card-shadow: rgba(0, 0, 0, 0.05);
             --sidebar-bg: rgba(245, 245, 247, 0.95);
-            --chart-grid: rgba(0, 0, 0, 0.05);
         }
 
         body {
             background: var(--bg);
             color: var(--text);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             overflow: hidden;
             height: 100vh;
             margin: 0;
-            transition: background 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: background 0.6s ease;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* --- DETAILED LIGHT MODE OVERRIDES --- */
+        /* --- LIGHT MODE ELEMENTS --- */
         .light-mode .crystal-glass {
-            background: white;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+            background: #ffffff;
             border-color: rgba(0,0,0,0.05);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.05);
         }
         .light-mode input, .light-mode select {
             background: #ebebed !important;
             color: black !important;
             border: 1px solid rgba(0,0,0,0.1) !important;
         }
-        .light-mode #sidebar {
-            background: var(--sidebar-bg);
-        }
+        .light-mode .toggle-container { background: #e5e5ea; }
+        .light-mode .toggle-label { color: #000; }
 
         /* --- UI COMPONENTS --- */
         .crystal-glass {
             background: var(--glass);
-            backdrop-filter: blur(60px) saturate(200%);
-            -webkit-backdrop-filter: blur(60px) saturate(200%);
+            backdrop-filter: blur(60px) saturate(210%);
+            -webkit-backdrop-filter: blur(60px) saturate(210%);
             border: 1px solid var(--glass-border);
             box-shadow: 0 12px 40px var(--card-shadow);
         }
 
-        /* --- DROP DOWN STYLING --- */
+        /* --- DROPDOWN CUSTOM --- */
         select {
             appearance: none;
             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
             background-repeat: no-repeat;
-            background-position: right 1rem center;
-            background-size: 1em;
+            background-position: right 1.2rem center;
+            background-size: 1.2em;
         }
         .light-mode select {
             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
@@ -94,7 +91,6 @@
             align-items: center;
             border: 1px solid var(--glass-border);
             touch-action: none;
-            overflow: hidden;
             cursor: pointer;
         }
 
@@ -113,7 +109,7 @@
             z-index: 10;
             box-shadow: 0 6px 15px rgba(0,0,0,0.3);
             text-transform: uppercase;
-            transition: transform 0.4s cubic-bezier(0.2, 1.1, 0.3, 1);
+            transition: transform 0.4s cubic-bezier(0.2, 1.1, 0.3, 1.2);
         }
 
         .toggle-label {
@@ -124,11 +120,11 @@
             text-transform: uppercase;
             opacity: 0.3;
             z-index: 5;
-            transition: opacity 0.3s, color 0.3s;
+            transition: opacity 0.3s;
         }
         .active-label { opacity: 1; }
 
-        /* --- SWIPE SYSTEM --- */
+        /* --- SWIPE TO DELETE --- */
         .transaction-wrapper {
             position: relative;
             border-radius: 2.5rem;
@@ -142,7 +138,7 @@
             display: flex;
             align-items: center;
             justify-content: flex-end;
-            padding-right: 30px;
+            padding-right: 35px;
             opacity: 0;
             z-index: 1;
         }
@@ -159,34 +155,23 @@
 </head>
 <body>
 
-    <div id="login-screen" class="fixed inset-0 z-[1000] bg-black flex items-center justify-center p-8">
-        <div class="w-full max-w-sm text-center">
-            <h1 class="text-8xl font-black mb-12 italic text-white tracking-tighter">V<span class="text-blue-600">.</span></h1>
-            <div class="crystal-glass p-10 rounded-[4rem]">
-                <input type="text" id="login-user" placeholder="IDENTITY" class="w-full p-6 rounded-3xl mb-4 text-center font-black bg-white/5 border border-white/10 text-white uppercase text-xs tracking-widest">
-                <input type="password" id="login-pass" placeholder="ACCESS KEY" class="w-full p-6 rounded-3xl mb-10 text-center font-black bg-white/5 border border-white/10 text-white">
-                <button onclick="auth.login()" class="w-full bg-blue-600 py-6 rounded-3xl font-black uppercase text-xs tracking-widest text-white shadow-2xl shadow-blue-600/30">Establish Link</button>
-            </div>
-        </div>
-    </div>
-
     <div id="sidebar" class="fixed inset-y-0 left-0 w-80 crystal-glass z-[950] -translate-x-full transition-transform duration-700 rounded-r-[3.5rem]">
         <div class="p-12 flex flex-col h-full">
             <div class="mb-16">
                 <h2 class="text-3xl font-black italic">Vultrex</h2>
-                <p class="text-[9px] font-black opacity-30 uppercase tracking-[0.4em]">System Infinity v6.0</p>
+                <p class="text-[9px] font-black opacity-30 uppercase tracking-[0.4em]">Direct Access Build</p>
             </div>
             <nav class="space-y-6 flex-1">
                 <button onclick="ui.switchPage('dashboard')" class="w-full text-left p-6 rounded-3xl hover:bg-white/5 font-bold transition-all flex items-center gap-4"><span>📊</span> Analytics</button>
                 <button onclick="ui.switchPage('monitor')" class="w-full text-left p-6 rounded-3xl hover:bg-white/5 font-bold transition-all flex items-center gap-4"><span>🌐</span> Node State</button>
                 <button onclick="ui.switchPage('settings')" class="w-full text-left p-6 rounded-3xl hover:bg-white/5 font-bold transition-all flex items-center gap-4"><span>⚙️</span> Preferences</button>
             </nav>
-            <button onclick="auth.logout()" class="p-6 rounded-3xl bg-rose-500/10 text-rose-500 font-bold uppercase text-[10px] tracking-widest">Terminate Session</button>
+            <div class="p-6 opacity-20 text-[8px] font-black uppercase tracking-widest text-center">Encryption Active</div>
         </div>
     </div>
     <div id="sidebar-overlay" onclick="ui.toggleSidebar()" class="fixed inset-0 bg-black/60 backdrop-blur-xl z-[900] hidden"></div>
 
-    <div id="app-content" class="hidden p-6 max-w-xl mx-auto h-screen overflow-y-auto no-scrollbar pb-44">
+    <div id="app-content" class="p-6 max-w-xl mx-auto h-screen overflow-y-auto no-scrollbar pb-44">
         
         <header class="flex justify-between items-center mb-12 pt-6">
             <button onclick="ui.toggleSidebar()" class="w-14 h-14 crystal-glass rounded-full flex items-center justify-center text-2xl font-bold">≡</button>
@@ -205,8 +190,8 @@
             </div>
 
             <div class="grid grid-cols-2 gap-5">
-                <button onclick="ui.openModal('manual')" class="crystal-glass py-9 rounded-[3rem] font-black uppercase text-[10px] tracking-widest">New Record</button>
-                <button onclick="ui.openModal('import')" class="bg-blue-600 text-white py-9 rounded-[3rem] font-black uppercase text-[10px] tracking-widest shadow-2xl shadow-blue-600/40">AI Scan</button>
+                <button onclick="ui.openModal('manual')" class="crystal-glass py-9 rounded-[3rem] font-black uppercase text-[10px] tracking-widest active:scale-95 transition-all">New Entry</button>
+                <button onclick="ui.openModal('import')" class="bg-blue-600 text-white py-9 rounded-[3rem] font-black uppercase text-[10px] tracking-widest shadow-2xl shadow-blue-600/40 active:scale-95 transition-all">AI Scan</button>
             </div>
 
             <div id="transaction-list" class="space-y-4"></div>
@@ -216,7 +201,7 @@
             <h2 class="text-4xl font-black italic mb-10">System</h2>
             <div class="crystal-glass p-10 rounded-[4rem] space-y-10">
                 <div>
-                    <p class="text-[10px] font-black uppercase opacity-40 mb-6 tracking-widest text-center">Environment</p>
+                    <p class="text-[10px] font-black uppercase opacity-40 mb-6 tracking-widest text-center">Appearance</p>
                     <div class="toggle-container" id="theme-toggle" data-val="dark" data-opts='["Dark","Light"]'>
                         <div class="toggle-knob">Dark</div>
                         <div class="toggle-label active-label">Dark</div>
@@ -252,12 +237,12 @@
                 </div>
 
                 <select id="entry-category" class="w-full p-6 rounded-3xl font-bold bg-white/5 border border-white/10 text-white uppercase text-[10px] tracking-widest">
-                    <option value="General">Category: General</option>
-                    <option value="Hosting">Category: Hosting</option>
-                    <option value="Plugins">Category: Plugins</option>
-                    <option value="Design">Category: Design</option>
-                    <option value="Food">Category: Food</option>
-                    <option value="Salary">Category: Salary</option>
+                    <option value="General">General</option>
+                    <option value="Hosting">Hosting</option>
+                    <option value="Plugins">Plugins</option>
+                    <option value="Design">Design</option>
+                    <option value="Food">Food</option>
+                    <option value="Salary">Salary</option>
                 </select>
 
                 <input type="text" id="entry-name" placeholder="LABEL / DESCRIPTION" class="w-full p-6 rounded-3xl font-bold text-center bg-white/5 border border-white/10 text-white uppercase text-[10px]">
@@ -280,18 +265,8 @@
 
     <script>
         /* --- CORE DATA --- */
-        let state = JSON.parse(localStorage.getItem('v_infinity_v6')) || { history: [], auth: null, theme: 'dark' };
+        let state = JSON.parse(localStorage.getItem('v_direct_v7')) || { history: [], theme: 'dark' };
         let mainChart = null;
-
-        /* --- AUTH SYSTEM --- */
-        const auth = {
-            login() {
-                const u = document.getElementById('login-user').value;
-                const p = document.getElementById('login-pass').value;
-                if(u && p) { state.auth = { user: u }; logic.save(); location.reload(); }
-            },
-            logout() { state.auth = null; logic.save(); location.reload(); }
-        };
 
         /* --- UI ENGINE --- */
         const ui = {
@@ -355,12 +330,13 @@
                 if(!mainChart) return;
                 const isL = state.theme === 'light';
                 let running = 0;
+                const color = isL ? '#666' : '#999';
+                const grid = isL ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
 
-                // Achsen-Beschriftung Logic
-                mainChart.options.scales.x.ticks.color = isL ? '#666' : '#999';
-                mainChart.options.scales.y.ticks.color = isL ? '#666' : '#999';
-                mainChart.options.scales.x.grid.color = isL ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
-                mainChart.options.scales.y.grid.color = isL ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
+                mainChart.options.scales.x.ticks.color = color;
+                mainChart.options.scales.y.ticks.color = color;
+                mainChart.options.scales.x.grid.color = grid;
+                mainChart.options.scales.y.grid.color = grid;
 
                 mainChart.data.labels = state.history.map(h => h.date);
                 mainChart.data.datasets[0].data = state.history.map(h => {
@@ -405,11 +381,11 @@
                     const content = await page.getTextContent();
                     const text = content.items.map(s => s.str).join(" ");
                     const match = text.match(/(\d+[\.,]\d{2})/);
-                    let val = match ? parseFloat(match[0].replace(',', '.')) : 49.00;
+                    let val = match ? parseFloat(match[0].replace(',', '.')) : 25.00;
 
                     state.history.push({
                         id: Date.now(),
-                        desc: "SCAN: " + file.name.substring(0, 10),
+                        desc: "AI SCAN: " + file.name.substring(0, 10),
                         amount: -val,
                         interval: 'Once',
                         cat: 'Imported',
@@ -421,7 +397,7 @@
             },
 
             delete(id) { state.history = state.history.filter(t => t.id != id); this.save(); ui.renderDashboard(); },
-            save() { localStorage.setItem('v_infinity_v6', JSON.stringify(state)); }
+            save() { localStorage.setItem('v_direct_v7', JSON.stringify(state)); }
         };
 
         /* --- SNAP PHYSICS SYSTEM --- */
@@ -474,7 +450,7 @@
             });
         };
 
-        /* --- SWIPE TO DELETE --- */
+        /* --- SWIPE SYSTEM --- */
         const swipe = {
             sX: 0, elem: null,
             start(e) { this.sX = e.touches[0].clientX; this.elem = e.currentTarget; this.elem.style.transition = 'none'; },
@@ -507,43 +483,37 @@
             async ping() {
                 const ip = document.getElementById('node-ip').value;
                 const res = document.getElementById('monitor-res');
-                res.innerHTML = "<p class='col-span-2 text-center py-12 opacity-30 text-[10px] font-black tracking-widest'>Polling Neural Node...</p>";
+                res.innerHTML = "<p class='col-span-2 text-center py-12 opacity-30 text-[10px] font-black'>Polling Node...</p>";
                 res.classList.remove('hidden');
                 try {
                     const r = await fetch(`https://api.mcstatus.io/v2/status/java/${ip}`);
                     const d = await r.json();
                     if(d.online) {
                         res.innerHTML = `
-                            <div class="crystal-glass p-8 rounded-3xl text-center"><p class="text-[9px] opacity-30 mb-2 tracking-widest">STATE</p><p class="text-emerald-500 font-black uppercase text-xs">Connected</p></div>
-                            <div class="crystal-glass p-8 rounded-3xl text-center"><p class="text-[9px] opacity-30 mb-2 tracking-widest">USERS</p><p class="font-black text-2xl">${d.players.online}</p></div>`;
-                    } else { res.innerHTML = "<p class='col-span-2 text-rose-500 text-center font-black p-12'>Neural Node Offline</p>"; }
+                            <div class="crystal-glass p-8 rounded-3xl text-center"><p class="text-[9px] opacity-30 mb-2 tracking-widest uppercase">State</p><p class="text-emerald-500 font-black uppercase text-xs">Active</p></div>
+                            <div class="crystal-glass p-8 rounded-3xl text-center"><p class="text-[9px] opacity-30 mb-2 tracking-widest uppercase">Users</p><p class="font-black text-2xl">${d.players.online}</p></div>`;
+                    } else { res.innerHTML = "<p class='col-span-2 text-rose-500 text-center font-black p-12'>Node Offline</p>"; }
                 } catch(e) { res.innerHTML = "Error"; }
             }
         };
 
-        /* --- INITIALIZATION --- */
+        /* --- STARTUP --- */
         window.onload = () => {
-            if(state.auth) {
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('app-content').classList.remove('hidden');
-                
-                mainChart = new Chart(document.getElementById('main-chart').getContext('2d'), {
-                    type: 'line',
-                    data: { labels: [], datasets: [{ data: [], borderColor: '#007AFF', tension: 0.4, fill: true, backgroundColor: 'rgba(0,122,255,0.05)', pointRadius: 0, borderWidth: 4 }] },
-                    options: {
-                        responsive: true, maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: { 
-                            x: { display: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { font: { size: 9 }, maxRotation: 0 } },
-                            y: { display: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { font: { size: 9 } } }
-                        }
+            mainChart = new Chart(document.getElementById('main-chart').getContext('2d'), {
+                type: 'line',
+                data: { labels: [], datasets: [{ data: [], borderColor: '#007AFF', tension: 0.4, fill: true, backgroundColor: 'rgba(0,122,255,0.05)', pointRadius: 0, borderWidth: 4 }] },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { 
+                        x: { display: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { font: { size: 9 }, maxRotation: 0 } },
+                        y: { display: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { font: { size: 9 } } }
                     }
-                });
-
-                ui.renderDashboard();
-                ui.applyTheme(state.theme);
-                initSnapToggles();
-            }
+                }
+            });
+            ui.renderDashboard();
+            if(state.theme) ui.applyTheme(state.theme);
+            initSnapToggles();
         };
     </script>
 </body>
