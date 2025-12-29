@@ -231,7 +231,7 @@
     </div>
 
     <div id="modal-box" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xl z-[1100] flex items-center justify-center p-6">
-        <div class="crystal-glass w-full max-w-sm p-8 rounded-[3.5rem] relative">
+        <div class="crystal-glass w-full max-sm p-8 rounded-[3.5rem] relative">
             <button onclick="ui.closeModal()" class="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-xl bg-black/10 font-bold">✕</button>
             <div class="space-y-5 pt-6">
                 <div class="toggle-container mb-2" id="entry-mode-toggle" data-idx="0" data-keys='["manual","ai_scan"]'>
@@ -417,47 +417,38 @@
                 const ctx = mainChart.ctx;
                 const chartArea = mainChart.chartArea;
 
-                // Dynamischer Gradient für die Linie und Füllung
                 const getGradient = (isFill) => {
                     if(!chartArea) return isFill ? 'rgba(0,0,0,0)' : '#007AFF';
-                    
                     const min = Math.min(...dataPoints);
                     const max = Math.max(...dataPoints);
                     const range = max - min;
-                    
-                    // Verhindert Division durch Null
                     if(range === 0) return max >= 0 ? '#10b981' : '#f43f5e';
-
-                    // Berechne den Stopp-Punkt der Nulllinie in Prozent (0 bis 1)
-                    // Da Chart.js y-Achse von oben nach unten zählt:
                     const zeroPos = 1 - ((0 - min) / range);
                     const clampedZero = Math.max(0, Math.min(1, zeroPos));
-
                     const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
-                    
                     if(isFill) {
-                        gradient.addColorStop(0, 'rgba(244, 63, 94, 0.2)'); // Rot unten
+                        gradient.addColorStop(0, 'rgba(244, 63, 94, 0.2)');
                         gradient.addColorStop(clampedZero, 'rgba(244, 63, 94, 0.2)');
                         gradient.addColorStop(clampedZero, 'rgba(16, 185, 129, 0.2)');
-                        gradient.addColorStop(1, 'rgba(16, 185, 129, 0.2)'); // Grün oben
+                        gradient.addColorStop(1, 'rgba(16, 185, 129, 0.2)');
                     } else {
-                        gradient.addColorStop(0, '#f43f5e'); // Rot
+                        gradient.addColorStop(0, '#f43f5e');
                         gradient.addColorStop(clampedZero, '#f43f5e');
                         gradient.addColorStop(clampedZero, '#10b981');
-                        gradient.addColorStop(1, '#10b981'); // Grün
+                        gradient.addColorStop(1, '#10b981');
                     }
                     return gradient;
                 };
 
                 mainChart.data.labels = labels;
                 mainChart.data.datasets[0].data = dataPoints;
-                
-                // Wir nutzen hier den Gradienten direkt als Farbe
                 mainChart.data.datasets[0].borderColor = getGradient(false);
                 mainChart.data.datasets[0].backgroundColor = getGradient(true);
                 
-                // Segmentierung entfernen, da Gradient präziser ist
-                delete mainChart.data.datasets[0].segment;
+                // Labels dynamisch einfärben basierend auf Theme
+                const labelColor = state.theme === 'light' ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.3)';
+                mainChart.options.scales.x.ticks.color = labelColor;
+                mainChart.options.scales.y.ticks.color = labelColor;
 
                 mainChart.update();
             }
@@ -614,16 +605,27 @@
             const ctx = document.getElementById('main-chart').getContext('2d');
             mainChart = new Chart(ctx, {
                 type: 'line',
-                data: { labels: [], datasets: [{ data: [], borderWidth: 4, tension: 0.4, pointRadius: 0, fill: true }] },
+                data: { labels: [], datasets: [{ data: [], borderWidth: 3, tension: 0.4, pointRadius: 0, fill: true }] },
                 options: { 
                     responsive: true, maintainAspectRatio: false, 
                     plugins: { legend: { display: false } },
                     scales: { 
                         y: { 
-                            grid: { display: true, color: 'rgba(255,255,255,0.05)' }, 
-                            ticks: { display: false } 
+                            grid: { display: true, color: 'rgba(255,255,255,0.05)', drawBorder: false }, 
+                            ticks: { 
+                                display: true,
+                                font: { size: 9, weight: 'bold' },
+                                callback: (v) => v + '€'
+                            } 
                         }, 
-                        x: { display: false } 
+                        x: { 
+                            grid: { display: false },
+                            ticks: {
+                                display: true,
+                                font: { size: 8, weight: 'bold' },
+                                maxRotation: 0
+                            }
+                        } 
                     }
                 }
             });
