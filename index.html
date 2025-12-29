@@ -48,6 +48,7 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow-y: auto; /* Erlaubt Scrollen innerhalb des Inhalts */
         }
 
         .crystal-glass { background: var(--glass); backdrop-filter: blur(50px) saturate(190%); border: 1px solid var(--glass-border); }
@@ -154,14 +155,14 @@
     </div>
     <div id="sidebar-overlay" onclick="ui.toggleSidebar()" class="fixed inset-0 bg-black/30 backdrop-blur-sm z-[900] hidden"></div>
 
-    <div id="app-content" class="no-scrollbar overflow-y-auto pb-32">
+    <div id="app-content" class="no-scrollbar">
         <header class="flex justify-between items-center mb-8 pt-4 relative z-20 shrink-0">
             <button onclick="ui.toggleSidebar()" class="w-12 h-12 crystal-glass rounded-2xl flex items-center justify-center text-xl">≡</button>
             <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center font-black text-white shadow-lg">V</div>
         </header>
 
-        <div id="page-dashboard" class="space-y-6">
-            <div class="crystal-glass p-8 md:p-12 rounded-[3rem] text-center reveal">
+        <div id="page-dashboard" class="space-y-6 flex flex-col">
+            <div class="crystal-glass p-8 md:p-12 rounded-[3rem] text-center reveal shrink-0">
                 <p class="text-[10px] opacity-40 uppercase font-black tracking-widest mb-1" data-t="total_assets">Total Assets</p>
                 <h3 id="balance-display" class="font-bold tracking-tighter italic">0.00 €</h3>
             </div>
@@ -170,7 +171,7 @@
                 <canvas id="main-chart"></canvas>
             </div>
             
-            <div class="grid grid-cols-1 reveal">
+            <div class="grid grid-cols-1 reveal shrink-0">
                 <button onclick="ui.openModal('manual')" class="crystal-glass py-7 rounded-[2rem] font-black uppercase text-[10px]" data-t="btn_new">New Entry</button>
             </div>
             
@@ -231,7 +232,7 @@
     </div>
 
     <div id="modal-box" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xl z-[1100] flex items-center justify-center p-6">
-        <div class="crystal-glass w-full max-sm p-8 rounded-[3.5rem] relative">
+        <div class="crystal-glass w-full max-w-sm p-8 rounded-[3.5rem] relative">
             <button onclick="ui.closeModal()" class="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-xl bg-black/10 font-bold">✕</button>
             <div class="space-y-5 pt-6">
                 <div class="toggle-container mb-2" id="entry-mode-toggle" data-idx="0" data-keys='["manual","ai_scan"]'>
@@ -445,7 +446,6 @@
                 mainChart.data.datasets[0].borderColor = getGradient(false);
                 mainChart.data.datasets[0].backgroundColor = getGradient(true);
                 
-                // Labels dynamisch einfärben basierend auf Theme
                 const labelColor = state.theme === 'light' ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.3)';
                 mainChart.options.scales.x.ticks.color = labelColor;
                 mainChart.options.scales.y.ticks.color = labelColor;
@@ -611,6 +611,7 @@
                     plugins: { legend: { display: false } },
                     scales: { 
                         y: { 
+                            beginAtZero: false,
                             grid: { display: true, color: 'rgba(255,255,255,0.05)', drawBorder: false }, 
                             ticks: { 
                                 display: true,
@@ -623,7 +624,9 @@
                             ticks: {
                                 display: true,
                                 font: { size: 8, weight: 'bold' },
-                                maxRotation: 0
+                                maxRotation: 0,
+                                autoSkip: true,
+                                maxTicksLimit: 5
                             }
                         } 
                     }
