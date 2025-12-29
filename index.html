@@ -108,7 +108,6 @@
         .active-label, .active-lang { opacity: 1; transform: scale(1.1); }
         .lang-label { font-size: 18px; }
 
-        /* INTENSITY SLIDER STYLES */
         .intensity-slider {
             -webkit-appearance: none;
             width: 100%;
@@ -167,7 +166,9 @@
                 <h3 id="balance-display" class="font-bold tracking-tighter italic">0.00 €</h3>
             </div>
             
-            <div class="crystal-glass p-6 rounded-[2.5rem] h-64 shrink-0 reveal"><canvas id="main-chart"></canvas></div>
+            <div class="crystal-glass p-6 rounded-[2.5rem] h-64 shrink-0 reveal">
+                <canvas id="main-chart"></canvas>
+            </div>
             
             <div class="grid grid-cols-1 reveal">
                 <button onclick="ui.openModal('manual')" class="crystal-glass py-7 rounded-[2rem] font-black uppercase text-[10px]" data-t="btn_new">New Entry</button>
@@ -371,7 +372,7 @@
             updateHapticIntensity(val) {
                 state.hapticIntensity = parseFloat(val);
                 localStorage.setItem('v_v15_final', JSON.stringify(state));
-                haptics.medium(); // Feedback beim Verstellen
+                haptics.medium();
             },
             updateAllTexts() {
                 document.querySelectorAll('[data-t]').forEach(el => {
@@ -409,8 +410,26 @@
             updateChart() {
                 if(!mainChart) return;
                 let run = 0;
+                const dataPoints = state.history.map(h => { run += h.amount; return run; });
+                
                 mainChart.data.labels = state.history.map(h => h.date);
-                mainChart.data.datasets[0].data = state.history.map(h => { run += h.amount; return run; });
+                mainChart.data.datasets[0].data = dataPoints;
+
+                // Dynamische Farbanpassung: Grün für >= 0, Rot für < 0
+                mainChart.data.datasets[0].segment = {
+                    borderColor: ctx => {
+                        const val = ctx.p0.parsed.y;
+                        return val >= 0 ? '#10b981' : '#f43f5e';
+                    }
+                };
+
+                // Area-Effekt Farben
+                mainChart.data.datasets[0].fill = {
+                    target: 'origin',
+                    above: 'rgba(16, 185, 129, 0.15)',
+                    below: 'rgba(244, 63, 94, 0.15)'
+                };
+
                 mainChart.update();
             }
         };
@@ -519,59 +538,69 @@
             const labels = container.querySelectorAll('.toggle-label, .lang-label');
             const flags = ["🇩🇪", "🇺🇸", "🇫🇷"];
             let isDragging = false, startX = 0, currentX = 0;
+            
             const update = (idx, silent = false) => {
                 const maxX = container.offsetWidth - knob.offsetWidth - 8;
                 currentX = (idx * (maxX / (isThreeWay ? 2 : 1)));
-                knob.style.transform = `translateX(${currentX}px)`;
+                knob.style.transform = `translateX(${currentX}px) scale(1)`;
                 if(isThreeWay) { state.lang = idx; knob.innerText = flags[idx]; ui.updateAllTexts(); }
                 else {
                     container.dataset.idx = idx;
                     const keys = JSON.parse(container.dataset.keys);
                     knob.innerText = i18n[state.lang][keys[idx]];
+                    if(containerId === 'theme-toggle') ui.applyTheme(keys[idx]);
+                    if(containerId === 'glow-toggle') state.glowEnabled = (idx === 0);
+                    if(containerId === 'haptic-toggle') state.hapticsEnabled = (idx === 0);
+                    if(containerId === 'type-toggle') logic.updateCategoryDropdown();
                     if(containerId === 'entry-mode-toggle') {
                         document.getElementById('ui-manual-fields').classList.toggle('hidden', idx === 1);
                         document.getElementById('ui-ai-fields').classList.toggle('hidden', idx === 0);
                     }
-                    if(!silent) {
-                        haptics.light();
-                        if(container.id === 'theme-toggle') ui.applyTheme(keys[idx]);
-                        if(container.id === 'glow-toggle') state.glowEnabled = (idx === 0);
-                        if(container.id === 'haptic-toggle') {
-                            state.hapticsEnabled = (idx === 0);
-                            document.getElementById('haptic-intensity-box').style.opacity = (idx === 0) ? '1' : '0.3';
-                        }
-                        if(container.id === 'type-toggle') logic.updateCategoryDropdown();
-                    }
+                    ui.updateAllTexts();
                 }
-                labels.forEach((l, i) => l.classList.toggle(isThreeWay ? 'active-lang' : 'active-label', i === idx));
                 localStorage.setItem('v_v15_final', JSON.stringify(state));
+                if(!silent) haptics.light();
             };
-            knob.addEventListener('touchstart', (e) => { isDragging = true; startX = e.touches[0].clientX - currentX; haptics.light(); });
-            window.addEventListener('touchmove', (e) => { if(!isDragging) return; currentX = Math.max(0, Math.min(e.touches[0].clientX - startX, container.offsetWidth - knob.offsetWidth - 8)); knob.style.transform = `translateX(${currentX}px)`; });
-            window.addEventListener('touchend', () => { if(!isDragging) return; isDragging = false; const maxX = container.offsetWidth - knob.offsetWidth - 8; const idx = Math.round(currentX / (maxX / (isThreeWay ? 2 : 1))); update(idx); });
-            container.addEventListener('click', (e) => { const rect = container.getBoundingClientRect(); const clickX = e.clientX - rect.left; const idx = Math.floor(clickX / (rect.width / (isThreeWay ? 3 : 2))); update(Math.min(idx, isThreeWay ? 2 : 1)); });
-            
-            if(isThreeWay) update(state.lang, true);
-            else if(containerId === 'theme-toggle') update(state.theme === 'light' ? 1 : 0, true);
-            else if(containerId === 'glow-toggle') update(state.glowEnabled ? 0 : 1, true);
-            else if(containerId === 'haptic-toggle') {
-                update(state.hapticsEnabled ? 0 : 1, true);
-                document.getElementById('haptic-intensity-box').style.opacity = state.hapticsEnabled ? '1' : '0.3';
-            }
-            else update(0, true);
+
+            container.addEventListener('touchstart', (e) => { isDragging = true; startX = e.touches[0].clientX - currentX; knob.style.transform += ' scale(0.95)'; });
+            container.addEventListener('touchmove', (e) => {
+                if(!isDragging) return;
+                let x = e.touches[0].clientX - startX;
+                const maxX = container.offsetWidth - knob.offsetWidth - 8;
+                x = Math.max(0, Math.min(x, maxX));
+                currentX = x;
+                knob.style.transform = `translateX(${x}px) scale(0.95)`;
+            });
+            container.addEventListener('touchend', () => {
+                isDragging = false;
+                const maxX = container.offsetWidth - knob.offsetWidth - 8;
+                const idx = Math.round(currentX / (maxX / (isThreeWay ? 2 : 1)));
+                update(idx);
+            });
+            update(isThreeWay ? state.lang : parseInt(container.dataset.idx), true);
         }
 
         window.onload = () => {
             confetti.init();
-            document.getElementById('haptic-intensity').value = state.hapticIntensity || 1;
-            mainChart = new Chart(document.getElementById('main-chart').getContext('2d'), {
-                type: 'line', data: { labels: [], datasets: [{ data: [], borderColor: '#007AFF', tension: 0.4, fill: true, backgroundColor: 'rgba(0,122,255,0.05)', pointRadius: 0, borderWidth: 3 }] },
-                options: { responsive: true, maintainAspectRatio: false, scales: { x: { display: false }, y: { display: false } }, plugins: { legend: { display: false } } }
+            const ctx = document.getElementById('main-chart').getContext('2d');
+            mainChart = new Chart(ctx, {
+                type: 'line',
+                data: { labels: [], datasets: [{ data: [], borderWidth: 4, tension: 0.4, pointRadius: 0, fill: true }] },
+                options: { 
+                    responsive: true, maintainAspectRatio: false, 
+                    plugins: { legend: { display: false } },
+                    scales: { y: { grid: { display: false }, ticks: { display: false } }, x: { display: false } }
+                }
             });
-            initDraggable('lang-toggle', true); initDraggable('theme-toggle', false); initDraggable('glow-toggle', false);
-            initDraggable('haptic-toggle', false); initDraggable('entry-mode-toggle', false); initDraggable('type-toggle', false); 
+            ui.applyTheme(state.theme);
+            ui.renderDashboard();
+            initDraggable('lang-toggle', true);
+            initDraggable('theme-toggle', false);
+            initDraggable('glow-toggle', false);
+            initDraggable('haptic-toggle', false);
+            initDraggable('type-toggle', false);
             initDraggable('interval-toggle', false);
-            ui.renderDashboard(); ui.updateAllTexts(); ui.applyTheme(state.theme); ui.initReveal();
+            initDraggable('entry-mode-toggle', false);
         };
     </script>
 </body>
