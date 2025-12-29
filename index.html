@@ -419,13 +419,18 @@
 
                 const getGradient = (isFill) => {
                     if(!chartArea) return isFill ? 'rgba(0,0,0,0)' : '#007AFF';
+                    
                     const min = Math.min(...dataPoints);
                     const max = Math.max(...dataPoints);
                     const range = max - min;
-                    if(range === 0) return max >= 0 ? '#10b981' : '#f43f5e';
+                    
+                    if (min >= 0) return isFill ? 'rgba(16, 185, 129, 0.2)' : '#10b981';
+                    if (max <= 0) return isFill ? 'rgba(244, 63, 94, 0.2)' : '#f43f5e';
+                    
                     const zeroPos = 1 - ((0 - min) / range);
                     const clampedZero = Math.max(0, Math.min(1, zeroPos));
                     const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+                    
                     if(isFill) {
                         gradient.addColorStop(0, 'rgba(244, 63, 94, 0.2)');
                         gradient.addColorStop(clampedZero, 'rgba(244, 63, 94, 0.2)');
@@ -445,10 +450,12 @@
                 mainChart.data.datasets[0].borderColor = getGradient(false);
                 mainChart.data.datasets[0].backgroundColor = getGradient(true);
                 
-                // Labels dynamisch einfärben basierend auf Theme
                 const labelColor = state.theme === 'light' ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.3)';
+                const gridColor = state.theme === 'light' ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
+                
                 mainChart.options.scales.x.ticks.color = labelColor;
                 mainChart.options.scales.y.ticks.color = labelColor;
+                mainChart.options.scales.y.grid.color = gridColor;
 
                 mainChart.update();
             }
@@ -611,7 +618,7 @@
                     plugins: { legend: { display: false } },
                     scales: { 
                         y: { 
-                            grid: { display: true, color: 'rgba(255,255,255,0.05)', drawBorder: false }, 
+                            grid: { display: true, drawBorder: false }, 
                             ticks: { 
                                 display: true,
                                 font: { size: 9, weight: 'bold' },
@@ -627,7 +634,25 @@
                             }
                         } 
                     }
-                }
+                },
+                plugins: [{
+                    id: 'zeroLine',
+                    beforeDraw: (chart) => {
+                        const { ctx, chartArea: { left, right }, scales: { y } } = chart;
+                        const zeroY = y.getPixelForValue(0);
+                        if (zeroY >= chart.chartArea.top && zeroY <= chart.chartArea.bottom) {
+                            ctx.save();
+                            ctx.strokeStyle = state.theme === 'light' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
+                            ctx.lineWidth = 1;
+                            ctx.setLineDash([5, 5]);
+                            ctx.beginPath();
+                            ctx.moveTo(left, zeroY);
+                            ctx.lineTo(right, zeroY);
+                            ctx.stroke();
+                            ctx.restore();
+                        }
+                    }
+                }]
             });
             ui.applyTheme(state.theme);
             ui.renderDashboard();
