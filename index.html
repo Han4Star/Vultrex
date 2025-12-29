@@ -179,6 +179,7 @@
                 <button onclick="monitor.ping()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] text-white" data-t="btn_refresh">Refresh Node</button>
             </div>
             <div id="monitor-res" class="hidden grid grid-cols-3 gap-4"></div>
+            <div id="monitor-players" class="hidden crystal-glass p-6 rounded-[2rem] space-y-2"></div>
         </div>
     </div>
 
@@ -397,8 +398,12 @@
             async ping() {
                 const ip = document.getElementById('node-ip').value;
                 const res = document.getElementById('monitor-res');
+                const playerBox = document.getElementById('monitor-players');
                 if(!ip) return;
-                res.innerHTML = "..."; res.classList.remove('hidden');
+                
+                res.innerHTML = "..."; 
+                res.classList.remove('hidden');
+                playerBox.classList.add('hidden');
                 
                 const startTime = Date.now();
                 try {
@@ -421,6 +426,19 @@
                                 <p class="text-blue-500 font-black text-[12px]">${latency}ms</p>
                             </div>
                         `;
+
+                        // Spielerliste anzeigen falls vorhanden
+                        if (d.players.list && d.players.list.length > 0) {
+                            playerBox.innerHTML = `<p class="text-[9px] font-black opacity-30 uppercase mb-2">Player List</p>`;
+                            d.players.list.forEach(p => {
+                                playerBox.innerHTML += `
+                                    <div class="flex items-center space-x-3 p-2 bg-white/5 rounded-xl border border-white/5">
+                                        <img src="https://mc-heads.net/avatar/${p.uuid}/24" class="w-6 h-6 rounded-md">
+                                        <span class="text-[11px] font-bold">${p.name_clean}</span>
+                                    </div>`;
+                            });
+                            playerBox.classList.remove('hidden');
+                        }
                     } else {
                         res.innerHTML = `<div class="col-span-3 crystal-glass p-4 rounded-2xl text-center text-rose-500 font-bold uppercase">Node Offline</div>`;
                     }
