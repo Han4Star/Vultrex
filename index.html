@@ -410,26 +410,54 @@
             updateChart() {
                 if(!mainChart) return;
                 
-                // Wir fügen einen fixen Startpunkt bei 0.00 hinzu
                 let run = 0;
-                const labels = ["START", ...state.history.map(h => h.date)];
                 const dataPoints = [0, ...state.history.map(h => { run += h.amount; return run; })];
-                
+                const labels = ["START", ...state.history.map(h => h.date)];
+
+                const ctx = mainChart.ctx;
+                const chartArea = mainChart.chartArea;
+
+                // Dynamischer Gradient für die Linie und Füllung
+                const getGradient = (isFill) => {
+                    if(!chartArea) return isFill ? 'rgba(0,0,0,0)' : '#007AFF';
+                    
+                    const min = Math.min(...dataPoints);
+                    const max = Math.max(...dataPoints);
+                    const range = max - min;
+                    
+                    // Verhindert Division durch Null
+                    if(range === 0) return max >= 0 ? '#10b981' : '#f43f5e';
+
+                    // Berechne den Stopp-Punkt der Nulllinie in Prozent (0 bis 1)
+                    // Da Chart.js y-Achse von oben nach unten zählt:
+                    const zeroPos = 1 - ((0 - min) / range);
+                    const clampedZero = Math.max(0, Math.min(1, zeroPos));
+
+                    const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+                    
+                    if(isFill) {
+                        gradient.addColorStop(0, 'rgba(244, 63, 94, 0.2)'); // Rot unten
+                        gradient.addColorStop(clampedZero, 'rgba(244, 63, 94, 0.2)');
+                        gradient.addColorStop(clampedZero, 'rgba(16, 185, 129, 0.2)');
+                        gradient.addColorStop(1, 'rgba(16, 185, 129, 0.2)'); // Grün oben
+                    } else {
+                        gradient.addColorStop(0, '#f43f5e'); // Rot
+                        gradient.addColorStop(clampedZero, '#f43f5e');
+                        gradient.addColorStop(clampedZero, '#10b981');
+                        gradient.addColorStop(1, '#10b981'); // Grün
+                    }
+                    return gradient;
+                };
+
                 mainChart.data.labels = labels;
                 mainChart.data.datasets[0].data = dataPoints;
-
-                mainChart.data.datasets[0].segment = {
-                    borderColor: ctx => {
-                        const val = ctx.p0.parsed.y;
-                        return val >= 0 ? '#10b981' : '#f43f5e';
-                    }
-                };
-
-                mainChart.data.datasets[0].fill = {
-                    target: 'origin',
-                    above: 'rgba(16, 185, 129, 0.15)',
-                    below: 'rgba(244, 63, 94, 0.15)'
-                };
+                
+                // Wir nutzen hier den Gradienten direkt als Farbe
+                mainChart.data.datasets[0].borderColor = getGradient(false);
+                mainChart.data.datasets[0].backgroundColor = getGradient(true);
+                
+                // Segmentierung entfernen, da Gradient präziser ist
+                delete mainChart.data.datasets[0].segment;
 
                 mainChart.update();
             }
@@ -590,7 +618,13 @@
                 options: { 
                     responsive: true, maintainAspectRatio: false, 
                     plugins: { legend: { display: false } },
-                    scales: { y: { grid: { display: false }, ticks: { display: false } }, x: { display: false } }
+                    scales: { 
+                        y: { 
+                            grid: { display: true, color: 'rgba(255,255,255,0.05)' }, 
+                            ticks: { display: false } 
+                        }, 
+                        x: { display: false } 
+                    }
                 }
             });
             ui.applyTheme(state.theme);
