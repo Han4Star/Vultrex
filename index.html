@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vultrex OS v16.7 - Adaptive VIP Edition</title>
+    <title>Vultrex OS v16.7 - Haptic VIP Edition</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -29,7 +29,6 @@
         .reveal {
             opacity: 0;
             transform: translateY(40px) scale(0.98);
-            /* Zeit auf 1.4s erhöht für ein majestätisches Erscheinen */
             transition: opacity 1.4s cubic-bezier(0.16, 1, 0.3, 1), 
                         transform 1.4s cubic-bezier(0.16, 1, 0.3, 1);
             will-change: opacity, transform;
@@ -193,7 +192,7 @@
     </div>
 
     <div id="modal-box" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xl z-[1100] flex items-center justify-center p-6">
-        <div class="crystal-glass w-full max-sm p-8 rounded-[3.5rem] relative">
+        <div class="crystal-glass w-full max-w-sm p-8 rounded-[3.5rem] relative">
             <button onclick="ui.closeModal()" class="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-xl bg-black/10 font-bold">✕</button>
             <div class="space-y-5 pt-6">
                 <div class="toggle-container mb-2" id="entry-mode-toggle" data-idx="0" data-keys='["manual","ai_scan"]'>
@@ -229,6 +228,14 @@
             0: { nav_dash: "📊 Dashboard", nav_monitor: "🌐 Monitor", nav_set: "⚙️ Einstellungen", total_assets: "Gesamtvermögen", btn_new: "Eintrag hinzufügen", btn_scan: "KI Scan", set_lang: "Sprache", set_theme: "Design", set_glow: "Click Glow", btn_commit: "Speichern", btn_refresh: "Refresh", expense: "Ausgabe", income: "Einnahme", once: "Einmal", monthly: "Monat", dark: "Dunkel", light: "Hell", on: "AN", off: "AUS", manual: "Manuell", ai_scan: "KI Scan ✨" },
             1: { nav_dash: "📊 Dashboard", nav_monitor: "🌐 Monitor", nav_set: "⚙️ Settings", total_assets: "Total Assets", btn_new: "New Entry", btn_scan: "AI Scan", set_lang: "Language", set_theme: "Appearance", set_glow: "Click Glow", btn_commit: "Commit", btn_refresh: "Refresh", expense: "Expense", income: "Income", once: "Once", monthly: "Monthly", dark: "Dark", light: "Light", on: "ON", off: "OFF", manual: "Manual", ai_scan: "AI Scan ✨" },
             2: { nav_dash: "📊 Dashboard", nav_monitor: "🌐 Moniteur", nav_set: "⚙️ Réglages", total_assets: "Total Actifs", btn_new: "Nouveau", btn_scan: "Scan IA", set_lang: "Langue", set_theme: "Apparence", set_glow: "Click Glow", btn_commit: "Valider", btn_refresh: "Refresh", expense: "Dépense", income: "Revenu", once: "Une fois", monthly: "Mensuel", dark: "Sombre", light: "Clair", on: "ON", off: "OFF", manual: "Manuel", ai_scan: "Scan IA ✨" }
+        };
+
+        // HAPTIC ENGINE MODULE
+        const haptics = {
+            light() { if(navigator.vibrate) navigator.vibrate(10); },
+            medium() { if(navigator.vibrate) navigator.vibrate(25); },
+            success() { if(navigator.vibrate) navigator.vibrate([20, 30, 20]); },
+            streak() { if(navigator.vibrate) navigator.vibrate([15, 50, 20, 60, 30, 100]); } // Duolingo-style Rumble
         };
 
         let state = JSON.parse(localStorage.getItem('v_v15_final')) || { history: [], theme: 'light', lang: 1, glowEnabled: true };
@@ -273,7 +280,7 @@
                     entries.forEach(entry => {
                         if (entry.isIntersecting) entry.target.classList.add('active');
                     });
-                }, { threshold: 0.05 }); // Früherer Trigger für sanfteren Verlauf
+                }, { threshold: 0.05 });
                 document.querySelectorAll('.reveal, .transaction-wrapper').forEach(el => observer.observe(el));
             },
             createGlow(e) {
@@ -293,6 +300,7 @@
                 const isOpen = sb.style.transform === 'translateX(0px)';
                 sb.style.transform = isOpen ? 'translateX(-100%)' : 'translateX(0px)';
                 document.getElementById('sidebar-overlay').classList.toggle('hidden');
+                haptics.light();
             },
             switchPage(id) {
                 ['dashboard', 'settings', 'monitor'].forEach(p => {
@@ -302,12 +310,11 @@
                 });
                 document.getElementById('page-' + id).classList.remove('page-hidden');
                 this.toggleSidebar();
-                // Kurze Verzögerung für den Stagger-Effekt beim Seitenwechsel
                 setTimeout(() => this.initReveal(), 100);
             },
-            openModal(type) { document.getElementById('modal-box').classList.remove('hidden'); logic.updateCategoryDropdown(); },
-            closeModal() { document.getElementById('modal-box').classList.add('hidden'); },
-            onFile(input) { if(input.files[0]) document.getElementById('file-label').innerText = input.files[0].name; },
+            openModal(type) { document.getElementById('modal-box').classList.remove('hidden'); logic.updateCategoryDropdown(); haptics.light(); },
+            closeModal() { document.getElementById('modal-box').classList.add('hidden'); haptics.light(); },
+            onFile(input) { if(input.files[0]) { document.getElementById('file-label').innerText = input.files[0].name; haptics.medium(); } },
             applyTheme(themeKey) {
                 state.theme = themeKey;
                 document.body.className = themeKey === 'light' ? 'light-mode' : '';
@@ -368,13 +375,13 @@
                 if(isNaN(amount)) return;
                 state.history.push({ id: Date.now(), amount: typeIdx === 0 ? -amount : amount, cat: document.getElementById('entry-category').value, date: new Date().toLocaleDateString() });
                 localStorage.setItem('v_v15_final', JSON.stringify(state));
+                haptics.success(); // Haptisches Feedback beim Speichern
                 ui.renderDashboard(); ui.closeModal();
                 document.getElementById('entry-amount').value = '';
             },
             async scanPDF() {
                 const file = document.getElementById('pdf-in').files[0];
                 if(!file) return;
-                confetti.spawn();
                 const reader = new FileReader();
                 reader.onload = async (e) => {
                     const typedarray = new Uint8Array(e.target.result);
@@ -386,6 +393,11 @@
                     let val = match ? parseFloat(match[0].replace(',', '.')) : 0.00;
                     state.history.push({ id: Date.now(), amount: -val, cat: 'AI Scan ✨', date: new Date().toLocaleDateString() });
                     localStorage.setItem('v_v15_final', JSON.stringify(state));
+                    
+                    // DUOLINGO STYLE FINISH
+                    confetti.spawn();
+                    haptics.streak(); 
+                    
                     setTimeout(() => { ui.renderDashboard(); ui.closeModal(); }, 1200);
                 };
                 reader.readAsArrayBuffer(file);
@@ -400,12 +412,14 @@
                 if(d < 0) {
                     this.elem.style.transform = `translateX(${Math.max(d, -120)}px)`;
                     this.elem.parentElement.querySelector('.delete-bg').style.opacity = Math.abs(d)/100;
+                    if(Math.abs(d) > 100) haptics.light(); // Kleiner Tick bei Erreichen der Löschgrenze
                 }
             },
             end(e) {
                 let d = e.changedTouches[0].clientX - this.sX;
                 this.elem.style.transition = 'transform 0.4s cubic-bezier(0.1, 0.9, 0.2, 1)';
                 if(d < -100) {
+                    haptics.medium();
                     state.history = state.history.filter(t => t.id != this.elem.dataset.id);
                     localStorage.setItem('v_v15_final', JSON.stringify(state));
                     ui.renderDashboard();
@@ -419,6 +433,7 @@
                 const res = document.getElementById('monitor-res');
                 const playerBox = document.getElementById('monitor-players');
                 if(!ip) return;
+                haptics.light();
                 res.innerHTML = "..."; res.classList.remove('hidden');
                 playerBox.classList.add('hidden');
                 const startTime = Date.now();
@@ -427,6 +442,7 @@
                     const d = await r.json();
                     const latency = Date.now() - startTime;
                     if (d.online) {
+                        haptics.success();
                         res.innerHTML = `<div class="crystal-glass p-4 rounded-2xl text-center reveal"><p class="text-emerald-500 font-bold text-[10px] uppercase">Status</p><p class="font-black text-[12px]">Online</p></div>
                             <div class="crystal-glass p-4 rounded-2xl text-center reveal"><p class="opacity-30 font-bold text-[10px] uppercase">Players</p><p class="font-black text-[12px]">${d.players.online}</p></div>
                             <div class="crystal-glass p-4 rounded-2xl text-center reveal"><p class="opacity-30 font-bold text-[10px] uppercase">Ping</p><p class="text-blue-500 font-black text-[12px]">${latency}ms</p></div>`;
@@ -439,7 +455,10 @@
                         }
                         ui.initReveal();
                     }
-                } catch(e) { res.innerHTML = `<div class="col-span-3 crystal-glass p-4 rounded-2xl text-center text-rose-500 font-bold uppercase">Error</div>`; }
+                } catch(e) { 
+                    haptics.medium();
+                    res.innerHTML = `<div class="col-span-3 crystal-glass p-4 rounded-2xl text-center text-rose-500 font-bold uppercase">Error</div>`; 
+                }
             }
         };
 
@@ -464,6 +483,7 @@
                         document.getElementById('ui-ai-fields').classList.toggle('hidden', idx === 0);
                     }
                     if(!silent) {
+                        haptics.light(); // Feedback beim Umschalten
                         if(container.id === 'theme-toggle') ui.applyTheme(keys[idx]);
                         if(container.id === 'glow-toggle') state.glowEnabled = (idx === 0);
                         if(container.id === 'type-toggle') logic.updateCategoryDropdown();
@@ -472,7 +492,7 @@
                 labels.forEach((l, i) => l.classList.toggle(isThreeWay ? 'active-lang' : 'active-label', i === idx));
                 localStorage.setItem('v_v15_final', JSON.stringify(state));
             };
-            knob.addEventListener('touchstart', (e) => { isDragging = true; startX = e.touches[0].clientX - currentX; });
+            knob.addEventListener('touchstart', (e) => { isDragging = true; startX = e.touches[0].clientX - currentX; haptics.light(); });
             window.addEventListener('touchmove', (e) => { if(!isDragging) return; currentX = Math.max(0, Math.min(e.touches[0].clientX - startX, container.offsetWidth - knob.offsetWidth - 8)); knob.style.transform = `translateX(${currentX}px)`; });
             window.addEventListener('touchend', () => { if(!isDragging) return; isDragging = false; const maxX = container.offsetWidth - knob.offsetWidth - 8; const idx = Math.round(currentX / (maxX / (isThreeWay ? 2 : 1))); update(idx); });
             container.addEventListener('click', (e) => { const rect = container.getBoundingClientRect(); const clickX = e.clientX - rect.left; const idx = Math.floor(clickX / (rect.width / (isThreeWay ? 3 : 2))); update(Math.min(idx, isThreeWay ? 2 : 1)); });
