@@ -409,13 +409,15 @@
             },
             updateChart() {
                 if(!mainChart) return;
-                let run = 0;
-                const dataPoints = state.history.map(h => { run += h.amount; return run; });
                 
-                mainChart.data.labels = state.history.map(h => h.date);
+                // Wir fügen einen fixen Startpunkt bei 0.00 hinzu
+                let run = 0;
+                const labels = ["START", ...state.history.map(h => h.date)];
+                const dataPoints = [0, ...state.history.map(h => { run += h.amount; return run; })];
+                
+                mainChart.data.labels = labels;
                 mainChart.data.datasets[0].data = dataPoints;
 
-                // Dynamische Farbanpassung: Grün für >= 0, Rot für < 0
                 mainChart.data.datasets[0].segment = {
                     borderColor: ctx => {
                         const val = ctx.p0.parsed.y;
@@ -423,7 +425,6 @@
                     }
                 };
 
-                // Area-Effekt Farben
                 mainChart.data.datasets[0].fill = {
                     target: 'origin',
                     above: 'rgba(16, 185, 129, 0.15)',
