@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en" class="light">
 <head>
     <meta charset="UTF-8">
@@ -51,7 +51,6 @@
             overflow-y: auto;
         }
 
-        /* VERBESSERTE LANDSCAPE LOGIK */
         @media (orientation: landscape) and (min-width: 768px) {
             #page-dashboard {
                 display: grid !important;
@@ -61,7 +60,6 @@
                 height: 80vh;
                 align-items: stretch;
             }
-
             .landscape-left-col {
                 grid-column: 1;
                 display: flex;
@@ -69,22 +67,18 @@
                 gap: 1.5rem;
                 height: 100%;
             }
-
-            /* Graph nimmt den restlichen Platz ein */
             .chart-container-wrapper {
                 flex-grow: 1;
                 min-height: 300px;
             }
-
             #transaction-list {
                 grid-column: 2;
                 max-height: 80vh;
                 overflow-y: auto;
                 padding-right: 10px;
             }
-
             .new-entry-btn-wrapper {
-                order: 2; /* Zwischen Balance und Graph */
+                order: 2;
                 margin-top: -0.5rem;
             }
         }
@@ -133,12 +127,13 @@
             background: var(--input-fill); border-radius: 1.5rem;
             padding: 4px; display: flex; align-items: center;
             border: 1px solid var(--glass-border); touch-action: none; z-index: 10;
+            cursor: pointer; /* Zeigt Klickbarkeit an */
         }
         .toggle-knob, .lang-knob {
             position: absolute; left: 4px; height: 50px;
             background: var(--knob-gradient), var(--accent);
             border-radius: 1.2rem; display: flex; align-items: center;
-            justify-content: center; z-index: 20; cursor: pointer;
+            justify-content: center; z-index: 20; pointer-events: none; /* Verhindert Störung beim Klicken auf Container */
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             color: white !important; font-size: 10px; font-weight: 900; text-transform: uppercase;
@@ -201,22 +196,17 @@
 
         <div id="page-dashboard" class="space-y-6 flex flex-col">
             <div class="landscape-left-col contents md:flex md:flex-col md:gap-6">
-                
                 <div class="crystal-glass p-8 md:p-12 rounded-[3rem] text-center reveal shrink-0 order-1">
                     <p class="text-[10px] opacity-40 uppercase font-black tracking-widest mb-1" data-t="total_assets">Total Assets</p>
                     <h3 id="balance-display" class="font-bold tracking-tighter italic">0.00 €</h3>
                 </div>
-
                 <div class="new-entry-btn-wrapper grid grid-cols-1 reveal shrink-0 order-2">
                     <button onclick="ui.openModal('manual')" class="crystal-glass py-6 rounded-[2rem] font-black uppercase text-[10px]" data-t="btn_new">New Entry</button>
                 </div>
-                
                 <div class="chart-container-wrapper crystal-glass p-6 rounded-[2.5rem] reveal order-3">
                     <canvas id="main-chart"></canvas>
                 </div>
-
             </div>
-            
             <div id="transaction-list" class="space-y-3 pb-10 no-scrollbar order-4"></div>
         </div>
 
@@ -236,19 +226,16 @@
                         <div class="toggle-knob" style="width: calc(50% - 6px)"></div>
                         <div class="toggle-label"></div><div class="toggle-label"></div>
                     </div>
-                    
                     <p class="text-[9px] font-black opacity-30 uppercase mb-4 text-center" data-t="set_glow">Click Glow</p>
                     <div class="toggle-container mb-6" id="glow-toggle" data-idx="0" data-keys='["on","off"]'>
                         <div class="toggle-knob" style="width: calc(50% - 6px)"></div>
                         <div class="toggle-label"></div><div class="toggle-label"></div>
                     </div>
-
                     <p class="text-[9px] font-black opacity-30 uppercase mb-4 text-center" data-t="set_haptic">Haptic Feedback</p>
                     <div class="toggle-container mb-4" id="haptic-toggle" data-idx="0" data-keys='["on","off"]'>
                         <div class="toggle-knob" style="width: calc(50% - 6px)"></div>
                         <div class="toggle-label"></div><div class="toggle-label"></div>
                     </div>
-                    
                     <div id="haptic-intensity-box" class="space-y-3 px-2">
                         <p class="text-[9px] font-black opacity-30 uppercase text-center" data-t="set_intensity">Intensity</p>
                         <input type="range" id="haptic-intensity" min="0.5" max="3" step="0.5" value="1" class="intensity-slider" oninput="ui.updateHapticIntensity(this.value)">
@@ -257,8 +244,6 @@
                             <span data-t="int_high">Strong</span>
                         </div>
                     </div>
-
-                    <p class="text-[8px] opacity-30 text-center mt-6 uppercase font-bold" data-t="haptic_desc">Funktioniert nur auf Home Bildschirm Apps</p>
                 </div>
             </div>
         </div>
@@ -318,11 +303,8 @@
             vibrate(pattern) {
                 if (state.hapticsEnabled && navigator.vibrate) {
                     const intensity = state.hapticIntensity || 1;
-                    if (Array.isArray(pattern)) {
-                        navigator.vibrate(pattern.map(p => p * intensity));
-                    } else {
-                        navigator.vibrate(pattern * intensity);
-                    }
+                    if (Array.isArray(pattern)) { navigator.vibrate(pattern.map(p => p * intensity)); }
+                    else { navigator.vibrate(pattern * intensity); }
                 }
             },
             light() { this.vibrate(10); },
@@ -332,7 +314,6 @@
         };
 
         let mainChart = null;
-
         const confetti = {
             canvas: null, ctx: null, particles: [],
             init() {
@@ -369,9 +350,7 @@
         const ui = {
             initReveal() {
                 const observer = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) entry.target.classList.add('active');
-                    });
+                    entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('active'); });
                 }, { threshold: 0.05 });
                 document.querySelectorAll('.reveal, .transaction-wrapper').forEach(el => observer.observe(el));
             },
@@ -452,46 +431,28 @@
             },
             updateChart() {
                 if(!mainChart) return;
-                
                 let run = 0;
                 const dataPoints = [0, ...state.history.map(h => { run += h.amount; return run; })];
                 const labels = ["START", ...state.history.map(h => h.date)];
-
                 const ctx = mainChart.ctx;
                 const chartArea = mainChart.chartArea;
-
                 const getGradient = (isFill) => {
                     if(!chartArea) return isFill ? 'rgba(0,0,0,0)' : '#007AFF';
-                    const min = Math.min(...dataPoints);
-                    const max = Math.max(...dataPoints);
-                    const range = max - min;
-                    if(range === 0) return max >= 0 ? '#10b981' : '#f43f5e';
-                    const zeroPos = 1 - ((0 - min) / range);
-                    const clampedZero = Math.max(0, Math.min(1, zeroPos));
+                    const min = Math.min(...dataPoints); const max = Math.max(...dataPoints);
+                    const range = max - min; if(range === 0) return max >= 0 ? '#10b981' : '#f43f5e';
+                    const zeroPos = 1 - ((0 - min) / range); const clampedZero = Math.max(0, Math.min(1, zeroPos));
                     const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
-                    if(isFill) {
-                        gradient.addColorStop(0, 'rgba(244, 63, 94, 0.2)');
-                        gradient.addColorStop(clampedZero, 'rgba(244, 63, 94, 0.2)');
-                        gradient.addColorStop(clampedZero, 'rgba(16, 185, 129, 0.2)');
-                        gradient.addColorStop(1, 'rgba(16, 185, 129, 0.2)');
-                    } else {
-                        gradient.addColorStop(0, '#f43f5e');
-                        gradient.addColorStop(clampedZero, '#f43f5e');
-                        gradient.addColorStop(clampedZero, '#10b981');
-                        gradient.addColorStop(1, '#10b981');
-                    }
+                    if(isFill) { gradient.addColorStop(0, 'rgba(244, 63, 94, 0.2)'); gradient.addColorStop(clampedZero, 'rgba(244, 63, 94, 0.2)'); gradient.addColorStop(clampedZero, 'rgba(16, 185, 129, 0.2)'); gradient.addColorStop(1, 'rgba(16, 185, 129, 0.2)'); }
+                    else { gradient.addColorStop(0, '#f43f5e'); gradient.addColorStop(clampedZero, '#f43f5e'); gradient.addColorStop(clampedZero, '#10b981'); gradient.addColorStop(1, '#10b981'); }
                     return gradient;
                 };
-
                 mainChart.data.labels = labels;
                 mainChart.data.datasets[0].data = dataPoints;
                 mainChart.data.datasets[0].borderColor = getGradient(false);
                 mainChart.data.datasets[0].backgroundColor = getGradient(true);
-                
                 const labelColor = state.theme === 'light' ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.3)';
                 mainChart.options.scales.x.ticks.color = labelColor;
                 mainChart.options.scales.y.ticks.color = labelColor;
-
                 mainChart.update();
             }
         };
@@ -509,8 +470,7 @@
                 if(isNaN(amount)) return;
                 state.history.push({ id: Date.now(), amount: typeIdx === 0 ? -amount : amount, cat: document.getElementById('entry-category').value, date: new Date().toLocaleDateString() });
                 localStorage.setItem('v_v15_final', JSON.stringify(state));
-                haptics.success();
-                ui.renderDashboard(); ui.closeModal();
+                haptics.success(); ui.renderDashboard(); ui.closeModal();
                 document.getElementById('entry-amount').value = '';
             },
             async scanPDF() {
@@ -527,8 +487,7 @@
                     let val = match ? parseFloat(match[0].replace(',', '.')) : 0.00;
                     state.history.push({ id: Date.now(), amount: -val, cat: 'AI Scan ✨', date: new Date().toLocaleDateString() });
                     localStorage.setItem('v_v15_final', JSON.stringify(state));
-                    confetti.spawn();
-                    haptics.streak(); 
+                    confetti.spawn(); haptics.streak(); 
                     setTimeout(() => { ui.renderDashboard(); ui.closeModal(); }, 1200);
                 };
                 reader.readAsArrayBuffer(file);
@@ -563,8 +522,7 @@
                 const ip = document.getElementById('node-ip').value;
                 const res = document.getElementById('monitor-res');
                 const playerBox = document.getElementById('monitor-players');
-                if(!ip) return;
-                haptics.light();
+                if(!ip) return; haptics.light();
                 res.innerHTML = "..."; res.classList.remove('hidden');
                 playerBox.classList.add('hidden');
                 const startTime = Date.now();
@@ -579,25 +537,20 @@
                             <div class="crystal-glass p-4 rounded-2xl text-center reveal"><p class="opacity-30 font-bold text-[10px] uppercase">Ping</p><p class="text-blue-500 font-black text-[12px]">${latency}ms</p></div>`;
                         if (d.players.list && d.players.list.length > 0) {
                             playerBox.innerHTML = `<p class="text-[9px] font-black opacity-30 uppercase mb-2">Player List</p>`;
-                            d.players.list.forEach(p => {
-                                playerBox.innerHTML += `<div class="flex items-center space-x-3 p-2 bg-white/5 rounded-xl border border-white/5 reveal"><img src="https://mc-heads.net/avatar/${p.uuid}/24" class="w-6 h-6 rounded-md"><span class="text-[11px] font-bold">${p.name_clean}</span></div>`;
-                            });
+                            d.players.list.forEach(p => { playerBox.innerHTML += `<div class="flex items-center space-x-3 p-2 bg-white/5 rounded-xl border border-white/5 reveal"><img src="https://mc-heads.net/avatar/${p.uuid}/24" class="w-6 h-6 rounded-md"><span class="text-[11px] font-bold">${p.name_clean}</span></div>`; });
                             playerBox.classList.remove('hidden');
                         }
                         ui.initReveal();
                     }
-                } catch(e) { 
-                    haptics.medium();
-                    res.innerHTML = `<div class="col-span-3 crystal-glass p-4 rounded-2xl text-center text-rose-500 font-bold uppercase">Error</div>`; 
-                }
+                } catch(e) { haptics.medium(); res.innerHTML = `<div class="col-span-3 crystal-glass p-4 rounded-2xl text-center text-rose-500 font-bold uppercase">Error</div>`; }
             }
         };
 
+        // FIX FÜR KLICKEN UND ZIEHEN
         function initDraggable(containerId, isThreeWay) {
             const container = document.getElementById(containerId);
             if (!container) return;
             const knob = container.querySelector('.toggle-knob, .lang-knob');
-            const labels = container.querySelectorAll('.toggle-label, .lang-label');
             const flags = ["🇩🇪", "🇺🇸", "🇫🇷"];
             let isDragging = false, startX = 0, currentX = 0;
             
@@ -624,7 +577,18 @@
                 if(!silent) haptics.light();
             };
 
-            container.addEventListener('touchstart', (e) => { isDragging = true; startX = e.touches[0].clientX - currentX; knob.style.transform += ' scale(0.95)'; });
+            // Klick-Logik: Reagiere auf direktes Tippen
+            container.addEventListener('click', (e) => {
+                if (isDragging) return;
+                const rect = container.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const sectionWidth = container.offsetWidth / (isThreeWay ? 3 : 2);
+                const idx = Math.floor(clickX / sectionWidth);
+                update(idx);
+            });
+
+            // Drag-Logik
+            container.addEventListener('touchstart', (e) => { isDragging = true; startX = e.touches[0].clientX - currentX; });
             container.addEventListener('touchmove', (e) => {
                 if(!isDragging) return;
                 let x = e.touches[0].clientX - startX;
@@ -633,12 +597,13 @@
                 currentX = x;
                 knob.style.transform = `translateX(${x}px) scale(0.95)`;
             });
-            container.addEventListener('touchend', () => {
-                isDragging = false;
+            container.addEventListener('touchend', (e) => {
                 const maxX = container.offsetWidth - knob.offsetWidth - 8;
                 const idx = Math.round(currentX / (maxX / (isThreeWay ? 2 : 1)));
                 update(idx);
+                setTimeout(() => isDragging = false, 50);
             });
+
             update(isThreeWay ? state.lang : parseInt(container.dataset.idx), true);
         }
 
@@ -652,36 +617,15 @@
                     responsive: true, maintainAspectRatio: false, 
                     plugins: { legend: { display: false } },
                     scales: { 
-                        y: { 
-                            beginAtZero: false,
-                            grid: { display: true, color: 'rgba(255,255,255,0.05)', drawBorder: false }, 
-                            ticks: { 
-                                display: true,
-                                font: { size: 9, weight: 'bold' },
-                                callback: (v) => v + '€'
-                            } 
-                        }, 
-                        x: { 
-                            grid: { display: false },
-                            ticks: {
-                                display: true,
-                                font: { size: 8, weight: 'bold' },
-                                maxRotation: 0,
-                                autoSkip: true,
-                                maxTicksLimit: 5
-                            }
-                        } 
+                        y: { beginAtZero: false, grid: { display: true, color: 'rgba(255,255,255,0.05)', drawBorder: false }, ticks: { font: { size: 9, weight: 'bold' }, callback: (v) => v + '€' } }, 
+                        x: { grid: { display: false }, ticks: { font: { size: 8, weight: 'bold' }, maxRotation: 0, autoSkip: true, maxTicksLimit: 5 } } 
                     }
                 }
             });
-            ui.applyTheme(state.theme);
-            ui.renderDashboard();
-            initDraggable('lang-toggle', true);
-            initDraggable('theme-toggle', false);
-            initDraggable('glow-toggle', false);
-            initDraggable('haptic-toggle', false);
-            initDraggable('type-toggle', false);
-            initDraggable('interval-toggle', false);
+            ui.applyTheme(state.theme); ui.renderDashboard();
+            initDraggable('lang-toggle', true); initDraggable('theme-toggle', false);
+            initDraggable('glow-toggle', false); initDraggable('haptic-toggle', false);
+            initDraggable('type-toggle', false); initDraggable('interval-toggle', false);
             initDraggable('entry-mode-toggle', false);
         };
     </script>
