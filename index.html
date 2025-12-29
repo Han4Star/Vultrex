@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vultrex OS v16.6 - VIP Scan Edition</title>
+    <title>Vultrex OS v16.7 - Adaptive VIP Edition</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -27,7 +27,25 @@
 
         * { -webkit-tap-highlight-color: transparent; outline: none; }
         html, body { overscroll-behavior: none; background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; overflow: hidden; height: 100vh; margin: 0; transition: background 0.5s ease; user-select: none; }
+        
+        /* ADAPTIVE CONTAINER */
+        #app-content {
+            width: 100%;
+            max-width: clamp(320px, 90vw, 600px); /* Optimale Breite für alle Geräte */
+            margin: 0 auto;
+            padding: clamp(1rem, 5vw, 2.5rem);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
         .crystal-glass { background: var(--glass); backdrop-filter: blur(50px) saturate(190%); border: 1px solid var(--glass-border); }
+
+        /* RESPONSIVE TEXT */
+        #balance-display {
+            font-size: clamp(2.5rem, 8vw, 4.5rem); /* Skaliert zwischen Handy und Desktop */
+            line-height: 1;
+        }
 
         /* CONFETTI CANVAS */
         #confetti-canvas {
@@ -38,7 +56,7 @@
             z-index: 2000;
         }
 
-        /* --- REVISED ADAPTIVE GLOW --- */
+        /* GLOW ANIMATIONS */
         .click-glow {
             position: fixed;
             pointer-events: none;
@@ -46,7 +64,6 @@
             z-index: 1; 
             transform: translate(-50%, -50%) scale(0);
         }
-
         .glow-dark {
             width: 400px; height: 400px;
             animation: glow-pulse-dark 0.8s cubic-bezier(0.1, 0.7, 0.3, 1) forwards;
@@ -55,7 +72,6 @@
             0% { transform: translate(-50%, -50%) scale(0.1); opacity: 0.8; }
             100% { transform: translate(-50%, -50%) scale(1.2); opacity: 0; }
         }
-
         .glow-light {
             width: 250px; height: 250px;
             animation: glow-pulse-light 0.6s ease-out forwards;
@@ -111,24 +127,25 @@
     </div>
     <div id="sidebar-overlay" onclick="ui.toggleSidebar()" class="fixed inset-0 bg-black/30 backdrop-blur-sm z-[900] hidden"></div>
 
-    <div id="app-content" class="p-6 max-w-lg mx-auto h-screen overflow-y-auto no-scrollbar pb-32">
-        <header class="flex justify-between items-center mb-10 pt-4 relative z-20">
+    <div id="app-content" class="no-scrollbar overflow-y-auto pb-32">
+        <header class="flex justify-between items-center mb-8 pt-4 relative z-20 shrink-0">
             <button onclick="ui.toggleSidebar()" class="w-12 h-12 crystal-glass rounded-2xl flex items-center justify-center text-xl">≡</button>
             <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center font-black text-white shadow-lg">V</div>
         </header>
 
         <div id="page-dashboard" class="space-y-6">
-            <div class="crystal-glass p-10 rounded-[3rem] text-center">
+            <div class="crystal-glass p-8 md:p-12 rounded-[3rem] text-center">
                 <p class="text-[10px] opacity-40 uppercase font-black tracking-widest mb-1" data-t="total_assets">Total Assets</p>
-                <h3 id="balance-display" class="text-5xl font-bold tracking-tighter italic">0.00 €</h3>
+                <h3 id="balance-display" class="font-bold tracking-tighter italic">0.00 €</h3>
             </div>
-            <div class="crystal-glass p-6 rounded-[2.5rem] h-64"><canvas id="main-chart"></canvas></div>
+            
+            <div class="crystal-glass p-6 rounded-[2.5rem] h-64 shrink-0"><canvas id="main-chart"></canvas></div>
             
             <div class="grid grid-cols-1">
                 <button onclick="ui.openModal('manual')" class="crystal-glass py-7 rounded-[2rem] font-black uppercase text-[10px]" data-t="btn_new">New Entry</button>
             </div>
             
-            <div id="transaction-list" class="space-y-3"></div>
+            <div id="transaction-list" class="space-y-3 pb-10"></div>
         </div>
 
         <div id="page-settings" class="page-hidden space-y-6">
@@ -166,7 +183,7 @@
     </div>
 
     <div id="modal-box" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xl z-[1100] flex items-center justify-center p-6">
-        <div class="crystal-glass w-full max-sm p-8 rounded-[3.5rem] relative">
+        <div class="crystal-glass w-full max-w-sm p-8 rounded-[3.5rem] relative">
             <button onclick="ui.closeModal()" class="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-xl bg-black/10 font-bold">✕</button>
             
             <div class="space-y-5 pt-6">
@@ -254,8 +271,7 @@
                 glow.className = `click-glow ${isLight ? 'glow-light' : 'glow-dark'}`;
                 const color = isLight ? 'rgba(0, 122, 255, 0.6)' : 'rgba(255, 255, 255, 0.7)';
                 glow.style.background = `radial-gradient(circle, ${color} 0%, rgba(255,255,255,0) 80%)`;
-                glow.style.left = e.clientX + 'px';
-                glow.style.top = e.clientY + 'px';
+                glow.style.left = e.clientX + 'px'; glow.style.top = e.clientY + 'px';
                 document.body.appendChild(glow);
                 setTimeout(() => glow.remove(), 1000);
             },
@@ -338,7 +354,7 @@
             async scanPDF() {
                 const file = document.getElementById('pdf-in').files[0];
                 if(!file) return;
-                confetti.spawn(); // Startet den Effekt
+                confetti.spawn();
                 const reader = new FileReader();
                 reader.onload = async (e) => {
                     const typedarray = new Uint8Array(e.target.result);
