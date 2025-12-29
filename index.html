@@ -172,11 +172,19 @@
                         <div class="toggle-knob" style="width: calc(50% - 6px)"></div>
                         <div class="toggle-label"></div><div class="toggle-label"></div>
                     </div>
+                    
                     <p class="text-[9px] font-black opacity-30 uppercase mb-4 text-center" data-t="set_glow">Click Glow</p>
-                    <div class="toggle-container" id="glow-toggle" data-idx="0" data-keys='["on","off"]'>
+                    <div class="toggle-container mb-6" id="glow-toggle" data-idx="0" data-keys='["on","off"]'>
                         <div class="toggle-knob" style="width: calc(50% - 6px)"></div>
                         <div class="toggle-label"></div><div class="toggle-label"></div>
                     </div>
+
+                    <p class="text-[9px] font-black opacity-30 uppercase mb-4 text-center">Haptic Feedback</p>
+                    <div class="toggle-container" id="haptic-toggle" data-idx="0" data-keys='["on","off"]'>
+                        <div class="toggle-knob" style="width: calc(50% - 6px)"></div>
+                        <div class="toggle-label"></div><div class="toggle-label"></div>
+                    </div>
+                    <p class="text-[8px] opacity-30 text-center mt-2 uppercase font-bold">Funktioniert nur auf Home Bildschirm Apps</p>
                 </div>
             </div>
         </div>
@@ -232,13 +240,18 @@
 
         // HAPTIC ENGINE MODULE
         const haptics = {
-            light() { if(navigator.vibrate) navigator.vibrate(10); },
-            medium() { if(navigator.vibrate) navigator.vibrate(25); },
-            success() { if(navigator.vibrate) navigator.vibrate([20, 30, 20]); },
-            streak() { if(navigator.vibrate) navigator.vibrate([15, 50, 20, 60, 30, 100]); } // Duolingo-style Rumble
+            vibrate(pattern) {
+                if (state.hapticsEnabled && navigator.vibrate) {
+                    navigator.vibrate(pattern);
+                }
+            },
+            light() { this.vibrate(10); },
+            medium() { this.vibrate(25); },
+            success() { this.vibrate([20, 30, 20]); },
+            streak() { this.vibrate([15, 50, 20, 60, 30, 100]); }
         };
 
-        let state = JSON.parse(localStorage.getItem('v_v15_final')) || { history: [], theme: 'light', lang: 1, glowEnabled: true };
+        let state = JSON.parse(localStorage.getItem('v_v15_final')) || { history: [], theme: 'light', lang: 1, glowEnabled: true, hapticsEnabled: true };
         let mainChart = null;
 
         const confetti = {
@@ -375,7 +388,7 @@
                 if(isNaN(amount)) return;
                 state.history.push({ id: Date.now(), amount: typeIdx === 0 ? -amount : amount, cat: document.getElementById('entry-category').value, date: new Date().toLocaleDateString() });
                 localStorage.setItem('v_v15_final', JSON.stringify(state));
-                haptics.success(); // Haptisches Feedback beim Speichern
+                haptics.success();
                 ui.renderDashboard(); ui.closeModal();
                 document.getElementById('entry-amount').value = '';
             },
@@ -393,11 +406,8 @@
                     let val = match ? parseFloat(match[0].replace(',', '.')) : 0.00;
                     state.history.push({ id: Date.now(), amount: -val, cat: 'AI Scan ✨', date: new Date().toLocaleDateString() });
                     localStorage.setItem('v_v15_final', JSON.stringify(state));
-                    
-                    // DUOLINGO STYLE FINISH
                     confetti.spawn();
                     haptics.streak(); 
-                    
                     setTimeout(() => { ui.renderDashboard(); ui.closeModal(); }, 1200);
                 };
                 reader.readAsArrayBuffer(file);
@@ -412,7 +422,7 @@
                 if(d < 0) {
                     this.elem.style.transform = `translateX(${Math.max(d, -120)}px)`;
                     this.elem.parentElement.querySelector('.delete-bg').style.opacity = Math.abs(d)/100;
-                    if(Math.abs(d) > 100) haptics.light(); // Kleiner Tick bei Erreichen der Löschgrenze
+                    if(Math.abs(d) > 100) haptics.light();
                 }
             },
             end(e) {
@@ -483,9 +493,10 @@
                         document.getElementById('ui-ai-fields').classList.toggle('hidden', idx === 0);
                     }
                     if(!silent) {
-                        haptics.light(); // Feedback beim Umschalten
+                        haptics.light();
                         if(container.id === 'theme-toggle') ui.applyTheme(keys[idx]);
                         if(container.id === 'glow-toggle') state.glowEnabled = (idx === 0);
+                        if(container.id === 'haptic-toggle') state.hapticsEnabled = (idx === 0);
                         if(container.id === 'type-toggle') logic.updateCategoryDropdown();
                     }
                 }
@@ -499,6 +510,7 @@
             if(isThreeWay) update(state.lang, true);
             else if(containerId === 'theme-toggle') update(state.theme === 'light' ? 1 : 0, true);
             else if(containerId === 'glow-toggle') update(state.glowEnabled ? 0 : 1, true);
+            else if(containerId === 'haptic-toggle') update(state.hapticsEnabled ? 0 : 1, true);
             else update(0, true);
         }
 
@@ -509,9 +521,9 @@
                 options: { responsive: true, maintainAspectRatio: false, scales: { x: { display: false }, y: { display: false } }, plugins: { legend: { display: false } } }
             });
             initDraggable('lang-toggle', true); initDraggable('theme-toggle', false); initDraggable('glow-toggle', false);
-            initDraggable('entry-mode-toggle', false); initDraggable('type-toggle', false); initDraggable('interval-toggle', false);
-            ui.renderDashboard(); ui.updateAllTexts(); ui.applyTheme(state.theme);
-            ui.initReveal();
+            initDraggable('haptic-toggle', false); initDraggable('entry-mode-toggle', false); initDraggable('type-toggle', false); 
+            initDraggable('interval-toggle', false);
+            ui.renderDashboard(); ui.updateAllTexts(); ui.applyTheme(state.theme); ui.initReveal();
         };
     </script>
 </body>
