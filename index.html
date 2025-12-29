@@ -25,7 +25,6 @@
             --input-fill: rgba(0, 0, 0, 0.05);
         }
 
-        /* VERLANGSAMTE REVEAL ANIMATION */
         .reveal {
             opacity: 0;
             transform: translateY(40px) scale(0.98);
@@ -109,6 +108,27 @@
         .active-label, .active-lang { opacity: 1; transform: scale(1.1); }
         .lang-label { font-size: 18px; }
 
+        /* INTENSITY SLIDER STYLES */
+        .intensity-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 12px;
+            background: var(--input-fill);
+            border-radius: 10px;
+            outline: none;
+            border: 1px solid var(--glass-border);
+        }
+        .intensity-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            background: var(--accent);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0,122,255,0.4);
+            border: 2px solid white;
+        }
+
         .transaction-wrapper { position: relative; border-radius: 2rem; margin-bottom: 0.75rem; overflow: hidden; touch-action: pan-y; z-index: 10; }
         .delete-bg { position: absolute; inset: 0; background: var(--delete-red); display: flex; align-items: center; justify-content: flex-end; padding-right: 25px; opacity: 0; }
         .transaction-card { position: relative; z-index: 5; background: var(--glass); transition: transform 0.4s cubic-bezier(0.1, 0.9, 0.2, 1); }
@@ -180,11 +200,21 @@
                     </div>
 
                     <p class="text-[9px] font-black opacity-30 uppercase mb-4 text-center" data-t="set_haptic">Haptic Feedback</p>
-                    <div class="toggle-container" id="haptic-toggle" data-idx="0" data-keys='["on","off"]'>
+                    <div class="toggle-container mb-4" id="haptic-toggle" data-idx="0" data-keys='["on","off"]'>
                         <div class="toggle-knob" style="width: calc(50% - 6px)"></div>
                         <div class="toggle-label"></div><div class="toggle-label"></div>
                     </div>
-                    <p class="text-[8px] opacity-30 text-center mt-2 uppercase font-bold" data-t="haptic_desc">Funktioniert nur auf Home Bildschirm Apps</p>
+                    
+                    <div id="haptic-intensity-box" class="space-y-3 px-2">
+                        <p class="text-[9px] font-black opacity-30 uppercase text-center" data-t="set_intensity">Intensity</p>
+                        <input type="range" id="haptic-intensity" min="0.5" max="3" step="0.5" value="1" class="intensity-slider" oninput="ui.updateHapticIntensity(this.value)">
+                        <div class="flex justify-between text-[8px] font-black opacity-20 uppercase">
+                            <span data-t="int_low">Soft</span>
+                            <span data-t="int_high">Strong</span>
+                        </div>
+                    </div>
+
+                    <p class="text-[8px] opacity-30 text-center mt-6 uppercase font-bold" data-t="haptic_desc">Funktioniert nur auf Home Bildschirm Apps</p>
                 </div>
             </div>
         </div>
@@ -233,16 +263,22 @@
 
     <script>
         const i18n = {
-            0: { nav_dash: "📊 Dashboard", nav_monitor: "🌐 Monitor", nav_set: "⚙️ Einstellungen", total_assets: "Gesamtvermögen", btn_new: "Eintrag hinzufügen", btn_scan: "KI Scan", set_lang: "Sprache", set_theme: "Design", set_glow: "Click Glow", set_haptic: "Haptisches Feedback", haptic_desc: "Funktioniert nur auf Home Bildschirm Apps", btn_commit: "Speichern", btn_refresh: "Refresh", expense: "Ausgabe", income: "Einnahme", once: "Einmal", monthly: "Monat", dark: "Dunkel", light: "Hell", on: "AN", off: "AUS", manual: "Manuell", ai_scan: "KI Scan ✨" },
-            1: { nav_dash: "📊 Dashboard", nav_monitor: "🌐 Monitor", nav_set: "⚙️ Settings", total_assets: "Total Assets", btn_new: "New Entry", btn_scan: "AI Scan", set_lang: "Language", set_theme: "Appearance", set_glow: "Click Glow", set_haptic: "Haptic Feedback", haptic_desc: "Only works on Home Screen Apps", btn_commit: "Commit", btn_refresh: "Refresh", expense: "Expense", income: "Income", once: "Once", monthly: "Monthly", dark: "Dark", light: "Light", on: "ON", off: "OFF", manual: "Manual", ai_scan: "AI Scan ✨" },
-            2: { nav_dash: "📊 Dashboard", nav_monitor: "🌐 Moniteur", nav_set: "⚙️ Réglages", total_assets: "Total Actifs", btn_new: "Nouveau", btn_scan: "Scan IA", set_lang: "Langue", set_theme: "Apparence", set_glow: "Click Glow", set_haptic: "Retour Haptique", haptic_desc: "Uniquement pour les applications de l'écran d'accueil", btn_commit: "Valider", btn_refresh: "Refresh", expense: "Dépense", income: "Revenu", once: "Une fois", monthly: "Mensuel", dark: "Sombre", light: "Clair", on: "ON", off: "OFF", manual: "Manuel", ai_scan: "Scan IA ✨" }
+            0: { nav_dash: "📊 Dashboard", nav_monitor: "🌐 Monitor", nav_set: "⚙️ Einstellungen", total_assets: "Gesamtvermögen", btn_new: "Eintrag hinzufügen", btn_scan: "KI Scan", set_lang: "Sprache", set_theme: "Design", set_glow: "Click Glow", set_haptic: "Haptisches Feedback", set_intensity: "Haptik Stärke", int_low: "Sanft", int_high: "Stark", haptic_desc: "Funktioniert nur auf Home Bildschirm Apps", btn_commit: "Speichern", btn_refresh: "Refresh", expense: "Ausgabe", income: "Einnahme", once: "Einmal", monthly: "Monat", dark: "Dunkel", light: "Hell", on: "AN", off: "AUS", manual: "Manuell", ai_scan: "KI Scan ✨" },
+            1: { nav_dash: "📊 Dashboard", nav_monitor: "🌐 Monitor", nav_set: "⚙️ Settings", total_assets: "Total Assets", btn_new: "New Entry", btn_scan: "AI Scan", set_lang: "Language", set_theme: "Appearance", set_glow: "Click Glow", set_haptic: "Haptic Feedback", set_intensity: "Haptic Intensity", int_low: "Soft", int_high: "Strong", haptic_desc: "Only works on Home Screen Apps", btn_commit: "Commit", btn_refresh: "Refresh", expense: "Expense", income: "Income", once: "Once", monthly: "Monthly", dark: "Dark", light: "Light", on: "ON", off: "OFF", manual: "Manual", ai_scan: "AI Scan ✨" },
+            2: { nav_dash: "📊 Dashboard", nav_monitor: "🌐 Moniteur", nav_set: "⚙️ Réglages", total_assets: "Total Actifs", btn_new: "Nouveau", btn_scan: "Scan IA", set_lang: "Langue", set_theme: "Apparence", set_glow: "Click Glow", set_haptic: "Retour Haptique", set_intensity: "Intensité Haptique", int_low: "Doux", int_high: "Fort", haptic_desc: "Uniquement für die apps de l'écran d'accueil", btn_commit: "Valider", btn_refresh: "Refresh", expense: "Dépense", income: "Revenu", once: "Une fois", monthly: "Mensuel", dark: "Sombre", light: "Clair", on: "ON", off: "OFF", manual: "Manuel", ai_scan: "Scan IA ✨" }
         };
 
-        // HAPTIC ENGINE MODULE
+        let state = JSON.parse(localStorage.getItem('v_v15_final')) || { history: [], theme: 'light', lang: 1, glowEnabled: true, hapticsEnabled: true, hapticIntensity: 1 };
+
         const haptics = {
             vibrate(pattern) {
                 if (state.hapticsEnabled && navigator.vibrate) {
-                    navigator.vibrate(pattern);
+                    const intensity = state.hapticIntensity || 1;
+                    if (Array.isArray(pattern)) {
+                        navigator.vibrate(pattern.map(p => p * intensity));
+                    } else {
+                        navigator.vibrate(pattern * intensity);
+                    }
                 }
             },
             light() { this.vibrate(10); },
@@ -251,7 +287,6 @@
             streak() { this.vibrate([15, 50, 20, 60, 30, 100]); }
         };
 
-        let state = JSON.parse(localStorage.getItem('v_v15_final')) || { history: [], theme: 'light', lang: 1, glowEnabled: true, hapticsEnabled: true };
         let mainChart = null;
 
         const confetti = {
@@ -332,6 +367,11 @@
                 state.theme = themeKey;
                 document.body.className = themeKey === 'light' ? 'light-mode' : '';
                 localStorage.setItem('v_v15_final', JSON.stringify(state));
+            },
+            updateHapticIntensity(val) {
+                state.hapticIntensity = parseFloat(val);
+                localStorage.setItem('v_v15_final', JSON.stringify(state));
+                haptics.medium(); // Feedback beim Verstellen
             },
             updateAllTexts() {
                 document.querySelectorAll('[data-t]').forEach(el => {
@@ -496,7 +536,10 @@
                         haptics.light();
                         if(container.id === 'theme-toggle') ui.applyTheme(keys[idx]);
                         if(container.id === 'glow-toggle') state.glowEnabled = (idx === 0);
-                        if(container.id === 'haptic-toggle') state.hapticsEnabled = (idx === 0);
+                        if(container.id === 'haptic-toggle') {
+                            state.hapticsEnabled = (idx === 0);
+                            document.getElementById('haptic-intensity-box').style.opacity = (idx === 0) ? '1' : '0.3';
+                        }
                         if(container.id === 'type-toggle') logic.updateCategoryDropdown();
                     }
                 }
@@ -507,15 +550,20 @@
             window.addEventListener('touchmove', (e) => { if(!isDragging) return; currentX = Math.max(0, Math.min(e.touches[0].clientX - startX, container.offsetWidth - knob.offsetWidth - 8)); knob.style.transform = `translateX(${currentX}px)`; });
             window.addEventListener('touchend', () => { if(!isDragging) return; isDragging = false; const maxX = container.offsetWidth - knob.offsetWidth - 8; const idx = Math.round(currentX / (maxX / (isThreeWay ? 2 : 1))); update(idx); });
             container.addEventListener('click', (e) => { const rect = container.getBoundingClientRect(); const clickX = e.clientX - rect.left; const idx = Math.floor(clickX / (rect.width / (isThreeWay ? 3 : 2))); update(Math.min(idx, isThreeWay ? 2 : 1)); });
+            
             if(isThreeWay) update(state.lang, true);
             else if(containerId === 'theme-toggle') update(state.theme === 'light' ? 1 : 0, true);
             else if(containerId === 'glow-toggle') update(state.glowEnabled ? 0 : 1, true);
-            else if(containerId === 'haptic-toggle') update(state.hapticsEnabled ? 0 : 1, true);
+            else if(containerId === 'haptic-toggle') {
+                update(state.hapticsEnabled ? 0 : 1, true);
+                document.getElementById('haptic-intensity-box').style.opacity = state.hapticsEnabled ? '1' : '0.3';
+            }
             else update(0, true);
         }
 
         window.onload = () => {
             confetti.init();
+            document.getElementById('haptic-intensity').value = state.hapticIntensity || 1;
             mainChart = new Chart(document.getElementById('main-chart').getContext('2d'), {
                 type: 'line', data: { labels: [], datasets: [{ data: [], borderColor: '#007AFF', tension: 0.4, fill: true, backgroundColor: 'rgba(0,122,255,0.05)', pointRadius: 0, borderWidth: 3 }] },
                 options: { responsive: true, maintainAspectRatio: false, scales: { x: { display: false }, y: { display: false } }, plugins: { legend: { display: false } } }
