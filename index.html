@@ -42,19 +42,50 @@
         
         #app-content {
             width: 100%;
-            max-width: clamp(320px, 90vw, 600px);
+            max-width: clamp(320px, 95vw, 1200px); /* Breiter für Landscape */
             margin: 0 auto;
-            padding: clamp(1rem, 5vw, 2.5rem);
+            padding: clamp(1rem, 3vw, 2.5rem);
             height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow-y: auto; /* Erlaubt Scrollen innerhalb des Inhalts */
+            overflow-y: auto;
+        }
+
+        /* LANDSCAPE LOGIK */
+        @media (orientation: landscape) and (min-width: 768px) {
+            #page-dashboard {
+                display: grid !important;
+                grid-template-columns: 1fr 350px; /* Links flexibel, rechts fix 350px für Transactions */
+                grid-template-rows: auto 1fr auto;
+                gap: 2rem;
+                height: auto;
+                align-items: start;
+            }
+
+            .landscape-left-col {
+                grid-column: 1;
+                display: flex;
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+
+            #transaction-list {
+                grid-column: 2;
+                grid-row: 1 / 4; /* Geht über die volle Höhe rechts */
+                max-height: 80vh;
+                overflow-y: auto;
+                padding-right: 10px;
+            }
+
+            .new-entry-btn-wrapper {
+                grid-column: 1;
+            }
         }
 
         .crystal-glass { background: var(--glass); backdrop-filter: blur(50px) saturate(190%); border: 1px solid var(--glass-border); }
 
         #balance-display {
-            font-size: clamp(2.5rem, 8vw, 4.5rem);
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
             line-height: 1;
         }
 
@@ -162,20 +193,22 @@
         </header>
 
         <div id="page-dashboard" class="space-y-6 flex flex-col">
-            <div class="crystal-glass p-8 md:p-12 rounded-[3rem] text-center reveal shrink-0">
-                <p class="text-[10px] opacity-40 uppercase font-black tracking-widest mb-1" data-t="total_assets">Total Assets</p>
-                <h3 id="balance-display" class="font-bold tracking-tighter italic">0.00 €</h3>
+            <div class="landscape-left-col contents md:flex md:flex-col md:gap-6">
+                <div class="crystal-glass p-8 md:p-12 rounded-[3rem] text-center reveal shrink-0">
+                    <p class="text-[10px] opacity-40 uppercase font-black tracking-widest mb-1" data-t="total_assets">Total Assets</p>
+                    <h3 id="balance-display" class="font-bold tracking-tighter italic">0.00 €</h3>
+                </div>
+                
+                <div class="crystal-glass p-6 rounded-[2.5rem] h-64 shrink-0 reveal">
+                    <canvas id="main-chart"></canvas>
+                </div>
             </div>
             
-            <div class="crystal-glass p-6 rounded-[2.5rem] h-64 shrink-0 reveal">
-                <canvas id="main-chart"></canvas>
-            </div>
-            
-            <div class="grid grid-cols-1 reveal shrink-0">
+            <div class="new-entry-btn-wrapper grid grid-cols-1 reveal shrink-0">
                 <button onclick="ui.openModal('manual')" class="crystal-glass py-7 rounded-[2rem] font-black uppercase text-[10px]" data-t="btn_new">New Entry</button>
             </div>
             
-            <div id="transaction-list" class="space-y-3 pb-10"></div>
+            <div id="transaction-list" class="space-y-3 pb-10 no-scrollbar"></div>
         </div>
 
         <div id="page-settings" class="page-hidden space-y-6">
