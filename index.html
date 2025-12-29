@@ -179,12 +179,12 @@
                         <div class="toggle-label"></div><div class="toggle-label"></div>
                     </div>
 
-                    <p class="text-[9px] font-black opacity-30 uppercase mb-4 text-center">Haptic Feedback</p>
+                    <p class="text-[9px] font-black opacity-30 uppercase mb-4 text-center" data-t="set_haptic">Haptic Feedback</p>
                     <div class="toggle-container" id="haptic-toggle" data-idx="0" data-keys='["on","off"]'>
                         <div class="toggle-knob" style="width: calc(50% - 6px)"></div>
                         <div class="toggle-label"></div><div class="toggle-label"></div>
                     </div>
-                    <p class="text-[8px] opacity-30 text-center mt-2 uppercase font-bold">Funktioniert nur auf Home Bildschirm Apps</p>
+                    <p class="text-[8px] opacity-30 text-center mt-2 uppercase font-bold" data-t="haptic_desc">Funktioniert nur auf Home Bildschirm Apps</p>
                 </div>
             </div>
         </div>
@@ -233,9 +233,9 @@
 
     <script>
         const i18n = {
-            0: { nav_dash: "📊 Dashboard", nav_monitor: "🌐 Monitor", nav_set: "⚙️ Einstellungen", total_assets: "Gesamtvermögen", btn_new: "Eintrag hinzufügen", btn_scan: "KI Scan", set_lang: "Sprache", set_theme: "Design", set_glow: "Click Glow", btn_commit: "Speichern", btn_refresh: "Refresh", expense: "Ausgabe", income: "Einnahme", once: "Einmal", monthly: "Monat", dark: "Dunkel", light: "Hell", on: "AN", off: "AUS", manual: "Manuell", ai_scan: "KI Scan ✨" },
-            1: { nav_dash: "📊 Dashboard", nav_monitor: "🌐 Monitor", nav_set: "⚙️ Settings", total_assets: "Total Assets", btn_new: "New Entry", btn_scan: "AI Scan", set_lang: "Language", set_theme: "Appearance", set_glow: "Click Glow", btn_commit: "Commit", btn_refresh: "Refresh", expense: "Expense", income: "Income", once: "Once", monthly: "Monthly", dark: "Dark", light: "Light", on: "ON", off: "OFF", manual: "Manual", ai_scan: "AI Scan ✨" },
-            2: { nav_dash: "📊 Dashboard", nav_monitor: "🌐 Moniteur", nav_set: "⚙️ Réglages", total_assets: "Total Actifs", btn_new: "Nouveau", btn_scan: "Scan IA", set_lang: "Langue", set_theme: "Apparence", set_glow: "Click Glow", btn_commit: "Valider", btn_refresh: "Refresh", expense: "Dépense", income: "Revenu", once: "Une fois", monthly: "Mensuel", dark: "Sombre", light: "Clair", on: "ON", off: "OFF", manual: "Manuel", ai_scan: "Scan IA ✨" }
+            0: { nav_dash: "📊 Dashboard", nav_monitor: "🌐 Monitor", nav_set: "⚙️ Einstellungen", total_assets: "Gesamtvermögen", btn_new: "Eintrag hinzufügen", btn_scan: "KI Scan", set_lang: "Sprache", set_theme: "Design", set_glow: "Click Glow", set_haptic: "Haptisches Feedback", haptic_desc: "Funktioniert nur auf Home Bildschirm Apps", btn_commit: "Speichern", btn_refresh: "Refresh", expense: "Ausgabe", income: "Einnahme", once: "Einmal", monthly: "Monat", dark: "Dunkel", light: "Hell", on: "AN", off: "AUS", manual: "Manuell", ai_scan: "KI Scan ✨" },
+            1: { nav_dash: "📊 Dashboard", nav_monitor: "🌐 Monitor", nav_set: "⚙️ Settings", total_assets: "Total Assets", btn_new: "New Entry", btn_scan: "AI Scan", set_lang: "Language", set_theme: "Appearance", set_glow: "Click Glow", set_haptic: "Haptic Feedback", haptic_desc: "Only works on Home Screen Apps", btn_commit: "Commit", btn_refresh: "Refresh", expense: "Expense", income: "Income", once: "Once", monthly: "Monthly", dark: "Dark", light: "Light", on: "ON", off: "OFF", manual: "Manual", ai_scan: "AI Scan ✨" },
+            2: { nav_dash: "📊 Dashboard", nav_monitor: "🌐 Moniteur", nav_set: "⚙️ Réglages", total_assets: "Total Actifs", btn_new: "Nouveau", btn_scan: "Scan IA", set_lang: "Langue", set_theme: "Apparence", set_glow: "Click Glow", set_haptic: "Retour Haptique", haptic_desc: "Uniquement pour les applications de l'écran d'accueil", btn_commit: "Valider", btn_refresh: "Refresh", expense: "Dépense", income: "Revenu", once: "Une fois", monthly: "Mensuel", dark: "Sombre", light: "Clair", on: "ON", off: "OFF", manual: "Manuel", ai_scan: "Scan IA ✨" }
         };
 
         // HAPTIC ENGINE MODULE
