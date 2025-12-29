@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vultrex OS v16.8 - Live Forex Edition</title>
+    <title>Vultrex OS v16.9 - Visual Analytics Edition</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -166,7 +166,9 @@
                 <h3 id="balance-display" class="font-bold tracking-tighter italic">0.00</h3>
             </div>
             
-            <div class="crystal-glass p-6 rounded-[2.5rem] h-64 shrink-0 reveal"><canvas id="main-chart"></canvas></div>
+            <div class="crystal-glass p-6 rounded-[2.5rem] h-80 shrink-0 reveal" style="padding: 20px;">
+                <canvas id="main-chart"></canvas>
+            </div>
             
             <div class="grid grid-cols-1 reveal">
                 <button onclick="ui.openModal('manual')" class="crystal-glass py-7 rounded-[2rem] font-black uppercase text-[10px]" data-t="btn_new">New Entry</button>
@@ -276,7 +278,6 @@
 
         let state = JSON.parse(localStorage.getItem('v_v15_final')) || { history: [], theme: 'light', lang: 1, currencyIdx: 0, glowEnabled: true, hapticsEnabled: true, hapticIntensity: 1 };
         
-        // Währungsdefinitionen
         const currencyMap = [
             { symbol: "€", code: "EUR", rate: 1.0 },
             { symbol: "$", code: "USD", rate: 1.09 },
@@ -381,6 +382,7 @@
                 state.theme = themeKey;
                 document.body.className = themeKey === 'light' ? 'light-mode' : '';
                 localStorage.setItem('v_v15_final', JSON.stringify(state));
+                if(mainChart) this.updateChart(); // Refresh chart colors for light/dark
             },
             updateHapticIntensity(val) {
                 state.hapticIntensity = parseFloat(val);
@@ -448,9 +450,51 @@
             },
             updateChart() {
                 if(!mainChart) return;
-                let run = 0;
-                mainChart.data.labels = state.history.map(h => h.date);
-                mainChart.data.datasets[0].data = state.history.map(h => { run += h.amount; return run; });
+                let runningBalance = 0;
+                const dataPoints = state.history.map(h => {
+                    runningBalance += h.amount;
+                    return runningBalance;
+                });
+                const labels = state.history.map(h => h.date);
+
+                // Update Data
+                mainChart.data.labels = labels;
+                mainChart.data.datasets[0].data = dataPoints;
+
+                // Color Logic: Create Gradient based on Y-Value
+                const ctx = document.getElementById('main-chart').getContext('2d');
+                const chartArea = mainChart.chartArea;
+                if (chartArea) {
+                    const yScale = mainChart.scales.y;
+                    const zeroPos = yScale.getPixelForValue(0);
+                    const topPos = yScale.getPixelForValue(yScale.max);
+                    const bottomPos = yScale.getPixelForValue(yScale.min);
+
+                    // Create Gradient: Green above 0, Red below 0
+                    const gradient = ctx.createLinearGradient(0, topPos, 0, bottomPos);
+                    
+                    // Normalisierung des Stopp-Punktes (0 bis 1)
+                    const zeroOffset = (zeroPos - topPos) / (bottomPos - topPos);
+                    const clampedOffset = Math.max(0, Math.min(1, zeroOffset));
+
+                    gradient.addColorStop(0, '#10b981'); // Emerald 500
+                    gradient.addColorStop(clampedOffset, '#10b981'); 
+                    gradient.addColorStop(clampedOffset, '#f43f5e'); // Rose 500
+                    gradient.addColorStop(1, '#f43f5e');
+
+                    mainChart.data.datasets[0].borderColor = gradient;
+                    mainChart.data.datasets[0].backgroundColor = gradient;
+                }
+
+                // Axis Styles
+                const axisColor = state.theme === 'light' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
+                const textColor = state.theme === 'light' ? '#1C1C1E' : '#FFFFFF';
+                
+                mainChart.options.scales.x.grid.color = axisColor;
+                mainChart.options.scales.y.grid.color = axisColor;
+                mainChart.options.scales.x.ticks.color = textColor;
+                mainChart.options.scales.y.ticks.color = textColor;
+
                 mainChart.update();
             }
         };
@@ -565,9 +609,7 @@
                 knob.style.transform = `translateX(${currentX}px)`;
                 
                 if (containerId === 'currency-toggle') {
-                    if (!silent && idx !== state.currencyIdx) {
-                        ui.convertCurrency(state.currencyIdx, idx);
-                    }
+                    if (!silent && idx !== state.currencyIdx) ui.convertCurrency(state.currencyIdx, idx);
                     knob.innerText = currencyMap[idx].symbol;
                 } else if (containerId === 'lang-toggle') {
                     state.lang = idx;
@@ -588,7 +630,7 @@
             knob.addEventListener('touchstart', (e) => { isDragging = true; startX = e.touches[0].clientX - currentX; haptics.light(); });
             window.addEventListener('touchmove', (e) => { if(!isDragging) return; currentX = Math.max(0, Math.min(e.touches[0].clientX - startX, container.offsetWidth - knob.offsetWidth - 8)); knob.style.transform = `translateX(${currentX}px)`; });
             window.addEventListener('touchend', () => { if(!isDragging) return; isDragging = false; const maxX = container.offsetWidth - knob.offsetWidth - 8; const idx = Math.round(currentX / (maxX / (steps - 1))); update(idx); });
-            container.addEventListener('click', (e) => { const rect = container.getBoundingClientRect(); const clickX = e.clientX - rect.left; const idx = Math.floor(clickX / (rect.width / steps)); update(Math.min(idx, steps - 1)); });
+            container.addEventListener('click', (e) => { const rect = container.getBoundingClientRect(); const idx = Math.floor((e.clientX - rect.left) / (rect.width / steps)); update(Math.min(idx, steps - 1)); });
 
             if (containerId === 'currency-toggle') update(state.currencyIdx || 0, true);
             if (containerId === 'lang-toggle') update(state.lang || 0, true);
@@ -645,14 +687,23 @@
             confetti.init();
             await ui.fetchLiveRates();
             document.getElementById('haptic-intensity').value = state.hapticIntensity || 1;
+            
             mainChart = new Chart(document.getElementById('main-chart').getContext('2d'), {
-                type: 'line', data: { labels: [], datasets: [{ data: [], borderColor: '#007AFF', tension: 0.4, fill: true, backgroundColor: 'rgba(0,122,255,0.05)', pointRadius: 0, borderWidth: 3 }] },
-                options: { responsive: true, maintainAspectRatio: false, scales: { x: { display: false }, y: { display: false } }, plugins: { legend: { display: false } } }
+                type: 'line', 
+                data: { labels: [], datasets: [{ data: [], tension: 0.4, fill: true, pointRadius: 4, pointHoverRadius: 6, borderWidth: 4 }] },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    scales: { 
+                        x: { display: true, grid: { display: true }, ticks: { font: { size: 8, weight: 'bold' } } }, 
+                        y: { display: true, grid: { display: true }, ticks: { font: { size: 8, weight: 'bold' } } } 
+                    }, 
+                    plugins: { legend: { display: false } } 
+                }
             });
             
             initMultiToggle('lang-toggle', 3);
             initMultiToggle('currency-toggle', 4);
-            
             initDraggable('theme-toggle'); 
             initDraggable('glow-toggle');
             initDraggable('haptic-toggle'); 
