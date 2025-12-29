@@ -238,7 +238,7 @@
     </div>
 
     <div id="modal-box" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xl z-[1100] flex items-center justify-center p-6">
-        <div class="crystal-glass w-full max-w-sm p-8 rounded-[3.5rem] relative">
+        <div class="crystal-glass w-full max-sm p-8 rounded-[3.5rem] relative">
             <button onclick="ui.closeModal()" class="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-xl bg-black/10 font-bold">✕</button>
             <div class="space-y-5 pt-6">
                 <div class="toggle-container mb-2" id="entry-mode-toggle" data-idx="0" data-keys='["manual","ai_scan"]'>
@@ -247,10 +247,6 @@
                 </div>
                 <div id="ui-manual-fields" class="space-y-5">
                     <div class="toggle-container" id="type-toggle" data-idx="0" data-keys='["expense","income"]'>
-                        <div class="toggle-knob" style="width: calc(50% - 6px)"></div>
-                        <div class="toggle-label"></div><div class="toggle-label"></div>
-                    </div>
-                    <div class="toggle-container" id="interval-toggle" data-idx="0" data-keys='["once","monthly"]'>
                         <div class="toggle-knob" style="width: calc(50% - 6px)"></div>
                         <div class="toggle-label"></div><div class="toggle-label"></div>
                     </div>
@@ -263,7 +259,7 @@
                         <span id="file-label" class="opacity-30 text-[9px] font-black uppercase">PDF</span>
                         <input type="file" id="pdf-in" accept=".pdf" class="absolute inset-0 opacity-0" onchange="ui.onFile(this)">
                     </div>
-                    <button id="ai-scan-btn" onclick="logic.scanPDF()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] text-white">Scan ✨</button>
+                    <button onclick="logic.scanPDF()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] text-white">Scan ✨</button>
                 </div>
             </div>
         </div>
@@ -271,9 +267,9 @@
 
     <script>
         const i18n = {
-            0: { nav_dash: "📊 Dashboard", nav_monitor: "🌐 Monitor", nav_set: "⚙️ Einstellungen", total_assets: "Gesamtvermögen", btn_new: "Eintrag hinzufügen", btn_scan: "KI Scan", set_lang: "Sprache", set_currency: "Währung & Live-Kurs", set_theme: "Design", set_glow: "Click Glow", set_haptic: "Haptisches Feedback", set_intensity: "Haptik Stärke", int_low: "Sanft", int_high: "Stark", haptic_desc: "Funktioniert nur auf Home Bildschirm Apps", btn_commit: "Speichern", btn_refresh: "Refresh", expense: "Ausgabe", income: "Einnahme", once: "Einmal", monthly: "Monat", dark: "Dunkel", light: "Hell", on: "AN", off: "AUS", manual: "Manuell", ai_scan: "KI Scan ✨" },
-            1: { nav_dash: "📊 Dashboard", nav_monitor: "🌐 Monitor", nav_set: "⚙️ Settings", total_assets: "Total Assets", btn_new: "New Entry", btn_scan: "AI Scan", set_lang: "Language", set_currency: "Currency & Live FX", set_theme: "Appearance", set_glow: "Click Glow", set_haptic: "Haptic Feedback", set_intensity: "Haptic Intensity", int_low: "Soft", int_high: "Strong", haptic_desc: "Only works on Home Screen Apps", btn_commit: "Commit", btn_refresh: "Refresh", expense: "Expense", income: "Income", once: "Once", monthly: "Monthly", dark: "Dark", light: "Light", on: "ON", off: "OFF", manual: "Manual", ai_scan: "AI Scan ✨" },
-            2: { nav_dash: "📊 Dashboard", nav_monitor: "🌐 Moniteur", nav_set: "⚙️ Réglages", total_assets: "Total Actifs", btn_new: "Nouveau", btn_scan: "Scan IA", set_lang: "Langue", set_currency: "Devise & Live FX", set_theme: "Apparence", set_glow: "Click Glow", set_haptic: "Retour Haptique", set_intensity: "Intensité Haptique", int_low: "Doux", int_high: "Fort", haptic_desc: "Uniquement pour les apps de l'écran d'accueil", btn_commit: "Valider", btn_refresh: "Refresh", expense: "Dépense", income: "Revenu", once: "Une fois", monthly: "Mensuel", dark: "Sombre", light: "Clair", on: "ON", off: "OFF", manual: "Manuel", ai_scan: "Scan IA ✨" }
+            0: { nav_dash: "📊 Dashboard", nav_monitor: "🌐 Monitor", nav_set: "⚙️ Einstellungen", total_assets: "Gesamtvermögen", btn_new: "Eintrag hinzufügen", btn_scan: "KI Scan", set_lang: "Sprache", set_currency: "Währung & Live-Kurs", set_theme: "Design", set_glow: "Click Glow", set_haptic: "Haptisches Feedback", set_intensity: "Haptik Stärke", int_low: "Sanft", int_high: "Stark", haptic_desc: "Nur Home Bildschirm", btn_commit: "Speichern", btn_refresh: "Refresh", expense: "Ausgabe", income: "Einnahme", once: "Einmal", monthly: "Monat", dark: "Dunkel", light: "Hell", on: "AN", off: "AUS", manual: "Manuell", ai_scan: "KI Scan ✨" },
+            1: { nav_dash: "📊 Dashboard", nav_monitor: "🌐 Monitor", nav_set: "⚙️ Settings", total_assets: "Total Assets", btn_new: "New Entry", btn_scan: "AI Scan", set_lang: "Language", set_currency: "Currency & Live FX", set_theme: "Appearance", set_glow: "Click Glow", set_haptic: "Haptic Feedback", set_intensity: "Haptic Intensity", int_low: "Soft", int_high: "Strong", haptic_desc: "Home Screen only", btn_commit: "Commit", btn_refresh: "Refresh", expense: "Expense", income: "Income", once: "Once", monthly: "Monthly", dark: "Dark", light: "Light", on: "ON", off: "OFF", manual: "Manual", ai_scan: "AI Scan ✨" },
+            2: { nav_dash: "📊 Dashboard", nav_monitor: "🌐 Moniteur", nav_set: "⚙️ Réglages", total_assets: "Total Actifs", btn_new: "Nouveau", btn_scan: "Scan IA", set_lang: "Langue", set_currency: "Devise & Live FX", set_theme: "Apparence", set_glow: "Click Glow", set_haptic: "Retour Haptique", set_intensity: "Intensité Haptique", int_low: "Doux", int_high: "Fort", haptic_desc: "Écran d'accueil uniquement", btn_commit: "Valider", btn_refresh: "Refresh", expense: "Dépense", income: "Revenu", once: "Une fois", monthly: "Mensuel", dark: "Sombre", light: "Clair", on: "ON", off: "OFF", manual: "Manuel", ai_scan: "Scan IA ✨" }
         };
 
         let state = JSON.parse(localStorage.getItem('v_v15_final')) || { history: [], theme: 'light', lang: 1, currencyIdx: 0, glowEnabled: true, hapticsEnabled: true, hapticIntensity: 1 };
@@ -289,11 +285,8 @@
             vibrate(pattern) {
                 if (state.hapticsEnabled && navigator.vibrate) {
                     const intensity = state.hapticIntensity || 1;
-                    if (Array.isArray(pattern)) {
-                        navigator.vibrate(pattern.map(p => p * intensity));
-                    } else {
-                        navigator.vibrate(pattern * intensity);
-                    }
+                    if (Array.isArray(pattern)) navigator.vibrate(pattern.map(p => p * intensity));
+                    else navigator.vibrate(pattern * intensity);
                 }
             },
             light() { this.vibrate(10); },
@@ -340,9 +333,7 @@
         const ui = {
             initReveal() {
                 const observer = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) entry.target.classList.add('active');
-                    });
+                    entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('active'); });
                 }, { threshold: 0.05 });
                 document.querySelectorAll('.reveal, .transaction-wrapper').forEach(el => observer.observe(el));
             },
@@ -366,70 +357,28 @@
                 haptics.light();
             },
             switchPage(id) {
-                ['dashboard', 'settings', 'monitor'].forEach(p => {
-                    const el = document.getElementById('page-' + p);
-                    el.classList.add('page-hidden');
-                    el.querySelectorAll('.reveal').forEach(r => r.classList.remove('active'));
-                });
+                ['dashboard', 'settings', 'monitor'].forEach(p => document.getElementById('page-' + p).classList.add('page-hidden'));
                 document.getElementById('page-' + id).classList.remove('page-hidden');
                 this.toggleSidebar();
                 setTimeout(() => this.initReveal(), 100);
             },
-            openModal(type) { document.getElementById('modal-box').classList.remove('hidden'); logic.updateCategoryDropdown(); haptics.light(); },
+            openModal() { document.getElementById('modal-box').classList.remove('hidden'); logic.updateCategoryDropdown(); haptics.light(); },
             closeModal() { document.getElementById('modal-box').classList.add('hidden'); haptics.light(); },
             onFile(input) { if(input.files[0]) { document.getElementById('file-label').innerText = input.files[0].name; haptics.medium(); } },
             applyTheme(themeKey) {
                 state.theme = themeKey;
                 document.body.className = themeKey === 'light' ? 'light-mode' : '';
                 localStorage.setItem('v_v15_final', JSON.stringify(state));
-                if(mainChart) this.updateChart(); // Refresh chart colors for light/dark
+                if(mainChart) this.updateChart();
             },
             updateHapticIntensity(val) {
                 state.hapticIntensity = parseFloat(val);
                 localStorage.setItem('v_v15_final', JSON.stringify(state));
                 haptics.medium();
             },
-            async fetchLiveRates() {
-                try {
-                    const response = await fetch('https://open.er-api.com/v6/latest/EUR');
-                    const data = await response.json();
-                    if (data.result === "success") {
-                        currencyMap[1].rate = data.rates.USD;
-                        currencyMap[2].rate = data.rates.GBP;
-                        currencyMap[3].rate = data.rates.CAD;
-                    }
-                } catch (e) { console.error("Forex API Error, using fallbacks."); }
-            },
-            async convertCurrency(oldIdx, newIdx) {
-                if (oldIdx === newIdx) return;
-                await this.fetchLiveRates();
-                const baseRate = currencyMap[oldIdx].rate;
-                const targetRate = currencyMap[newIdx].rate;
-                state.history = state.history.map(item => ({
-                    ...item,
-                    amount: (item.amount / baseRate) * targetRate
-                }));
-                state.currencyIdx = newIdx;
-                localStorage.setItem('v_v15_final', JSON.stringify(state));
-                this.renderDashboard();
-                haptics.medium();
-            },
             updateAllTexts() {
-                document.querySelectorAll('[data-t]').forEach(el => {
-                    el.innerText = i18n[state.lang][el.getAttribute('data-t')];
-                });
-                document.querySelectorAll('.toggle-container').forEach(container => {
-                    const keys = JSON.parse(container.dataset.keys);
-                    const labels = container.querySelectorAll('.toggle-label');
-                    const knob = container.querySelector('.toggle-knob');
-                    const idx = parseInt(container.dataset.idx);
-                    if (labels.length >= 2) {
-                        labels[0].innerText = i18n[state.lang][keys[0]];
-                        labels[1].innerText = i18n[state.lang][keys[1]];
-                        knob.innerText = i18n[state.lang][keys[idx]];
-                        labels.forEach((l, i) => l.classList.toggle('active-label', i === idx));
-                    }
-                });
+                document.querySelectorAll('[data-t]').forEach(el => { el.innerText = i18n[state.lang][el.getAttribute('data-t')]; });
+                document.querySelectorAll('.toggle-container').forEach(c => this.updateToggleVisuals(c.id));
             },
             renderDashboard() {
                 let total = 0;
@@ -451,51 +400,35 @@
             updateChart() {
                 if(!mainChart) return;
                 let runningBalance = 0;
-                const dataPoints = state.history.map(h => {
-                    runningBalance += h.amount;
-                    return runningBalance;
-                });
+                const dataPoints = state.history.map(h => { runningBalance += h.amount; return runningBalance; });
                 const labels = state.history.map(h => h.date);
 
-                // Update Data
                 mainChart.data.labels = labels;
                 mainChart.data.datasets[0].data = dataPoints;
 
-                // Color Logic: Create Gradient based on Y-Value
                 const ctx = document.getElementById('main-chart').getContext('2d');
-                const chartArea = mainChart.chartArea;
-                if (chartArea) {
-                    const yScale = mainChart.scales.y;
-                    const zeroPos = yScale.getPixelForValue(0);
-                    const topPos = yScale.getPixelForValue(yScale.max);
-                    const bottomPos = yScale.getPixelForValue(yScale.min);
+                const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+                gradient.addColorStop(0, '#10b981');
+                gradient.addColorStop(1, '#f43f5e');
 
-                    // Create Gradient: Green above 0, Red below 0
-                    const gradient = ctx.createLinearGradient(0, topPos, 0, bottomPos);
-                    
-                    // Normalisierung des Stopp-Punktes (0 bis 1)
-                    const zeroOffset = (zeroPos - topPos) / (bottomPos - topPos);
-                    const clampedOffset = Math.max(0, Math.min(1, zeroOffset));
-
-                    gradient.addColorStop(0, '#10b981'); // Emerald 500
-                    gradient.addColorStop(clampedOffset, '#10b981'); 
-                    gradient.addColorStop(clampedOffset, '#f43f5e'); // Rose 500
-                    gradient.addColorStop(1, '#f43f5e');
-
-                    mainChart.data.datasets[0].borderColor = gradient;
-                    mainChart.data.datasets[0].backgroundColor = gradient;
-                }
-
-                // Axis Styles
-                const axisColor = state.theme === 'light' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
-                const textColor = state.theme === 'light' ? '#1C1C1E' : '#FFFFFF';
-                
-                mainChart.options.scales.x.grid.color = axisColor;
-                mainChart.options.scales.y.grid.color = axisColor;
-                mainChart.options.scales.x.ticks.color = textColor;
-                mainChart.options.scales.y.ticks.color = textColor;
-
+                mainChart.data.datasets[0].borderColor = gradient;
+                mainChart.options.scales.x.ticks.color = state.theme === 'light' ? '#1C1C1E' : '#FFFFFF';
+                mainChart.options.scales.y.ticks.color = state.theme === 'light' ? '#1C1C1E' : '#FFFFFF';
                 mainChart.update();
+            },
+            updateToggleVisuals(id) {
+                const c = document.getElementById(id);
+                if(!c) return;
+                const knob = c.querySelector('.toggle-knob');
+                const labels = c.querySelectorAll('.toggle-label');
+                const idx = parseInt(c.dataset.idx);
+                const keys = JSON.parse(c.dataset.keys);
+                knob.style.transform = `translateX(${idx * 100}%)`;
+                knob.innerText = i18n[state.lang][keys[idx]];
+                labels.forEach((l, i) => {
+                    l.innerText = i18n[state.lang][keys[i]];
+                    l.classList.toggle('active-label', i === idx);
+                });
             }
         };
 
@@ -542,179 +475,76 @@
             sX: 0, elem: null,
             start(e) { this.sX = e.touches[0].clientX; this.elem = e.currentTarget; this.elem.style.transition = 'none'; },
             move(e) {
-                let d = e.touches[0].clientX - this.sX;
-                if(d < 0) {
-                    this.elem.style.transform = `translateX(${Math.max(d, -120)}px)`;
-                    this.elem.parentElement.querySelector('.delete-bg').style.opacity = Math.abs(d)/100;
-                    if(Math.abs(d) > 100) haptics.light();
+                const diff = e.touches[0].clientX - this.sX;
+                if(diff < 0) {
+                    this.elem.style.transform = `translateX(${diff}px)`;
+                    this.elem.parentElement.querySelector('.delete-bg').style.opacity = Math.min(1, Math.abs(diff)/100);
                 }
             },
             end(e) {
-                let d = e.changedTouches[0].clientX - this.sX;
+                const diff = e.changedTouches[0].clientX - this.sX;
                 this.elem.style.transition = 'transform 0.4s cubic-bezier(0.1, 0.9, 0.2, 1)';
-                if(d < -100) {
-                    haptics.medium();
-                    state.history = state.history.filter(t => t.id != this.elem.dataset.id);
+                if(diff < -150) {
+                    const id = parseInt(this.elem.dataset.id);
+                    state.history = state.history.filter(h => h.id !== id);
                     localStorage.setItem('v_v15_final', JSON.stringify(state));
-                    ui.renderDashboard();
-                } else { this.elem.style.transform = 'translateX(0)'; }
-            }
-        };
-
-        const monitor = {
-            async ping() {
-                const ip = document.getElementById('node-ip').value;
-                const res = document.getElementById('monitor-res');
-                const playerBox = document.getElementById('monitor-players');
-                if(!ip) return;
-                haptics.light();
-                res.innerHTML = "..."; res.classList.remove('hidden');
-                playerBox.classList.add('hidden');
-                const startTime = Date.now();
-                try {
-                    const r = await fetch(`https://api.mcstatus.io/v2/status/java/${ip}`);
-                    const d = await r.json();
-                    const latency = Date.now() - startTime;
-                    if (d.online) {
-                        haptics.success();
-                        res.innerHTML = `<div class="crystal-glass p-4 rounded-2xl text-center reveal"><p class="text-emerald-500 font-bold text-[10px] uppercase">Status</p><p class="font-black text-[12px]">Online</p></div>
-                            <div class="crystal-glass p-4 rounded-2xl text-center reveal"><p class="opacity-30 font-bold text-[10px] uppercase">Players</p><p class="font-black text-[12px]">${d.players.online}</p></div>
-                            <div class="crystal-glass p-4 rounded-2xl text-center reveal"><p class="opacity-30 font-bold text-[10px] uppercase">Ping</p><p class="text-blue-500 font-black text-[12px]">${latency}ms</p></div>`;
-                        if (d.players.list && d.players.list.length > 0) {
-                            playerBox.innerHTML = `<p class="text-[9px] font-black opacity-30 uppercase mb-2">Player List</p>`;
-                            d.players.list.forEach(p => {
-                                playerBox.innerHTML += `<div class="flex items-center space-x-3 p-2 bg-white/5 rounded-xl border border-white/5 reveal"><img src="https://mc-heads.net/avatar/${p.uuid}/24" class="w-6 h-6 rounded-md"><span class="text-[11px] font-bold">${p.name_clean}</span></div>`;
-                            });
-                            playerBox.classList.remove('hidden');
-                        }
-                        ui.initReveal();
-                    }
-                } catch(e) { 
                     haptics.medium();
-                    res.innerHTML = `<div class="col-span-3 crystal-glass p-4 rounded-2xl text-center text-rose-500 font-bold uppercase">Error</div>`; 
+                    ui.renderDashboard();
+                } else {
+                    this.elem.style.transform = 'translateX(0)';
                 }
             }
         };
 
-        function initMultiToggle(containerId, steps) {
-            const container = document.getElementById(containerId);
-            if (!container) return;
-            const knob = container.querySelector('div[class$="-knob"]');
-            const labels = container.querySelectorAll('div[class$="-label"]');
-            let isDragging = false, startX = 0, currentX = 0;
-
-            const update = (idx, silent = false) => {
-                const maxX = container.offsetWidth - knob.offsetWidth - 8;
-                currentX = (idx * (maxX / (steps - 1)));
-                knob.style.transform = `translateX(${currentX}px)`;
-                
-                if (containerId === 'currency-toggle') {
-                    if (!silent && idx !== state.currencyIdx) ui.convertCurrency(state.currencyIdx, idx);
-                    knob.innerText = currencyMap[idx].symbol;
-                } else if (containerId === 'lang-toggle') {
-                    state.lang = idx;
-                    const flags = ["🇩🇪", "🇺🇸", "🇫🇷"];
-                    knob.innerText = flags[idx];
-                    ui.updateAllTexts();
-                }
-
-                labels.forEach((l, i) => {
-                    l.style.opacity = (i === idx) ? '1' : '0.2';
-                    l.style.transform = (i === idx) ? 'scale(1.1)' : 'scale(1)';
-                });
-
-                if(!silent) haptics.light();
-                localStorage.setItem('v_v15_final', JSON.stringify(state));
-            };
-
-            knob.addEventListener('touchstart', (e) => { isDragging = true; startX = e.touches[0].clientX - currentX; haptics.light(); });
-            window.addEventListener('touchmove', (e) => { if(!isDragging) return; currentX = Math.max(0, Math.min(e.touches[0].clientX - startX, container.offsetWidth - knob.offsetWidth - 8)); knob.style.transform = `translateX(${currentX}px)`; });
-            window.addEventListener('touchend', () => { if(!isDragging) return; isDragging = false; const maxX = container.offsetWidth - knob.offsetWidth - 8; const idx = Math.round(currentX / (maxX / (steps - 1))); update(idx); });
-            container.addEventListener('click', (e) => { const rect = container.getBoundingClientRect(); const idx = Math.floor((e.clientX - rect.left) / (rect.width / steps)); update(Math.min(idx, steps - 1)); });
-
-            if (containerId === 'currency-toggle') update(state.currencyIdx || 0, true);
-            if (containerId === 'lang-toggle') update(state.lang || 0, true);
-        }
-
-        function initDraggable(containerId) {
-            const container = document.getElementById(containerId);
-            if (!container) return;
-            const knob = container.querySelector('.toggle-knob');
-            const labels = container.querySelectorAll('.toggle-label');
-            let isDragging = false, startX = 0, currentX = 0;
-
-            const update = (idx, silent = false) => {
-                const maxX = container.offsetWidth - knob.offsetWidth - 8;
-                currentX = (idx * maxX);
-                knob.style.transform = `translateX(${currentX}px)`;
-                container.dataset.idx = idx;
-                const keys = JSON.parse(container.dataset.keys);
-                knob.innerText = i18n[state.lang][keys[idx]];
-
-                if(!silent) {
+        function initToggles() {
+            document.querySelectorAll('.toggle-container').forEach(c => {
+                c.onclick = () => {
+                    let idx = parseInt(c.dataset.idx);
+                    idx = (idx + 1) % 2;
+                    c.dataset.idx = idx;
+                    ui.updateToggleVisuals(c.id);
                     haptics.light();
-                    if(container.id === 'theme-toggle') ui.applyTheme(keys[idx]);
-                    if(container.id === 'glow-toggle') state.glowEnabled = (idx === 0);
-                    if(container.id === 'haptic-toggle') {
-                        state.hapticsEnabled = (idx === 0);
-                        document.getElementById('haptic-intensity-box').style.opacity = (idx === 0) ? '1' : '0.3';
-                    }
-                    if(container.id === 'type-toggle') logic.updateCategoryDropdown();
-                    if(containerId === 'entry-mode-toggle') {
+                    if(c.id === 'theme-toggle') ui.applyTheme(idx === 0 ? 'dark' : 'light');
+                    if(c.id === 'glow-toggle') state.glowEnabled = (idx === 0);
+                    if(c.id === 'haptic-toggle') state.hapticsEnabled = (idx === 0);
+                    if(c.id === 'type-toggle') logic.updateCategoryDropdown();
+                    if(c.id === 'entry-mode-toggle') {
                         document.getElementById('ui-manual-fields').classList.toggle('hidden', idx === 1);
                         document.getElementById('ui-ai-fields').classList.toggle('hidden', idx === 0);
                     }
-                }
-                labels.forEach((l, i) => l.classList.toggle('active-label', i === idx));
-                localStorage.setItem('v_v15_final', JSON.stringify(state));
+                    localStorage.setItem('v_v15_final', JSON.stringify(state));
+                };
+                ui.updateToggleVisuals(c.id);
+            });
+
+            // Special Lang & Currency Toggles
+            document.getElementById('lang-toggle').onclick = () => {
+                state.lang = (state.lang + 1) % 3;
+                document.getElementById('l-knob').style.transform = `translateX(${state.lang * 100}%)`;
+                document.getElementById('l-knob').innerText = ["🇩🇪","🇺🇸","🇫🇷"][state.lang];
+                ui.updateAllTexts();
+                haptics.medium();
             };
-
-            knob.addEventListener('touchstart', (e) => { isDragging = true; startX = e.touches[0].clientX - currentX; haptics.light(); });
-            window.addEventListener('touchmove', (e) => { if(!isDragging) return; currentX = Math.max(0, Math.min(e.touches[0].clientX - startX, container.offsetWidth - knob.offsetWidth - 8)); knob.style.transform = `translateX(${currentX}px)`; });
-            window.addEventListener('touchend', () => { if(!isDragging) return; isDragging = false; const idx = Math.round(currentX / (container.offsetWidth - knob.offsetWidth - 8)); update(idx); });
-            container.addEventListener('click', (e) => { const rect = container.getBoundingClientRect(); update(e.clientX - rect.left > rect.width / 2 ? 1 : 0); });
-
-            if(containerId === 'theme-toggle') update(state.theme === 'light' ? 1 : 0, true);
-            else if(containerId === 'glow-toggle') update(state.glowEnabled ? 0 : 1, true);
-            else if(containerId === 'haptic-toggle') {
-                update(state.hapticsEnabled ? 0 : 1, true);
-                document.getElementById('haptic-intensity-box').style.opacity = state.hapticsEnabled ? '1' : '0.3';
-            }
-            else update(0, true);
+            document.getElementById('currency-toggle').onclick = () => {
+                const old = state.currencyIdx;
+                state.currencyIdx = (state.currencyIdx + 1) % 4;
+                document.getElementById('c-knob').style.transform = `translateX(${state.currencyIdx * 100}%)`;
+                document.getElementById('c-knob').innerText = currencyMap[state.currencyIdx].symbol;
+                ui.convertCurrency(old, state.currencyIdx);
+            };
         }
 
-        window.onload = async () => {
+        window.onload = () => {
             confetti.init();
-            await ui.fetchLiveRates();
-            document.getElementById('haptic-intensity').value = state.hapticIntensity || 1;
-            
+            initToggles();
             mainChart = new Chart(document.getElementById('main-chart').getContext('2d'), {
-                type: 'line', 
-                data: { labels: [], datasets: [{ data: [], tension: 0.4, fill: true, pointRadius: 4, pointHoverRadius: 6, borderWidth: 4 }] },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    scales: { 
-                        x: { display: true, grid: { display: true }, ticks: { font: { size: 8, weight: 'bold' } } }, 
-                        y: { display: true, grid: { display: true }, ticks: { font: { size: 8, weight: 'bold' } } } 
-                    }, 
-                    plugins: { legend: { display: false } } 
-                }
+                type: 'line',
+                data: { labels: [], datasets: [{ data: [], borderWidth: 4, pointRadius: 0, tension: 0.4, fill: true }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { borderDash: [5, 5] } } } }
             });
-            
-            initMultiToggle('lang-toggle', 3);
-            initMultiToggle('currency-toggle', 4);
-            initDraggable('theme-toggle'); 
-            initDraggable('glow-toggle');
-            initDraggable('haptic-toggle'); 
-            initDraggable('entry-mode-toggle'); 
-            initDraggable('type-toggle'); 
-            initDraggable('interval-toggle');
-            
-            ui.renderDashboard(); 
-            ui.updateAllTexts(); 
-            ui.applyTheme(state.theme); 
-            ui.initReveal();
+            ui.renderDashboard();
+            ui.updateAllTexts();
+            ui.applyTheme(state.theme);
         };
     </script>
 </body>
