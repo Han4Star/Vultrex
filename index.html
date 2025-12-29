@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vultrex OS v16.4 - Light & English Default</title>
+    <title>Vultrex OS v16.6 - VIP Scan Edition</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -29,6 +29,15 @@
         html, body { overscroll-behavior: none; background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; overflow: hidden; height: 100vh; margin: 0; transition: background 0.5s ease; user-select: none; }
         .crystal-glass { background: var(--glass); backdrop-filter: blur(50px) saturate(190%); border: 1px solid var(--glass-border); }
 
+        /* CONFETTI CANVAS */
+        #confetti-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 2000;
+        }
+
         /* --- REVISED ADAPTIVE GLOW --- */
         .click-glow {
             position: fixed;
@@ -38,10 +47,8 @@
             transform: translate(-50%, -50%) scale(0);
         }
 
-        /* Dark Mode Animation */
         .glow-dark {
-            width: 400px; 
-            height: 400px;
+            width: 400px; height: 400px;
             animation: glow-pulse-dark 0.8s cubic-bezier(0.1, 0.7, 0.3, 1) forwards;
         }
         @keyframes glow-pulse-dark {
@@ -49,10 +56,8 @@
             100% { transform: translate(-50%, -50%) scale(1.2); opacity: 0; }
         }
 
-        /* Light Mode Animation (Heller eingestellt) */
         .glow-light {
-            width: 250px; 
-            height: 250px;
+            width: 250px; height: 250px;
             animation: glow-pulse-light 0.6s ease-out forwards;
         }
         @keyframes glow-pulse-light {
@@ -60,7 +65,7 @@
             100% { transform: translate(-50%, -50%) scale(1.3); opacity: 0; }
         }
 
-        /* UI Komponenten */
+        /* UI COMPONENTS */
         .toggle-container, .lang-container {
             position: relative; width: 100%; height: 60px;
             background: var(--input-fill); border-radius: 1.5rem;
@@ -92,9 +97,11 @@
 </head>
 <body onpointerdown="ui.createGlow(event)">
 
+    <canvas id="confetti-canvas"></canvas>
+
     <div id="sidebar" class="fixed inset-y-0 left-0 w-72 crystal-glass z-[950] -translate-x-full transition-transform duration-500 rounded-r-[2.5rem]">
         <div class="p-10 flex flex-col h-full">
-            <h2 class="text-2xl font-black italic mb-12 uppercase tracking-tighter">Vultrex</h2>
+            <h2 class="text-2xl font-black italic mb-12 uppercase tracking-tighter">Vultrex ✨</h2>
             <nav class="space-y-4 flex-1">
                 <button onclick="ui.switchPage('dashboard')" class="w-full text-left p-5 rounded-2xl font-bold" data-t="nav_dash">📊 Dashboard</button>
                 <button onclick="ui.switchPage('monitor')" class="w-full text-left p-5 rounded-2xl font-bold" data-t="nav_monitor">🌐 Monitor</button>
@@ -116,10 +123,11 @@
                 <h3 id="balance-display" class="text-5xl font-bold tracking-tighter italic">0.00 €</h3>
             </div>
             <div class="crystal-glass p-6 rounded-[2.5rem] h-64"><canvas id="main-chart"></canvas></div>
-            <div class="grid grid-cols-2 gap-4">
+            
+            <div class="grid grid-cols-1">
                 <button onclick="ui.openModal('manual')" class="crystal-glass py-7 rounded-[2rem] font-black uppercase text-[10px]" data-t="btn_new">New Entry</button>
-                <button onclick="ui.openModal('import')" class="bg-blue-600 text-white py-7 rounded-[2rem] font-black uppercase text-[10px]" data-t="btn_scan">AI Scan</button>
             </div>
+            
             <div id="transaction-list" class="space-y-3"></div>
         </div>
 
@@ -129,7 +137,7 @@
                 <div>
                     <p class="text-[9px] font-black opacity-30 uppercase mb-4 text-center" data-t="set_lang">Language</p>
                     <div class="lang-container" id="lang-toggle">
-                        <div class="lang-knob" id="l-knob" style="width: calc(33.33% - 6px)">🇩🇪</div>
+                        <div class="lang-knob" id="l-knob" style="width: calc(33.33% - 6px)">🇺🇸</div>
                         <div class="lang-label">🇩🇪</div><div class="lang-label">🇺🇸</div><div class="lang-label">🇫🇷</div>
                     </div>
                 </div>
@@ -160,52 +168,92 @@
     <div id="modal-box" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xl z-[1100] flex items-center justify-center p-6">
         <div class="crystal-glass w-full max-sm p-8 rounded-[3.5rem] relative">
             <button onclick="ui.closeModal()" class="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-xl bg-black/10 font-bold">✕</button>
-            <div id="ui-manual" class="space-y-5 pt-6">
-                <div class="toggle-container" id="type-toggle" data-idx="0" data-keys='["expense","income"]'>
+            
+            <div class="space-y-5 pt-6">
+                <div class="toggle-container mb-2" id="entry-mode-toggle" data-idx="0" data-keys='["manual","ai_scan"]'>
                     <div class="toggle-knob" style="width: calc(50% - 6px)"></div>
                     <div class="toggle-label"></div><div class="toggle-label"></div>
                 </div>
-                <div class="toggle-container" id="interval-toggle" data-idx="0" data-keys='["once","monthly"]'>
-                    <div class="toggle-knob" style="width: calc(50% - 6px)"></div>
-                    <div class="toggle-label"></div><div class="toggle-label"></div>
+
+                <div id="ui-manual-fields" class="space-y-5">
+                    <div class="toggle-container" id="type-toggle" data-idx="0" data-keys='["expense","income"]'>
+                        <div class="toggle-knob" style="width: calc(50% - 6px)"></div>
+                        <div class="toggle-label"></div><div class="toggle-label"></div>
+                    </div>
+                    <div class="toggle-container" id="interval-toggle" data-idx="0" data-keys='["once","monthly"]'>
+                        <div class="toggle-knob" style="width: calc(50% - 6px)"></div>
+                        <div class="toggle-label"></div><div class="toggle-label"></div>
+                    </div>
+                    <select id="entry-category" class="w-full p-5 rounded-2xl font-bold bg-white/5 border border-white/10 uppercase text-[10px]"></select>
+                    <input type="number" id="entry-amount" placeholder="0.00" class="w-full p-5 rounded-2xl font-bold text-center text-4xl bg-white/5 border border-white/10">
+                    <button onclick="logic.addEntry()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] text-white shadow-lg" data-t="btn_commit">Commit</button>
                 </div>
-                <select id="entry-category" class="w-full p-5 rounded-2xl font-bold bg-white/5 border border-white/10 uppercase text-[10px]"></select>
-                <input type="number" id="entry-amount" placeholder="0.00" class="w-full p-5 rounded-2xl font-bold text-center text-4xl bg-white/5 border border-white/10">
-                <button onclick="logic.addEntry()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] text-white shadow-lg" data-t="btn_commit">Commit</button>
-            </div>
-            <div id="ui-import" class="hidden space-y-6 text-center pt-6">
-                <div class="w-full h-40 bg-white/5 rounded-[2rem] border-2 border-dashed border-white/10 flex items-center justify-center relative">
-                    <span id="file-label" class="opacity-30 text-[9px] font-black uppercase">PDF</span>
-                    <input type="file" id="pdf-in" accept=".pdf" class="absolute inset-0 opacity-0" onchange="ui.onFile(this)">
+
+                <div id="ui-ai-fields" class="hidden space-y-6 text-center">
+                    <div class="w-full h-40 bg-white/5 rounded-[2rem] border-2 border-dashed border-white/10 flex items-center justify-center relative">
+                        <span id="file-label" class="opacity-30 text-[9px] font-black uppercase">PDF</span>
+                        <input type="file" id="pdf-in" accept=".pdf" class="absolute inset-0 opacity-0" onchange="ui.onFile(this)">
+                    </div>
+                    <button id="ai-scan-btn" onclick="logic.scanPDF()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] text-white">Scan ✨</button>
                 </div>
-                <button onclick="logic.scanPDF()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] text-white">Scan</button>
             </div>
         </div>
     </div>
 
     <script>
         const i18n = {
-            0: { nav_dash: "📊 Dashboard", nav_monitor: "🌐 Monitor", nav_set: "⚙️ Einstellungen", total_assets: "Gesamtvermögen", btn_new: "Eintrag", btn_scan: "KI Scan", set_lang: "Sprache", set_theme: "Design", set_glow: "Click Glow", btn_commit: "Speichern", btn_refresh: "Refresh", expense: "Ausgabe", income: "Einnahme", once: "Einmal", monthly: "Monat", dark: "Dunkel", light: "Hell", on: "AN", off: "AUS" },
-            1: { nav_dash: "📊 Dashboard", nav_monitor: "🌐 Monitor", nav_set: "⚙️ Settings", total_assets: "Total Assets", btn_new: "New Entry", btn_scan: "AI Scan", set_lang: "Language", set_theme: "Appearance", set_glow: "Click Glow", btn_commit: "Commit", btn_refresh: "Refresh", expense: "Expense", income: "Income", once: "Once", monthly: "Monthly", dark: "Dark", light: "Light", on: "ON", off: "OFF" },
-            2: { nav_dash: "📊 Dashboard", nav_monitor: "🌐 Moniteur", nav_set: "⚙️ Réglages", total_assets: "Total Actifs", btn_new: "Nouveau", btn_scan: "Scan IA", set_lang: "Langue", set_theme: "Apparence", set_glow: "Click Glow", btn_commit: "Valider", btn_refresh: "Refresh", expense: "Dépense", income: "Revenu", once: "Une fois", monthly: "Mensuel", dark: "Sombre", light: "Clair", on: "ON", off: "OFF" }
+            0: { nav_dash: "📊 Dashboard", nav_monitor: "🌐 Monitor", nav_set: "⚙️ Einstellungen", total_assets: "Gesamtvermögen", btn_new: "Eintrag hinzufügen", btn_scan: "KI Scan", set_lang: "Sprache", set_theme: "Design", set_glow: "Click Glow", btn_commit: "Speichern", btn_refresh: "Refresh", expense: "Ausgabe", income: "Einnahme", once: "Einmal", monthly: "Monat", dark: "Dunkel", light: "Hell", on: "AN", off: "AUS", manual: "Manuell", ai_scan: "KI Scan ✨" },
+            1: { nav_dash: "📊 Dashboard", nav_monitor: "🌐 Monitor", nav_set: "⚙️ Settings", total_assets: "Total Assets", btn_new: "New Entry", btn_scan: "AI Scan", set_lang: "Language", set_theme: "Appearance", set_glow: "Click Glow", btn_commit: "Commit", btn_refresh: "Refresh", expense: "Expense", income: "Income", once: "Once", monthly: "Monthly", dark: "Dark", light: "Light", on: "ON", off: "OFF", manual: "Manual", ai_scan: "AI Scan ✨" },
+            2: { nav_dash: "📊 Dashboard", nav_monitor: "🌐 Moniteur", nav_set: "⚙️ Réglages", total_assets: "Total Actifs", btn_new: "Nouveau", btn_scan: "Scan IA", set_lang: "Langue", set_theme: "Apparence", set_glow: "Click Glow", btn_commit: "Valider", btn_refresh: "Refresh", expense: "Dépense", income: "Revenu", once: "Une fois", monthly: "Mensuel", dark: "Sombre", light: "Clair", on: "ON", off: "OFF", manual: "Manuel", ai_scan: "Scan IA ✨" }
         };
 
-        // Standardwerte nun auf Englisch (lang: 1) und Light Mode (theme: 'light')
         let state = JSON.parse(localStorage.getItem('v_v15_final')) || { history: [], theme: 'light', lang: 1, glowEnabled: true };
         let mainChart = null;
+
+        const confetti = {
+            canvas: null, ctx: null, particles: [],
+            init() {
+                this.canvas = document.getElementById('confetti-canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            },
+            spawn() {
+                for(let i=0; i<50; i++) {
+                    this.particles.push({
+                        x: window.innerWidth/2, y: window.innerHeight/2,
+                        vX: (Math.random()-0.5)*15, vY: (Math.random()-0.5)*15,
+                        size: Math.random()*8+4, color: Math.random() > 0.5 ? '#007AFF' : '#C0C0C0',
+                        rot: Math.random()*360, vR: Math.random()*10
+                    });
+                }
+                if(this.particles.length <= 50) this.animate();
+            },
+            animate() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.particles.forEach((p, i) => {
+                    p.x += p.vX; p.y += p.vY; p.vY += 0.2; p.rot += p.vR;
+                    this.ctx.fillStyle = p.color;
+                    this.ctx.save();
+                    this.ctx.translate(p.x, p.y);
+                    this.ctx.rotate(p.rot * Math.PI / 180);
+                    this.ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size);
+                    this.ctx.restore();
+                    if(p.y > this.canvas.height) this.particles.splice(i, 1);
+                });
+                if(this.particles.length > 0) requestAnimationFrame(() => this.animate());
+            }
+        };
 
         const ui = {
             createGlow(e) {
                 if (!state.glowEnabled) return;
                 if (e.target.closest('button, input, select, .toggle-container, .lang-container')) return;
-                
                 const glow = document.createElement('div');
                 const isLight = state.theme === 'light';
                 glow.className = `click-glow ${isLight ? 'glow-light' : 'glow-dark'}`;
-                
                 const color = isLight ? 'rgba(0, 122, 255, 0.6)' : 'rgba(255, 255, 255, 0.7)';
                 glow.style.background = `radial-gradient(circle, ${color} 0%, rgba(255,255,255,0) 80%)`;
-                
                 glow.style.left = e.clientX + 'px';
                 glow.style.top = e.clientY + 'px';
                 document.body.appendChild(glow);
@@ -222,12 +270,7 @@
                 document.getElementById('page-' + id).classList.remove('page-hidden');
                 this.toggleSidebar();
             },
-            openModal(type) {
-                document.getElementById('modal-box').classList.remove('hidden');
-                document.getElementById('ui-manual').classList.toggle('hidden', type !== 'manual');
-                document.getElementById('ui-import').classList.toggle('hidden', type !== 'import');
-                logic.updateCategoryDropdown();
-            },
+            openModal(type) { document.getElementById('modal-box').classList.remove('hidden'); logic.updateCategoryDropdown(); },
             closeModal() { document.getElementById('modal-box').classList.add('hidden'); },
             onFile(input) { if(input.files[0]) document.getElementById('file-label').innerText = input.files[0].name; },
             applyTheme(themeKey) {
@@ -244,7 +287,6 @@
                     const labels = container.querySelectorAll('.toggle-label');
                     const knob = container.querySelector('.toggle-knob');
                     const idx = parseInt(container.dataset.idx);
-                    
                     if (labels.length >= 2) {
                         labels[0].innerText = i18n[state.lang][keys[0]];
                         labels[1].innerText = i18n[state.lang][keys[1]];
@@ -296,6 +338,7 @@
             async scanPDF() {
                 const file = document.getElementById('pdf-in').files[0];
                 if(!file) return;
+                confetti.spawn(); // Startet den Effekt
                 const reader = new FileReader();
                 reader.onload = async (e) => {
                     const typedarray = new Uint8Array(e.target.result);
@@ -305,9 +348,9 @@
                     const text = content.items.map(s => s.str).join(" ");
                     const match = text.match(/(\d+[\.,]\d{2})/);
                     let val = match ? parseFloat(match[0].replace(',', '.')) : 0.00;
-                    state.history.push({ id: Date.now(), amount: -val, cat: 'AI Scan', date: new Date().toLocaleDateString() });
+                    state.history.push({ id: Date.now(), amount: -val, cat: 'AI Scan ✨', date: new Date().toLocaleDateString() });
                     localStorage.setItem('v_v15_final', JSON.stringify(state));
-                    ui.renderDashboard(); ui.closeModal();
+                    setTimeout(() => { ui.renderDashboard(); ui.closeModal(); }, 1200);
                 };
                 reader.readAsArrayBuffer(file);
             }
@@ -355,20 +398,19 @@
             const labels = container.querySelectorAll('.toggle-label, .lang-label');
             const flags = ["🇩🇪", "🇺🇸", "🇫🇷"];
             let isDragging = false, startX = 0, currentX = 0;
-
             const update = (idx, silent = false) => {
                 const maxX = container.offsetWidth - knob.offsetWidth - 8;
                 currentX = (idx * (maxX / (isThreeWay ? 2 : 1)));
                 knob.style.transform = `translateX(${currentX}px)`;
-                
-                if(isThreeWay) {
-                    state.lang = idx;
-                    knob.innerText = flags[idx];
-                    ui.updateAllTexts();
-                } else {
+                if(isThreeWay) { state.lang = idx; knob.innerText = flags[idx]; ui.updateAllTexts(); }
+                else {
                     container.dataset.idx = idx;
                     const keys = JSON.parse(container.dataset.keys);
                     knob.innerText = i18n[state.lang][keys[idx]];
+                    if(containerId === 'entry-mode-toggle') {
+                        document.getElementById('ui-manual-fields').classList.toggle('hidden', idx === 1);
+                        document.getElementById('ui-ai-fields').classList.toggle('hidden', idx === 0);
+                    }
                     if(!silent) {
                         if(container.id === 'theme-toggle') ui.applyTheme(keys[idx]);
                         if(container.id === 'glow-toggle') state.glowEnabled = (idx === 0);
@@ -378,37 +420,10 @@
                 labels.forEach((l, i) => l.classList.toggle(isThreeWay ? 'active-lang' : 'active-label', i === idx));
                 localStorage.setItem('v_v15_final', JSON.stringify(state));
             };
-
-            knob.addEventListener('touchstart', (e) => { 
-                isDragging = true; 
-                startX = e.touches[0].clientX - currentX; 
-                knob.classList.add('dragging'); 
-            });
-
-            window.addEventListener('touchmove', (e) => {
-                if(!isDragging) return;
-                currentX = Math.max(0, Math.min(e.touches[0].clientX - startX, container.offsetWidth - knob.offsetWidth - 8));
-                knob.style.transform = `translateX(${currentX}px)`;
-            });
-
-            window.addEventListener('touchend', () => {
-                if(!isDragging) return; 
-                isDragging = false; 
-                knob.classList.remove('dragging');
-                const maxX = container.offsetWidth - knob.offsetWidth - 8;
-                const idx = Math.round(currentX / (maxX / (isThreeWay ? 2 : 1)));
-                update(idx);
-            });
-
-            container.addEventListener('click', (e) => {
-                if(isDragging) return;
-                const rect = container.getBoundingClientRect();
-                const clickX = e.clientX - rect.left;
-                const segmentWidth = rect.width / (isThreeWay ? 3 : 2);
-                const idx = Math.floor(clickX / segmentWidth);
-                update(Math.min(idx, isThreeWay ? 2 : 1));
-            });
-            
+            knob.addEventListener('touchstart', (e) => { isDragging = true; startX = e.touches[0].clientX - currentX; knob.classList.add('dragging'); });
+            window.addEventListener('touchmove', (e) => { if(!isDragging) return; currentX = Math.max(0, Math.min(e.touches[0].clientX - startX, container.offsetWidth - knob.offsetWidth - 8)); knob.style.transform = `translateX(${currentX}px)`; });
+            window.addEventListener('touchend', () => { if(!isDragging) return; isDragging = false; knob.classList.remove('dragging'); const maxX = container.offsetWidth - knob.offsetWidth - 8; const idx = Math.round(currentX / (maxX / (isThreeWay ? 2 : 1))); update(idx); });
+            container.addEventListener('click', (e) => { if(isDragging) return; const rect = container.getBoundingClientRect(); const clickX = e.clientX - rect.left; const idx = Math.floor(clickX / (rect.width / (isThreeWay ? 3 : 2))); update(Math.min(idx, isThreeWay ? 2 : 1)); });
             if(isThreeWay) update(state.lang, true);
             else if(containerId === 'theme-toggle') update(state.theme === 'light' ? 1 : 0, true);
             else if(containerId === 'glow-toggle') update(state.glowEnabled ? 0 : 1, true);
@@ -416,20 +431,14 @@
         }
 
         window.onload = () => {
+            confetti.init();
             mainChart = new Chart(document.getElementById('main-chart').getContext('2d'), {
                 type: 'line', data: { labels: [], datasets: [{ data: [], borderColor: '#007AFF', tension: 0.4, fill: true, backgroundColor: 'rgba(0,122,255,0.05)', pointRadius: 0, borderWidth: 3 }] },
                 options: { responsive: true, maintainAspectRatio: false, scales: { x: { display: false }, y: { display: false } }, plugins: { legend: { display: false } } }
             });
-            
-            initDraggable('lang-toggle', true); 
-            initDraggable('theme-toggle', false);
-            initDraggable('glow-toggle', false);
-            initDraggable('type-toggle', false); 
-            initDraggable('interval-toggle', false);
-            
-            ui.renderDashboard(); 
-            ui.updateAllTexts();
-            ui.applyTheme(state.theme);
+            initDraggable('lang-toggle', true); initDraggable('theme-toggle', false); initDraggable('glow-toggle', false);
+            initDraggable('entry-mode-toggle', false); initDraggable('type-toggle', false); initDraggable('interval-toggle', false);
+            ui.renderDashboard(); ui.updateAllTexts(); ui.applyTheme(state.theme);
         };
     </script>
 </body>
