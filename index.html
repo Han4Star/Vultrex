@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vultrex OS v16.7 - Adaptive VIP Edition</title>
+    <title>Vultrex OS v16.8.1 - Full Layout Engine</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -28,10 +28,9 @@
         * { -webkit-tap-highlight-color: transparent; outline: none; }
         html, body { overscroll-behavior: none; background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; overflow: hidden; height: 100vh; margin: 0; transition: background 0.5s ease; user-select: none; }
         
-        /* ADAPTIVE CONTAINER */
         #app-content {
             width: 100%;
-            max-width: clamp(320px, 90vw, 600px); /* Optimale Breite für alle Geräte */
+            max-width: clamp(320px, 90vw, 600px);
             margin: 0 auto;
             padding: clamp(1rem, 5vw, 2.5rem);
             height: 100vh;
@@ -39,71 +38,54 @@
             flex-direction: column;
         }
 
-        .crystal-glass { background: var(--glass); backdrop-filter: blur(50px) saturate(190%); border: 1px solid var(--glass-border); }
+        .crystal-glass { background: var(--glass); backdrop-filter: blur(50px) saturate(190%); border: 1px solid var(--glass-border); position: relative; transition: background 0.3s, transform 0.3s; }
 
-        /* RESPONSIVE TEXT */
-        #balance-display {
-            font-size: clamp(2.5rem, 8vw, 4.5rem); /* Skaliert zwischen Handy und Desktop */
-            line-height: 1;
+        /* --- LAYOUT ENGINE ANIMATIONS --- */
+        @keyframes jiggle {
+            0% { transform: rotate(-0.6deg) translate(1px, 1px); }
+            50% { transform: rotate(0.6deg) translate(-1px, -1px); }
+            100% { transform: rotate(-0.6deg) translate(1px, 1px); }
+        }
+        .editing .jiggle {
+            animation: jiggle 0.25s infinite ease-in-out;
+            cursor: grab;
+            border: 2px dashed var(--accent) !important;
+            z-index: 50;
         }
 
-        /* CONFETTI CANVAS */
-        #confetti-canvas {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            pointer-events: none;
-            z-index: 2000;
-        }
-
-        /* GLOW ANIMATIONS */
-        .click-glow {
-            position: fixed;
-            pointer-events: none;
+        .resize-handle {
+            display: none;
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            width: 24px;
+            height: 24px;
+            background: var(--accent);
             border-radius: 50%;
-            z-index: 1; 
-            transform: translate(-50%, -50%) scale(0);
+            border: 4px solid white;
+            cursor: nwse-resize;
+            z-index: 100;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
-        .glow-dark {
-            width: 400px; height: 400px;
-            animation: glow-pulse-dark 0.8s cubic-bezier(0.1, 0.7, 0.3, 1) forwards;
-        }
-        @keyframes glow-pulse-dark {
-            0% { transform: translate(-50%, -50%) scale(0.1); opacity: 0.8; }
-            100% { transform: translate(-50%, -50%) scale(1.2); opacity: 0; }
-        }
-        .glow-light {
-            width: 250px; height: 250px;
-            animation: glow-pulse-light 0.6s ease-out forwards;
-        }
-        @keyframes glow-pulse-light {
-            0% { transform: translate(-50%, -50%) scale(0.2); opacity: 0.85; }
-            100% { transform: translate(-50%, -50%) scale(1.3); opacity: 0; }
-        }
+        .editing .resize-handle { display: block; }
 
-        /* UI COMPONENTS */
-        .toggle-container, .lang-container {
-            position: relative; width: 100%; height: 60px;
-            background: var(--input-fill); border-radius: 1.5rem;
-            padding: 4px; display: flex; align-items: center;
-            border: 1px solid var(--glass-border); touch-action: none; z-index: 10;
-        }
-        .toggle-knob, .lang-knob {
-            position: absolute; left: 4px; height: 50px;
-            background: var(--knob-gradient), var(--accent);
-            border-radius: 1.2rem; display: flex; align-items: center;
-            justify-content: center; z-index: 20; cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            color: white !important; font-size: 10px; font-weight: 900; text-transform: uppercase;
-        }
+        /* --- EXISTING UI ELEMENTS --- */
+        #balance-display { font-size: clamp(2.5rem, 8vw, 4.5rem); line-height: 1; }
+        #confetti-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2000; }
+        .click-glow { position: fixed; pointer-events: none; border-radius: 50%; z-index: 1; transform: translate(-50%, -50%) scale(0); }
+        .glow-dark { width: 400px; height: 400px; animation: glow-pulse-dark 0.8s forwards; }
+        @keyframes glow-pulse-dark { 0% { transform: translate(-50%, -50%) scale(0.1); opacity: 0.8; } 100% { transform: translate(-50%, -50%) scale(1.2); opacity: 0; } }
+        .glow-light { width: 250px; height: 250px; animation: glow-pulse-light 0.6s forwards; }
+        @keyframes glow-pulse-light { 0% { transform: translate(-50%, -50%) scale(0.2); opacity: 0.85; } 100% { transform: translate(-50%, -50%) scale(1.3); opacity: 0; } }
+
+        .toggle-container, .lang-container { position: relative; width: 100%; height: 60px; background: var(--input-fill); border-radius: 1.5rem; padding: 4px; display: flex; align-items: center; border: 1px solid var(--glass-border); touch-action: none; z-index: 10; }
+        .toggle-knob, .lang-knob { position: absolute; left: 4px; height: 50px; background: var(--knob-gradient), var(--accent); border-radius: 1.2rem; display: flex; align-items: center; justify-content: center; z-index: 20; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.2); transition: transform 0.4s; color: white !important; font-size: 10px; font-weight: 900; text-transform: uppercase; }
         .toggle-label, .lang-label { flex: 1; text-align: center; font-size: 10px; font-weight: 800; text-transform: uppercase; opacity: 0.2; transition: 0.3s; z-index: 5; pointer-events: none; }
         .active-label, .active-lang { opacity: 1; transform: scale(1.1); }
-        .lang-label { font-size: 18px; }
-
+        
         .transaction-wrapper { position: relative; border-radius: 2rem; margin-bottom: 0.75rem; overflow: hidden; touch-action: pan-y; z-index: 10; }
         .delete-bg { position: absolute; inset: 0; background: var(--delete-red); display: flex; align-items: center; justify-content: flex-end; padding-right: 25px; opacity: 0; }
-        .transaction-card { position: relative; z-index: 5; background: var(--glass); transition: transform 0.4s cubic-bezier(0.1, 0.9, 0.2, 1); }
+        .transaction-card { position: relative; z-index: 5; background: var(--glass); transition: transform 0.4s; }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .page-hidden { display: none; }
@@ -130,22 +112,31 @@
     <div id="app-content" class="no-scrollbar overflow-y-auto pb-32">
         <header class="flex justify-between items-center mb-8 pt-4 relative z-20 shrink-0">
             <button onclick="ui.toggleSidebar()" class="w-12 h-12 crystal-glass rounded-2xl flex items-center justify-center text-xl">≡</button>
+            <button onclick="layout.toggleEdit()" id="edit-btn" class="px-6 py-2 crystal-glass rounded-full text-[10px] font-black uppercase tracking-widest text-blue-500 border border-blue-500/30">Edit ✨</button>
             <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center font-black text-white shadow-lg">V</div>
         </header>
 
-        <div id="page-dashboard" class="space-y-6">
-            <div class="crystal-glass p-8 md:p-12 rounded-[3rem] text-center">
+        <div id="page-dashboard" class="space-y-6 flex flex-col">
+            <div id="comp-balance" class="jiggle crystal-glass p-8 md:p-12 rounded-[3rem] text-center" draggable="false">
                 <p class="text-[10px] opacity-40 uppercase font-black tracking-widest mb-1" data-t="total_assets">Total Assets</p>
                 <h3 id="balance-display" class="font-bold tracking-tighter italic">0.00 €</h3>
+                <div class="resize-handle" onmousedown="layout.startResize(event, 'comp-balance')" ontouchstart="layout.startResize(event, 'comp-balance')"></div>
             </div>
             
-            <div class="crystal-glass p-6 rounded-[2.5rem] h-64 shrink-0"><canvas id="main-chart"></canvas></div>
-            
-            <div class="grid grid-cols-1">
-                <button onclick="ui.openModal('manual')" class="crystal-glass py-7 rounded-[2rem] font-black uppercase text-[10px]" data-t="btn_new">New Entry</button>
+            <div id="comp-chart" class="jiggle crystal-glass p-6 rounded-[2.5rem] h-64 shrink-0 overflow-hidden">
+                <canvas id="main-chart"></canvas>
+                <div class="resize-handle" onmousedown="layout.startResize(event, 'comp-chart')" ontouchstart="layout.startResize(event, 'comp-chart')"></div>
             </div>
             
-            <div id="transaction-list" class="space-y-3 pb-10"></div>
+            <div id="comp-actions" class="jiggle">
+                <button onclick="ui.openModal('manual')" class="w-full crystal-glass py-7 rounded-[2rem] font-black uppercase text-[10px]" data-t="btn_new">New Entry</button>
+                <div class="resize-handle" onmousedown="layout.startResize(event, 'comp-actions')" ontouchstart="layout.startResize(event, 'comp-actions')"></div>
+            </div>
+            
+            <div id="comp-list" class="jiggle space-y-3 pb-10">
+                <div id="transaction-list" class="space-y-3"></div>
+                <div class="resize-handle" onmousedown="layout.startResize(event, 'comp-list')" ontouchstart="layout.startResize(event, 'comp-list')"></div>
+            </div>
         </div>
 
         <div id="page-settings" class="page-hidden space-y-6">
@@ -185,13 +176,11 @@
     <div id="modal-box" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xl z-[1100] flex items-center justify-center p-6">
         <div class="crystal-glass w-full max-w-sm p-8 rounded-[3.5rem] relative">
             <button onclick="ui.closeModal()" class="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-xl bg-black/10 font-bold">✕</button>
-            
             <div class="space-y-5 pt-6">
                 <div class="toggle-container mb-2" id="entry-mode-toggle" data-idx="0" data-keys='["manual","ai_scan"]'>
                     <div class="toggle-knob" style="width: calc(50% - 6px)"></div>
                     <div class="toggle-label"></div><div class="toggle-label"></div>
                 </div>
-
                 <div id="ui-manual-fields" class="space-y-5">
                     <div class="toggle-container" id="type-toggle" data-idx="0" data-keys='["expense","income"]'>
                         <div class="toggle-knob" style="width: calc(50% - 6px)"></div>
@@ -203,15 +192,14 @@
                     </div>
                     <select id="entry-category" class="w-full p-5 rounded-2xl font-bold bg-white/5 border border-white/10 uppercase text-[10px]"></select>
                     <input type="number" id="entry-amount" placeholder="0.00" class="w-full p-5 rounded-2xl font-bold text-center text-4xl bg-white/5 border border-white/10">
-                    <button onclick="logic.addEntry()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] text-white shadow-lg" data-t="btn_commit">Commit</button>
+                    <button onclick="logic.addEntry()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] text-white" data-t="btn_commit">Commit</button>
                 </div>
-
                 <div id="ui-ai-fields" class="hidden space-y-6 text-center">
                     <div class="w-full h-40 bg-white/5 rounded-[2rem] border-2 border-dashed border-white/10 flex items-center justify-center relative">
                         <span id="file-label" class="opacity-30 text-[9px] font-black uppercase">PDF</span>
                         <input type="file" id="pdf-in" accept=".pdf" class="absolute inset-0 opacity-0" onchange="ui.onFile(this)">
                     </div>
-                    <button id="ai-scan-btn" onclick="logic.scanPDF()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] text-white">Scan ✨</button>
+                    <button onclick="logic.scanPDF()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] text-white">Scan ✨</button>
                 </div>
             </div>
         </div>
@@ -227,223 +215,149 @@
         let state = JSON.parse(localStorage.getItem('v_v15_final')) || { history: [], theme: 'light', lang: 1, glowEnabled: true };
         let mainChart = null;
 
+        /* --- LAYOUT ENGINE (DRAG & RESIZE) --- */
+        const layout = {
+            isEditing: false,
+            resizingEl: null,
+            startY: 0, startH: 0,
+
+            toggleEdit() {
+                this.isEditing = !this.isEditing;
+                document.getElementById('page-dashboard').classList.toggle('editing', this.isEditing);
+                document.getElementById('edit-btn').innerText = this.isEditing ? "Done ✅" : "Edit ✨";
+                this.setupDrag();
+            },
+
+            setupDrag() {
+                const dashboard = document.getElementById('page-dashboard');
+                const comps = dashboard.querySelectorAll('.jiggle');
+                comps.forEach(c => {
+                    c.draggable = this.isEditing;
+                    c.ondragstart = (e) => { if(!this.isEditing) return; e.dataTransfer.setData('text', c.id); c.style.opacity = '0.4'; };
+                    c.ondragend = () => { c.style.opacity = '1'; };
+                    c.ondragover = (e) => { e.preventDefault(); };
+                    c.ondrop = (e) => {
+                        e.preventDefault();
+                        const draggedId = e.dataTransfer.getData('text');
+                        const draggedEl = document.getElementById(draggedId);
+                        if(draggedEl && draggedEl !== c) {
+                            const children = Array.from(dashboard.children);
+                            if(children.indexOf(draggedEl) < children.indexOf(c)) dashboard.insertBefore(draggedEl, c.nextSibling);
+                            else dashboard.insertBefore(draggedEl, c);
+                        }
+                    };
+                });
+            },
+
+            startResize(e, id) {
+                if(!this.isEditing) return;
+                e.stopPropagation(); e.preventDefault();
+                this.resizingEl = document.getElementById(id);
+                this.startY = (e.type === 'touchstart') ? e.touches[0].clientY : e.clientY;
+                this.startH = this.resizingEl.offsetHeight;
+                
+                const move = (me) => {
+                    const currentY = (me.type === 'touchmove') ? me.touches[0].clientY : me.clientY;
+                    const delta = currentY - this.startY;
+                    this.resizingEl.style.height = (this.startH + delta) + 'px';
+                };
+                const stop = () => {
+                    window.removeEventListener('mousemove', move);
+                    window.removeEventListener('mouseup', stop);
+                    window.removeEventListener('touchmove', move);
+                    window.removeEventListener('touchend', stop);
+                };
+                window.addEventListener('mousemove', move);
+                window.addEventListener('mouseup', stop);
+                window.addEventListener('touchmove', move);
+                window.addEventListener('touchend', stop);
+            }
+        };
+
+        /* --- UI & LOGIC --- */
         const confetti = {
             canvas: null, ctx: null, particles: [],
-            init() {
-                this.canvas = document.getElementById('confetti-canvas');
-                this.ctx = this.canvas.getContext('2d');
-                this.canvas.width = window.innerWidth;
-                this.canvas.height = window.innerHeight;
-            },
+            init() { this.canvas = document.getElementById('confetti-canvas'); this.ctx = this.canvas.getContext('2d'); this.canvas.width = window.innerWidth; this.canvas.height = window.innerHeight; },
             spawn() {
-                for(let i=0; i<50; i++) {
-                    this.particles.push({
-                        x: window.innerWidth/2, y: window.innerHeight/2,
-                        vX: (Math.random()-0.5)*15, vY: (Math.random()-0.5)*15,
-                        size: Math.random()*8+4, color: Math.random() > 0.5 ? '#007AFF' : '#C0C0C0',
-                        rot: Math.random()*360, vR: Math.random()*10
-                    });
-                }
-                if(this.particles.length <= 50) this.animate();
+                for(let i=0; i<60; i++) { this.particles.push({ x: window.innerWidth/2, y: window.innerHeight/2, vX: (Math.random()-0.5)*18, vY: (Math.random()-0.5)*18, size: Math.random()*8+4, color: Math.random() > 0.5 ? '#007AFF' : '#C0C0C0', rot: Math.random()*360, vR: Math.random()*12 }); }
+                if(this.particles.length <= 60) this.animate();
             },
             animate() {
                 this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                this.particles.forEach((p, i) => {
-                    p.x += p.vX; p.y += p.vY; p.vY += 0.2; p.rot += p.vR;
-                    this.ctx.fillStyle = p.color;
-                    this.ctx.save();
-                    this.ctx.translate(p.x, p.y);
-                    this.ctx.rotate(p.rot * Math.PI / 180);
-                    this.ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size);
-                    this.ctx.restore();
-                    if(p.y > this.canvas.height) this.particles.splice(i, 1);
-                });
+                this.particles.forEach((p, i) => { p.x += p.vX; p.y += p.vY; p.vY += 0.25; p.rot += p.vR; this.ctx.fillStyle = p.color; this.ctx.save(); this.ctx.translate(p.x, p.y); this.ctx.rotate(p.rot * Math.PI / 180); this.ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size); this.ctx.restore(); if(p.y > this.canvas.height) this.particles.splice(i, 1); });
                 if(this.particles.length > 0) requestAnimationFrame(() => this.animate());
             }
         };
 
         const ui = {
             createGlow(e) {
-                if (!state.glowEnabled) return;
-                if (e.target.closest('button, input, select, .toggle-container, .lang-container')) return;
+                if (!state.glowEnabled || e.target.closest('button, .toggle-container, .resize-handle')) return;
                 const glow = document.createElement('div');
                 const isLight = state.theme === 'light';
                 glow.className = `click-glow ${isLight ? 'glow-light' : 'glow-dark'}`;
-                const color = isLight ? 'rgba(0, 122, 255, 0.6)' : 'rgba(255, 255, 255, 0.7)';
-                glow.style.background = `radial-gradient(circle, ${color} 0%, rgba(255,255,255,0) 80%)`;
+                const color = isLight ? 'rgba(0, 122, 255, 0.5)' : 'rgba(255, 255, 255, 0.6)';
+                glow.style.background = `radial-gradient(circle, ${color} 0%, rgba(255,255,255,0) 70%)`;
                 glow.style.left = e.clientX + 'px'; glow.style.top = e.clientY + 'px';
                 document.body.appendChild(glow);
-                setTimeout(() => glow.remove(), 1000);
+                setTimeout(() => glow.remove(), 800);
             },
-            toggleSidebar() {
-                const sb = document.getElementById('sidebar');
-                const isOpen = sb.style.transform === 'translateX(0px)';
-                sb.style.transform = isOpen ? 'translateX(-100%)' : 'translateX(0px)';
-                document.getElementById('sidebar-overlay').classList.toggle('hidden');
-            },
-            switchPage(id) {
-                ['dashboard', 'settings', 'monitor'].forEach(p => document.getElementById('page-' + p).classList.add('page-hidden'));
-                document.getElementById('page-' + id).classList.remove('page-hidden');
-                this.toggleSidebar();
-            },
-            openModal(type) { document.getElementById('modal-box').classList.remove('hidden'); logic.updateCategoryDropdown(); },
+            toggleSidebar() { const sb = document.getElementById('sidebar'); const isOpen = sb.style.transform === 'translateX(0px)'; sb.style.transform = isOpen ? 'translateX(-100%)' : 'translateX(0px)'; document.getElementById('sidebar-overlay').classList.toggle('hidden'); },
+            switchPage(id) { ['dashboard', 'settings', 'monitor'].forEach(p => document.getElementById('page-' + p).classList.add('page-hidden')); document.getElementById('page-' + id).classList.remove('page-hidden'); this.toggleSidebar(); },
+            openModal() { document.getElementById('modal-box').classList.remove('hidden'); logic.updateCategoryDropdown(); },
             closeModal() { document.getElementById('modal-box').classList.add('hidden'); },
             onFile(input) { if(input.files[0]) document.getElementById('file-label').innerText = input.files[0].name; },
-            applyTheme(themeKey) {
-                state.theme = themeKey;
-                document.body.className = themeKey === 'light' ? 'light-mode' : '';
-                localStorage.setItem('v_v15_final', JSON.stringify(state));
-            },
+            applyTheme(themeKey) { state.theme = themeKey; document.body.className = themeKey === 'light' ? 'light-mode' : ''; localStorage.setItem('v_v15_final', JSON.stringify(state)); },
             updateAllTexts() {
-                document.querySelectorAll('[data-t]').forEach(el => {
-                    el.innerText = i18n[state.lang][el.getAttribute('data-t')];
-                });
+                document.querySelectorAll('[data-t]').forEach(el => { el.innerText = i18n[state.lang][el.getAttribute('data-t')]; });
                 document.querySelectorAll('.toggle-container').forEach(container => {
-                    const keys = JSON.parse(container.dataset.keys);
-                    const labels = container.querySelectorAll('.toggle-label');
-                    const knob = container.querySelector('.toggle-knob');
-                    const idx = parseInt(container.dataset.idx);
-                    if (labels.length >= 2) {
-                        labels[0].innerText = i18n[state.lang][keys[0]];
-                        labels[1].innerText = i18n[state.lang][keys[1]];
-                        knob.innerText = i18n[state.lang][keys[idx]];
-                        labels.forEach((l, i) => l.classList.toggle('active-label', i === idx));
-                    }
+                    const keys = JSON.parse(container.dataset.keys); const labels = container.querySelectorAll('.toggle-label'); const knob = container.querySelector('.toggle-knob'); const idx = parseInt(container.dataset.idx);
+                    if (labels.length >= 2) { labels[0].innerText = i18n[state.lang][keys[0]]; labels[1].innerText = i18n[state.lang][keys[1]]; knob.innerText = i18n[state.lang][keys[idx]]; labels.forEach((l, i) => l.classList.toggle('active-label', i === idx)); }
                 });
             },
             renderDashboard() {
-                let total = 0;
-                const list = document.getElementById('transaction-list');
-                list.innerHTML = '';
+                let total = 0; const list = document.getElementById('transaction-list'); list.innerHTML = '';
                 state.history.slice().reverse().forEach(item => {
                     total += item.amount;
-                    list.innerHTML += `<div class="transaction-wrapper"><div class="delete-bg">🗑️</div>
-                        <div class="transaction-card crystal-glass p-6 rounded-3xl flex justify-between items-center" data-id="${item.id}" ontouchstart="swipe.start(event)" ontouchmove="swipe.move(event)" ontouchend="swipe.end(event)">
-                            <div><p class="font-black text-[10px] uppercase">${item.cat}</p><p class="text-[8px] opacity-30 uppercase font-bold">${item.date}</p></div>
-                            <p class="font-bold ${item.amount < 0 ? 'text-rose-500' : 'text-emerald-500'}">${item.amount.toFixed(2)} €</p>
-                        </div></div>`;
+                    list.innerHTML += `<div class="transaction-wrapper"><div class="delete-bg">🗑️</div><div class="transaction-card crystal-glass p-6 rounded-3xl flex justify-between items-center" data-id="${item.id}" ontouchstart="swipe.start(event)" ontouchmove="swipe.move(event)" ontouchend="swipe.end(event)"><div><p class="font-black text-[10px] uppercase">${item.cat}</p><p class="text-[8px] opacity-30 uppercase font-bold">${item.date}</p></div><p class="font-bold ${item.amount < 0 ? 'text-rose-500' : 'text-emerald-500'}">${item.amount.toFixed(2)} €</p></div></div>`;
                 });
-                document.getElementById('balance-display').innerText = total.toFixed(2) + " €";
-                this.updateChart();
+                document.getElementById('balance-display').innerText = total.toFixed(2) + " €"; this.updateChart();
             },
-            updateChart() {
-                if(!mainChart) return;
-                let run = 0;
-                mainChart.data.labels = state.history.map(h => h.date);
-                mainChart.data.datasets[0].data = state.history.map(h => { run += h.amount; return run; });
-                mainChart.update();
-            }
+            updateChart() { if(!mainChart) return; let run = 0; mainChart.data.labels = state.history.map(h => h.date); mainChart.data.datasets[0].data = state.history.map(h => { run += h.amount; return run; }); mainChart.update(); }
         };
 
         const logic = {
-            updateCategoryDropdown() {
-                const typeIdx = parseInt(document.getElementById('type-toggle').dataset.idx);
-                const select = document.getElementById('entry-category');
-                const cats = typeIdx === 0 ? ["Server", "Domain", "Plugins"] : ["Ranks", "Collabs", "Donations"];
-                select.innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join('');
-            },
-            addEntry() {
-                const amount = parseFloat(document.getElementById('entry-amount').value);
-                const typeIdx = parseInt(document.getElementById('type-toggle').dataset.idx);
-                if(isNaN(amount)) return;
-                state.history.push({ id: Date.now(), amount: typeIdx === 0 ? -amount : amount, cat: document.getElementById('entry-category').value, date: new Date().toLocaleDateString() });
-                localStorage.setItem('v_v15_final', JSON.stringify(state));
-                ui.renderDashboard(); ui.closeModal();
-                document.getElementById('entry-amount').value = '';
-            },
-            async scanPDF() {
-                const file = document.getElementById('pdf-in').files[0];
-                if(!file) return;
-                confetti.spawn();
-                const reader = new FileReader();
-                reader.onload = async (e) => {
-                    const typedarray = new Uint8Array(e.target.result);
-                    const pdf = await pdfjsLib.getDocument(typedarray).promise;
-                    const page = await pdf.getPage(1);
-                    const content = await page.getTextContent();
-                    const text = content.items.map(s => s.str).join(" ");
-                    const match = text.match(/(\d+[\.,]\d{2})/);
-                    let val = match ? parseFloat(match[0].replace(',', '.')) : 0.00;
-                    state.history.push({ id: Date.now(), amount: -val, cat: 'AI Scan ✨', date: new Date().toLocaleDateString() });
-                    localStorage.setItem('v_v15_final', JSON.stringify(state));
-                    setTimeout(() => { ui.renderDashboard(); ui.closeModal(); }, 1200);
-                };
-                reader.readAsArrayBuffer(file);
-            }
+            updateCategoryDropdown() { const typeIdx = parseInt(document.getElementById('type-toggle').dataset.idx); const select = document.getElementById('entry-category'); const cats = typeIdx === 0 ? ["Server", "Domain", "Plugins"] : ["Ranks", "Collabs", "Donations"]; select.innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join(''); },
+            addEntry() { const amount = parseFloat(document.getElementById('entry-amount').value); const typeIdx = parseInt(document.getElementById('type-toggle').dataset.idx); if(isNaN(amount)) return; state.history.push({ id: Date.now(), amount: typeIdx === 0 ? -amount : amount, cat: document.getElementById('entry-category').value, date: new Date().toLocaleDateString() }); localStorage.setItem('v_v15_final', JSON.stringify(state)); ui.renderDashboard(); ui.closeModal(); document.getElementById('entry-amount').value = ''; },
+            async scanPDF() { const file = document.getElementById('pdf-in').files[0]; if(!file) return; confetti.spawn(); const reader = new FileReader(); reader.onload = async (e) => { const typedarray = new Uint8Array(e.target.result); const pdf = await pdfjsLib.getDocument(typedarray).promise; const page = await pdf.getPage(1); const content = await page.getTextContent(); const text = content.items.map(s => s.str).join(" "); const match = text.match(/(\d+[\.,]\d{2})/); let val = match ? parseFloat(match[0].replace(',', '.')) : 0.00; state.history.push({ id: Date.now(), amount: -val, cat: 'AI Scan ✨', date: new Date().toLocaleDateString() }); localStorage.setItem('v_v15_final', JSON.stringify(state)); setTimeout(() => { ui.renderDashboard(); ui.closeModal(); }, 1200); }; reader.readAsArrayBuffer(file); }
         };
 
         const swipe = {
             sX: 0, elem: null,
-            start(e) { this.sX = e.touches[0].clientX; this.elem = e.currentTarget; this.elem.style.transition = 'none'; },
-            move(e) {
-                let d = e.touches[0].clientX - this.sX;
-                if(d < 0) {
-                    this.elem.style.transform = `translateX(${Math.max(d, -120)}px)`;
-                    this.elem.parentElement.querySelector('.delete-bg').style.opacity = Math.abs(d)/100;
-                }
-            },
-            end(e) {
-                let d = e.changedTouches[0].clientX - this.sX;
-                this.elem.style.transition = 'transform 0.4s cubic-bezier(0.1, 0.9, 0.2, 1)';
-                if(d < -100) {
-                    state.history = state.history.filter(t => t.id != this.elem.dataset.id);
-                    localStorage.setItem('v_v15_final', JSON.stringify(state));
-                    ui.renderDashboard();
-                } else { this.elem.style.transform = 'translateX(0)'; }
-            }
+            start(e) { if(layout.isEditing) return; this.sX = e.touches[0].clientX; this.elem = e.currentTarget; this.elem.style.transition = 'none'; },
+            move(e) { if(layout.isEditing) return; let d = e.touches[0].clientX - this.sX; if(d < 0) { this.elem.style.transform = `translateX(${Math.max(d, -120)}px)`; this.elem.parentElement.querySelector('.delete-bg').style.opacity = Math.abs(d)/100; } },
+            end(e) { if(layout.isEditing) return; let d = e.changedTouches[0].clientX - this.sX; this.elem.style.transition = 'transform 0.4s'; if(d < -100) { state.history = state.history.filter(t => t.id != this.elem.dataset.id); localStorage.setItem('v_v15_final', JSON.stringify(state)); ui.renderDashboard(); } else { this.elem.style.transform = 'translateX(0)'; } }
         };
 
         const monitor = {
-            async ping() {
-                const ip = document.getElementById('node-ip').value;
-                const res = document.getElementById('monitor-res');
-                if(!ip) return;
-                res.innerHTML = "..."; res.classList.remove('hidden');
-                try {
-                    const r = await fetch(`https://api.mcstatus.io/v2/status/java/${ip}`);
-                    const d = await r.json();
-                    res.innerHTML = d.online ? `<div class="crystal-glass p-4 rounded-2xl text-center"><p class="text-emerald-500 font-bold">Online</p></div><div class="crystal-glass p-4 rounded-2xl text-center"><p class="font-bold">${d.players.online}</p></div>` : "Offline";
-                } catch(e) { res.innerHTML = "Error"; }
-            }
+            async ping() { const ip = document.getElementById('node-ip').value; const res = document.getElementById('monitor-res'); if(!ip) return; res.innerHTML = "..."; res.classList.remove('hidden'); try { const r = await fetch(`https://api.mcstatus.io/v2/status/java/${ip}`); const d = await r.json(); res.innerHTML = d.online ? `<div class="crystal-glass p-4 rounded-2xl text-center"><p class="text-emerald-500 font-bold">Online</p></div><div class="crystal-glass p-4 rounded-2xl text-center"><p class="font-bold">${d.players.online}</p></div>` : "Offline"; } catch(e) { res.innerHTML = "Error"; } }
         };
 
         function initDraggable(containerId, isThreeWay) {
-            const container = document.getElementById(containerId);
-            if (!container) return;
-            const knob = container.querySelector('.toggle-knob, .lang-knob');
-            const labels = container.querySelectorAll('.toggle-label, .lang-label');
-            const flags = ["🇩🇪", "🇺🇸", "🇫🇷"];
-            let isDragging = false, startX = 0, currentX = 0;
+            const container = document.getElementById(containerId); if (!container) return; const knob = container.querySelector('.toggle-knob, .lang-knob'); const labels = container.querySelectorAll('.toggle-label, .lang-label'); let isDragging = false, startX = 0, currentX = 0;
             const update = (idx, silent = false) => {
-                const maxX = container.offsetWidth - knob.offsetWidth - 8;
-                currentX = (idx * (maxX / (isThreeWay ? 2 : 1)));
-                knob.style.transform = `translateX(${currentX}px)`;
-                if(isThreeWay) { state.lang = idx; knob.innerText = flags[idx]; ui.updateAllTexts(); }
-                else {
-                    container.dataset.idx = idx;
-                    const keys = JSON.parse(container.dataset.keys);
-                    knob.innerText = i18n[state.lang][keys[idx]];
-                    if(containerId === 'entry-mode-toggle') {
-                        document.getElementById('ui-manual-fields').classList.toggle('hidden', idx === 1);
-                        document.getElementById('ui-ai-fields').classList.toggle('hidden', idx === 0);
-                    }
-                    if(!silent) {
-                        if(container.id === 'theme-toggle') ui.applyTheme(keys[idx]);
-                        if(container.id === 'glow-toggle') state.glowEnabled = (idx === 0);
-                        if(container.id === 'type-toggle') logic.updateCategoryDropdown();
-                    }
+                const maxX = container.offsetWidth - knob.offsetWidth - 8; currentX = (idx * (maxX / (isThreeWay ? 2 : 1))); knob.style.transform = `translateX(${currentX}px)`;
+                if(isThreeWay) { state.lang = idx; knob.innerText = ["🇩🇪", "🇺🇸", "🇫🇷"][idx]; ui.updateAllTexts(); } else {
+                    container.dataset.idx = idx; const keys = JSON.parse(container.dataset.keys); knob.innerText = i18n[state.lang][keys[idx]];
+                    if(containerId === 'entry-mode-toggle') { document.getElementById('ui-manual-fields').classList.toggle('hidden', idx === 1); document.getElementById('ui-ai-fields').classList.toggle('hidden', idx === 0); }
+                    if(!silent) { if(container.id === 'theme-toggle') ui.applyTheme(keys[idx]); if(container.id === 'glow-toggle') state.glowEnabled = (idx === 0); if(container.id === 'type-toggle') logic.updateCategoryDropdown(); }
                 }
-                labels.forEach((l, i) => l.classList.toggle(isThreeWay ? 'active-lang' : 'active-label', i === idx));
-                localStorage.setItem('v_v15_final', JSON.stringify(state));
+                labels.forEach((l, i) => l.classList.toggle(isThreeWay ? 'active-lang' : 'active-label', i === idx)); localStorage.setItem('v_v15_final', JSON.stringify(state));
             };
-            knob.addEventListener('touchstart', (e) => { isDragging = true; startX = e.touches[0].clientX - currentX; knob.classList.add('dragging'); });
+            knob.addEventListener('touchstart', (e) => { isDragging = true; startX = e.touches[0].clientX - currentX; });
             window.addEventListener('touchmove', (e) => { if(!isDragging) return; currentX = Math.max(0, Math.min(e.touches[0].clientX - startX, container.offsetWidth - knob.offsetWidth - 8)); knob.style.transform = `translateX(${currentX}px)`; });
-            window.addEventListener('touchend', () => { if(!isDragging) return; isDragging = false; knob.classList.remove('dragging'); const maxX = container.offsetWidth - knob.offsetWidth - 8; const idx = Math.round(currentX / (maxX / (isThreeWay ? 2 : 1))); update(idx); });
-            container.addEventListener('click', (e) => { if(isDragging) return; const rect = container.getBoundingClientRect(); const clickX = e.clientX - rect.left; const idx = Math.floor(clickX / (rect.width / (isThreeWay ? 3 : 2))); update(Math.min(idx, isThreeWay ? 2 : 1)); });
-            if(isThreeWay) update(state.lang, true);
-            else if(containerId === 'theme-toggle') update(state.theme === 'light' ? 1 : 0, true);
-            else if(containerId === 'glow-toggle') update(state.glowEnabled ? 0 : 1, true);
-            else update(0, true);
+            window.addEventListener('touchend', () => { if(!isDragging) return; isDragging = false; const maxX = container.offsetWidth - knob.offsetWidth - 8; const idx = Math.round(currentX / (maxX / (isThreeWay ? 2 : 1))); update(idx); });
+            container.addEventListener('click', (e) => { if(isDragging) return; const rect = container.getBoundingClientRect(); const idx = Math.floor((e.clientX - rect.left) / (rect.width / (isThreeWay ? 3 : 2))); update(Math.min(idx, isThreeWay ? 2 : 1)); });
+            if(isThreeWay) update(state.lang, true); else if(containerId === 'theme-toggle') update(state.theme === 'light' ? 1 : 0, true); else update(0, true);
         }
 
         window.onload = () => {
@@ -452,8 +366,7 @@
                 type: 'line', data: { labels: [], datasets: [{ data: [], borderColor: '#007AFF', tension: 0.4, fill: true, backgroundColor: 'rgba(0,122,255,0.05)', pointRadius: 0, borderWidth: 3 }] },
                 options: { responsive: true, maintainAspectRatio: false, scales: { x: { display: false }, y: { display: false } }, plugins: { legend: { display: false } } }
             });
-            initDraggable('lang-toggle', true); initDraggable('theme-toggle', false); initDraggable('glow-toggle', false);
-            initDraggable('entry-mode-toggle', false); initDraggable('type-toggle', false); initDraggable('interval-toggle', false);
+            ['lang-toggle', 'theme-toggle', 'glow-toggle', 'entry-mode-toggle', 'type-toggle', 'interval-toggle'].forEach(id => initDraggable(id, id === 'lang-toggle'));
             ui.renderDashboard(); ui.updateAllTexts(); ui.applyTheme(state.theme);
         };
     </script>
