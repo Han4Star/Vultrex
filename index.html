@@ -178,7 +178,7 @@
                 <input type="text" id="node-ip" placeholder="SERVER IP" class="w-full p-5 rounded-2xl mb-4 text-center font-bold bg-white/5 border border-white/10 text-[10px] uppercase">
                 <button onclick="monitor.ping()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] text-white" data-t="btn_refresh">Refresh Node</button>
             </div>
-            <div id="monitor-res" class="hidden grid grid-cols-2 gap-4"></div>
+            <div id="monitor-res" class="hidden grid grid-cols-3 gap-4"></div>
         </div>
     </div>
 
@@ -399,11 +399,34 @@
                 const res = document.getElementById('monitor-res');
                 if(!ip) return;
                 res.innerHTML = "..."; res.classList.remove('hidden');
+                
+                const startTime = Date.now();
                 try {
                     const r = await fetch(`https://api.mcstatus.io/v2/status/java/${ip}`);
                     const d = await r.json();
-                    res.innerHTML = d.online ? `<div class="crystal-glass p-4 rounded-2xl text-center"><p class="text-emerald-500 font-bold">Online</p></div><div class="crystal-glass p-4 rounded-2xl text-center"><p class="font-bold">${d.players.online}</p></div>` : "Offline";
-                } catch(e) { res.innerHTML = "Error"; }
+                    const latency = Date.now() - startTime;
+                    
+                    if (d.online) {
+                        res.innerHTML = `
+                            <div class="crystal-glass p-4 rounded-2xl text-center">
+                                <p class="text-emerald-500 font-bold text-[10px] uppercase">Status</p>
+                                <p class="font-black text-[12px]">Online</p>
+                            </div>
+                            <div class="crystal-glass p-4 rounded-2xl text-center">
+                                <p class="opacity-30 font-bold text-[10px] uppercase">Players</p>
+                                <p class="font-black text-[12px]">${d.players.online}</p>
+                            </div>
+                            <div class="crystal-glass p-4 rounded-2xl text-center">
+                                <p class="opacity-30 font-bold text-[10px] uppercase">Ping</p>
+                                <p class="text-blue-500 font-black text-[12px]">${latency}ms</p>
+                            </div>
+                        `;
+                    } else {
+                        res.innerHTML = `<div class="col-span-3 crystal-glass p-4 rounded-2xl text-center text-rose-500 font-bold uppercase">Node Offline</div>`;
+                    }
+                } catch(e) { 
+                    res.innerHTML = `<div class="col-span-3 crystal-glass p-4 rounded-2xl text-center text-rose-500 font-bold uppercase">Connection Error</div>`; 
+                }
             }
         };
 
