@@ -266,7 +266,6 @@
             height: 80px;
             margin-bottom: 20px;
             filter: drop-shadow(0 0 15px rgba(0, 217, 255, 0.5));
-            image-rendering: pixelated;
             transform: translateZ(20px);
         }
 
@@ -305,10 +304,10 @@
         .stat-number {
             font-size: 3em;
             font-weight: 900;
-            background: linear-gradient(135deg, #00d9ff, #7dd3fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            /* Default Red, JS will animate to Green */
+            color: #ff4b4b; 
             transform: translateZ(20px);
+            transition: color 2s ease-out;
         }
 
         /* --- IP SECTION --- */
@@ -381,7 +380,7 @@
         <div class="hero-content">
             <div class="hero-badge">
                 <span class="status-dot"></span>
-                <span id="latencyBadge">14ms</span>
+                <span id="latencyBadge">1027ms</span>
             </div>
             
             <h1 class="title-wrapper" id="mainTitle">CloudCraft</h1>
@@ -396,57 +395,56 @@
         <p class="section-subtitle">Choose your weapon and dominate</p>
         <div class="grid">
             <div class="card">
-                <img src="https://minecraft.wiki/images/Diamond_Sword_JE3_BE3.png" class="item-img" alt="Sword">
+                <img src="https://raw.githubusercontent.com/soufianesakhi/minecraft-assets/master/assets/pc/items/diamond_sword.png" class="item-img" alt="Sword">
                 <h3>Sword PvP</h3>
                 <p>Master sword combat with custom enchantments and combos. Fast-paced skill-based gameplay.</p>
             </div>
             <div class="card">
-                <img src="https://minecraft.wiki/images/Diamond_Axe_JE3_BE3.png" class="item-img" alt="Axe">
+                <img src="https://raw.githubusercontent.com/soufianesakhi/minecraft-assets/master/assets/pc/items/diamond_axe.png" class="item-img" alt="Axe">
                 <h3>Axe PvP</h3>
                 <p>Heavy-hitting axe battles. Time your strikes for maximum damage.</p>
             </div>
             <div class="card">
-                <img src="https://minecraft.wiki/images/Mushroom_Stew_JE2_BE2.png" class="item-img" alt="Soup">
+                <img src="https://raw.githubusercontent.com/soufianesakhi/minecraft-assets/master/assets/pc/items/mushroom_stew.png" class="item-img" alt="Soup">
                 <h3>Soup PvP</h3>
                 <p>Classic soup PvP with instant healing. Quick reflexes are key.</p>
             </div>
             <div class="card">
-                <img src="https://minecraft.wiki/images/Trident_JE3_BE3.png" class="item-img" alt="Spear">
+                <img src="https://raw.githubusercontent.com/soufianesakhi/minecraft-assets/master/assets/pc/items/trident.png" class="item-img" alt="Spear">
                 <h3>Spear Combat</h3>
                 <p>Long-range melee combat. Keep distance and strike with precision.</p>
             </div>
             <div class="card">
-                <img src="https://minecraft.wiki/images/Bow_JE3_BE1.png" class="item-img" alt="Bow">
+                <img src="https://raw.githubusercontent.com/soufianesakhi/minecraft-assets/master/assets/pc/items/bow_pulling_2.png" class="item-img" alt="Bow">
                 <h3>Bow Duels</h3>
                 <p>Test your aim in archery battles. Every shot counts.</p>
             </div>
             <div class="card">
-                <img src="https://minecraft.wiki/images/Nether_Star_JE3_BE2.png" class="item-img" alt="More">
+                <img src="https://raw.githubusercontent.com/soufianesakhi/minecraft-assets/master/assets/pc/items/nether_star.png" class="item-img" alt="More">
                 <h3>Even More...</h3>
                 <p>Discover additional unique game modes and special events. New content added regularly!</p>
             </div>
         </div>
     </section>
 
-    <section class="section">
+    <section class="section" id="metricsSection">
         <h2 class="section-title">Server Metrics</h2>
         <p class="section-subtitle">Real-time performance indicators</p>
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-number" id="latencyStat">14ms</div>
+                <div class="stat-number" id="latencyStat">1027</div>
+                <div style="color: #00d9ff; font-weight: bold; margin-top: 5px;">MS</div>
                 <div>Average Latency</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">1.21.1</div>
-                <div>Version</div>
+                <div class="stat-number" id="uptimeStat" style="color: #ff4b4b;">1</div>
+                <div style="color: #00d9ff; font-weight: bold; margin-top: 5px;">%</div>
+                <div>Server Uptime</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">20.0</div>
-                <div>TPS</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">99.9%</div>
-                <div>Uptime</div>
+                <div class="stat-number" style="color: #00d9ff;">1.21.1</div>
+                <div style="color: #00d9ff; font-weight: bold; margin-top: 5px;">VERSION</div>
+                <div>Latest Release</div>
             </div>
         </div>
     </section>
@@ -528,14 +526,51 @@
         }
         type();
 
-        // --- 4. LATENCY SIMULATION (MS) ---
-        function updateLatency() {
-            const ms = Math.floor(Math.random() * (18 - 12) + 12);
-            document.getElementById('latencyBadge').textContent = ms + 'ms';
-            document.getElementById('latencyStat').textContent = ms + 'ms';
-        }
-        setInterval(updateLatency, 3000);
-        updateLatency();
+        // --- 4. SCROLL ANIMATION FOR METRICS ---
+        let animated = false;
+        const metricsSection = document.getElementById('metricsSection');
+        
+        const animateValue = (id, start, end, duration, decimal = false) => {
+            const obj = document.getElementById(id);
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                let current = progress * (end - start) + start;
+                obj.innerHTML = decimal ? current.toFixed(2) : Math.floor(current);
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && !animated) {
+                animated = true;
+                
+                // Latency: 1027 -> 1
+                animateValue("latencyStat", 1027, 1, 2500);
+                document.getElementById('latencyStat').style.color = "#4ade80";
+                
+                // Uptime: 1 -> 99.98
+                animateValue("uptimeStat", 1, 99.98, 2500, true);
+                document.getElementById('uptimeStat').style.color = "#4ade80";
+
+                // Update Hero Badge too
+                const badge = document.getElementById('latencyBadge');
+                badge.style.transition = "color 2s";
+                badge.style.color = "#4ade80";
+                animateValue("latencyBadge", 1027, 1, 2500);
+                // Note: animateValue overrides the innerHTML, we might need a small fix to keep 'ms'
+                setTimeout(() => {
+                    document.getElementById('latencyBadge').innerHTML += "ms";
+                }, 2600);
+            }
+        }, { threshold: 0.5 });
+
+        observer.observe(metricsSection);
+
     </script>
 </body>
 </html>
