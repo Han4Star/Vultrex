@@ -16,41 +16,46 @@
             background: #000;
             color: #fff;
             overflow-x: hidden;
-            perspective: 1000px; /* Essential for 3D effects */
+            perspective: 1000px;
+            cursor: none; /* Hide default cursor */
         }
 
-        /* --- MOUSE CURSOR --- */
+        /* --- MOUSE CURSOR FIXES --- */
         .cursor {
             width: 20px;
             height: 20px;
             border: 2px solid #00d9ff;
             border-radius: 50%;
             position: fixed;
-            pointer-events: none;
-            z-index: 9999;
+            pointer-events: none; /* Essential so you can click through it */
+            z-index: 10001; /* Higher than navbar */
             transform: translate(-50%, -50%);
-            transition: transform 0.1s;
+            transition: transform 0.1s ease-out;
+            top: 0;
+            left: 0;
         }
 
         .cursor-glow {
-            width: 120px;
-            height: 120px;
-            background: radial-gradient(circle, rgba(0, 217, 255, 0.12) 0%, transparent 70%);
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, rgba(0, 217, 255, 0.15) 0%, transparent 60%);
             border-radius: 50%;
             position: fixed;
             pointer-events: none;
-            z-index: 9998;
+            z-index: 10000; /* Just below the dot */
             transform: translate(-50%, -50%);
-            transition: transform 0.15s;
+            transition: width 0.3s, height 0.3s, transform 0.1s ease-out;
+            top: 0;
+            left: 0;
         }
 
-        /* --- UPDATED NAVBAR --- */
+        /* --- NAVBAR (Always Fixed) --- */
         nav {
             position: fixed;
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            z-index: 1000;
+            z-index: 9999; /* High Z-index but below cursor */
             background: rgba(0, 0, 0, 0.3);
             backdrop-filter: blur(40px) saturate(180%);
             -webkit-backdrop-filter: blur(40px) saturate(180%);
@@ -59,13 +64,9 @@
             padding: 12px 30px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4),
                         inset 0 1px 1px rgba(255, 255, 255, 0.1);
-            
-            /* CHANGE: Layout Layout split */
             display: flex;
-            justify-content: space-between; /* Pushes items to edges */
+            justify-content: space-between;
             align-items: center;
-            
-            /* CHANGE: Defined width to allow spacing */
             width: 90%;
             max-width: 800px;
         }
@@ -76,8 +77,8 @@
             background: linear-gradient(135deg, #00d9ff, #7dd3fc);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            /* Ensure text doesn't wrap */
             white-space: nowrap;
+            cursor: none; /* Keep custom cursor feel */
         }
 
         .join-btn {
@@ -89,7 +90,7 @@
             color: #fff;
             font-weight: 700;
             font-size: 0.9em;
-            cursor: pointer;
+            cursor: none; /* We use custom cursor */
             transition: all 0.3s;
             box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2);
             white-space: nowrap;
@@ -159,7 +160,7 @@
             50% { box-shadow: 0 0 0 10px rgba(74, 222, 128, 0); }
         }
 
-        /* --- NEW TEXT ANIMATION (CloudCraft) --- */
+        /* --- ANIMATED TEXT --- */
         .title-wrapper {
             font-size: 6em;
             font-weight: 900;
@@ -167,7 +168,7 @@
             margin-bottom: 25px;
             display: flex;
             justify-content: center;
-            gap: 5px; /* Slight gap between letters if needed */
+            gap: 5px;
         }
 
         .char-span {
@@ -177,22 +178,13 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-size: 200% auto;
-            /* The specific animation */
             animation: elegantReveal 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards,
                        gradientShift 3s linear infinite;
         }
 
         @keyframes elegantReveal {
-            0% {
-                opacity: 0;
-                transform: translateY(40px) skewY(10deg);
-                filter: blur(10px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0) skewY(0);
-                filter: blur(0);
-            }
+            0% { opacity: 0; transform: translateY(40px) skewY(10deg); filter: blur(10px); }
+            100% { opacity: 1; transform: translateY(0) skewY(0); filter: blur(0); }
         }
 
         @keyframes gradientShift {
@@ -212,9 +204,7 @@
             animation: blink 1s step-end infinite;
         }
 
-        @keyframes blink {
-            50% { border-color: transparent; }
-        }
+        @keyframes blink { 50% { border-color: transparent; } }
 
         .cta-button {
             padding: 20px 50px;
@@ -224,7 +214,7 @@
             border-radius: 12px;
             color: #000;
             font-weight: 700;
-            cursor: pointer;
+            cursor: none;
             transition: all 0.3s;
             animation: fadeIn 0.6s 0.8s both;
         }
@@ -234,7 +224,21 @@
             box-shadow: 0 20px 40px rgba(0, 217, 255, 0.4);
         }
 
-        /* --- GENERAL SECTIONS --- */
+        /* --- APPLE STYLE SCROLL REVEAL --- */
+        .reveal-on-scroll {
+            opacity: 0;
+            transform: translateY(40px) scale(0.98);
+            transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1); /* Apple's smooth easing */
+            filter: blur(10px);
+        }
+
+        .reveal-visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            filter: blur(0);
+        }
+
+        /* --- SECTIONS --- */
         .section {
             padding: 100px 20px;
             max-width: 1400px;
@@ -268,80 +272,41 @@
             border: 1px solid rgba(0, 217, 255, 0.2);
             border-radius: 20px;
             padding: 40px;
-            cursor: pointer;
             position: relative;
-            
-            /* Important for the 3D effect */
             transform-style: preserve-3d;
-            transform: perspective(1000px);
-            transition: transform 0.1s ease-out; /* Fast transition for mouse movement */
-            
-            /* Default non-hover properties */
+            perspective: 1000px;
+            /* Default transition for the "Smooth Return" */
+            transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), background 0.3s, border 0.3s;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
 
-        /* We remove the hover transform here because JS handles it, 
-           but we keep the color/border changes */
         .card:hover {
             border-color: #00d9ff;
             background: rgba(0, 217, 255, 0.08);
             box-shadow: 0 20px 60px rgba(0, 217, 255, 0.3);
+            /* When hovering, we want the transition to be very fast/instant for responsiveness */
+            transition: transform 0.05s linear, background 0.3s, border 0.3s;
         }
 
-        /* Fix image z-index so it pops out a bit in 3D space */
         .item-img {
             width: 80px;
             height: 80px;
             margin-bottom: 20px;
             filter: drop-shadow(0 0 15px rgba(0, 217, 255, 0.5));
             image-rendering: pixelated;
-            transform: translateZ(20px); /* Pops the item out */
+            transform: translateZ(40px);
         }
 
         .card h3 {
             font-size: 1.8em;
             color: #00d9ff;
             margin-bottom: 15px;
-            transform: translateZ(15px); /* Pops text out slightly */
+            transform: translateZ(30px);
         }
 
         .card p {
             color: rgba(255, 255, 255, 0.7);
             line-height: 1.8;
-            transform: translateZ(10px);
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 30px;
-            margin: 50px 0;
-        }
-
-        .stat-card {
-            text-align: center;
-            padding: 30px;
-            background: rgba(0, 217, 255, 0.03);
-            border: 1px solid rgba(0, 217, 255, 0.2);
-            border-radius: 20px;
-            
-            /* 3D Props */
-            transform-style: preserve-3d;
-            transform: perspective(1000px);
-            transition: transform 0.1s ease-out;
-        }
-
-        .stat-card:hover {
-            border-color: #00d9ff;
-            background: rgba(0, 217, 255, 0.05);
-        }
-
-        .stat-number {
-            font-size: 3em;
-            font-weight: 900;
-            background: linear-gradient(135deg, #00d9ff, #7dd3fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
             transform: translateZ(20px);
         }
 
@@ -371,7 +336,7 @@
 
         .discord-icon {
             font-size: 4em;
-            cursor: pointer;
+            cursor: none;
             transition: all 0.3s;
             filter: drop-shadow(0 0 20px rgba(88, 101, 242, 0.5));
             display: inline-block;
@@ -383,9 +348,9 @@
         }
 
         footer {
-            padding: 60px 20px;
+            padding: 30px 20px;
             text-align: center;
-            border-top: 1px solid rgba(0, 217, 255, 0.1);
+            /* Empty footer essentially */
         }
 
         @keyframes fadeIn {
@@ -398,7 +363,8 @@
             nav { width: 95%; padding: 10px 20px; }
             .logo { font-size: 1.2em; }
             .grid { grid-template-columns: 1fr; }
-            .cursor, .cursor-glow { display: none; }
+            .cursor, .cursor-glow { display: none; } /* Disable custom cursor on mobile */
+            body, .join-btn, .logo, .cta-button, .discord-icon { cursor: auto; }
         }
     </style>
 </head>
@@ -414,9 +380,9 @@
     <section class="hero" id="home">
         <div class="hero-grid"></div>
         <div class="hero-content">
-            <div class="hero-badge">
+            <div class="hero-badge reveal-on-scroll">
                 <span class="status-dot"></span>
-                <span id="playerCount">Loading...</span>
+                <span>Online</span>
             </div>
             
             <h1 class="title-wrapper" id="mainTitle">
@@ -429,35 +395,35 @@
     </section>
 
     <section class="section" id="modes">
-        <h2 class="section-title gradient-text">Game Modes</h2>
-        <p class="section-subtitle">Choose your weapon and dominate</p>
+        <h2 class="section-title gradient-text reveal-on-scroll">Game Modes</h2>
+        <p class="section-subtitle reveal-on-scroll">Choose your weapon and dominate</p>
         <div class="grid">
-            <div class="card tilt-card">
+            <div class="card tilt-card reveal-on-scroll">
                 <img src="https://minecraft.wiki/images/Diamond_Sword_JE3_BE3.png" class="item-img" alt="Sword">
                 <h3>Sword PvP</h3>
                 <p>Master sword combat with custom enchantments and combos. Fast-paced skill-based gameplay.</p>
             </div>
-            <div class="card tilt-card">
+            <div class="card tilt-card reveal-on-scroll">
                 <img src="https://minecraft.wiki/images/Diamond_Axe_JE3_BE3.png" class="item-img" alt="Axe">
                 <h3>Axe PvP</h3>
                 <p>Heavy-hitting axe battles. Time your strikes for maximum damage.</p>
             </div>
-            <div class="card tilt-card">
+            <div class="card tilt-card reveal-on-scroll">
                 <img src="https://minecraft.wiki/images/Mushroom_Stew_JE2_BE2.png" class="item-img" alt="Soup">
                 <h3>Soup PvP</h3>
                 <p>Classic soup PvP with instant healing. Quick reflexes are key.</p>
             </div>
-            <div class="card tilt-card">
-                <img src="https://minecraft.wiki/images/Trident_JE3_BE3.png" class="item-img" alt="Spear">
+            <div class="card tilt-card reveal-on-scroll">
+                <img src="https://static.wikia.nocookie.net/minecraft_gamepedia/images/4/4b/Trident_JE2_BE1.png" class="item-img" alt="Spear">
                 <h3>Spear Combat</h3>
                 <p>Long-range melee combat. Keep distance and strike with precision.</p>
             </div>
-            <div class="card tilt-card">
-                <img src="https://minecraft.wiki/images/Bow_JE3_BE1.png" class="item-img" alt="Bow">
+            <div class="card tilt-card reveal-on-scroll">
+                 <img src="https://static.wikia.nocookie.net/minecraft_gamepedia/images/a/a9/Bow_JE2_BE1.png" class="item-img" alt="Bow">
                 <h3>Bow Duels</h3>
                 <p>Test your aim in archery battles. Every shot counts.</p>
             </div>
-            <div class="card tilt-card">
+            <div class="card tilt-card reveal-on-scroll">
                 <img src="https://minecraft.wiki/images/Nether_Star_JE3_BE2.png" class="item-img" alt="More">
                 <h3>Even More...</h3>
                 <p>Discover additional unique game modes and special events. New content added regularly!</p>
@@ -466,73 +432,28 @@
     </section>
 
     <section class="section" id="why">
-        <h2 class="section-title gradient-text">Why CloudCraft?</h2>
-        <p class="section-subtitle">The best PvP experience in Europe</p>
+        <h2 class="section-title gradient-text reveal-on-scroll">Why CloudCraft?</h2>
+        <p class="section-subtitle reveal-on-scroll">The best PvP experience in Europe</p>
         <div class="grid">
-            <div class="card tilt-card">
+            <div class="card tilt-card reveal-on-scroll">
                 <div style="font-size: 3em; margin-bottom: 20px; transform: translateZ(20px);">⚡</div>
                 <h3>Low Ping</h3>
                 <p>EU-based servers ensure ultra-low latency for European players. Competitive advantage with minimal lag.</p>
             </div>
-            <div class="card tilt-card">
+            <div class="card tilt-card reveal-on-scroll">
                 <div style="font-size: 3em; margin-bottom: 20px; transform: translateZ(20px);">🌍</div>
                 <h3>EU Only</h3>
                 <p>Servers located in Europe for the best possible connection. Optimized for EU players.</p>
             </div>
-            <div class="card tilt-card">
+            <div class="card tilt-card reveal-on-scroll">
                 <div style="font-size: 3em; margin-bottom: 20px; transform: translateZ(20px);">🔄</div>
                 <h3>24/7 Uptime</h3>
-                <p>Our servers run non-stop with 99.9% uptime guarantee. Play whenever you want, day or night.</p>
-            </div>
-            <div class="card tilt-card">
-                <div style="font-size: 3em; margin-bottom: 20px; transform: translateZ(20px);">👥</div>
-                <h3>Active Community</h3>
-                <p>Join a thriving community of passionate PvP players. Make friends and form teams.</p>
-            </div>
-            <div class="card tilt-card">
-                <div style="font-size: 3em; margin-bottom: 20px; transform: translateZ(20px);">🛡️</div>
-                <h3>Active Staff</h3>
-                <p>Our moderation team is always online to help, handle reports, and keep the server fair.</p>
-            </div>
-            <div class="card tilt-card">
-                <div style="font-size: 3em; margin-bottom: 20px; transform: translateZ(20px);">🎮</div>
-                <h3>Regular Updates</h3>
-                <p>New features, game modes, and content added weekly. We listen to player feedback.</p>
+                <p>Our servers run non-stop with 99.9% uptime guarantee. Play whenever you want.</p>
             </div>
         </div>
     </section>
 
-    <section class="section">
-        <div class="stats-grid">
-            <div class="stat-card tilt-card">
-                <div class="stat-number" id="onlinePlayers">--</div>
-                <div>Players Online</div>
-            </div>
-            <div class="stat-card tilt-card">
-                <div class="stat-number" id="serverVersion">1.21.1</div>
-                <div>Version</div>
-            </div>
-            <div class="stat-card tilt-card">
-                <div class="stat-number">24/7</div>
-                <div>Availability</div>
-            </div>
-            <div class="stat-card tilt-card">
-                <div class="stat-number">99.98%</div>
-                <div>Uptime</div>
-            </div>
-        </div>
-    </section>
-
-    <section class="section" id="stats">
-        <h2 class="section-title gradient-text">📊 Player Stats</h2>
-        <p class="section-subtitle">Search your statistics</p>
-        <div style="max-width: 600px; margin: 0 auto; display: flex; gap: 15px;">
-            <input type="text" placeholder="Enter player name..." style="flex: 1; padding: 18px 25px; background: rgba(0, 217, 255, 0.05); border: 2px solid rgba(0, 217, 255, 0.3); border-radius: 12px; color: #fff; font-size: 1em;">
-            <button style="padding: 18px 35px; background: linear-gradient(135deg, #00d9ff, #7dd3fc); border: none; border-radius: 12px; color: #000; font-weight: 700; cursor: pointer;">Search</button>
-        </div>
-    </section>
-
-    <section class="ip-section" id="play">
+    <section class="ip-section reveal-on-scroll" id="play">
         <h2 class="section-title gradient-text">Server IP</h2>
         <p class="section-subtitle">Join the battle</p>
         <div class="coming-soon-box">
@@ -547,13 +468,11 @@
     </section>
 
     <footer>
-        <p>&copy; 2026 CloudCraft. All rights reserved.</p>
-    </footer>
+        </footer>
 
     <script>
-        // --- 1. TILT EFFECT LOGIC (like norisk.gg) ---
-        // We select all elements with class 'card' or 'stat-card' (added tilt-card class for clarity)
-        const tiltCards = document.querySelectorAll('.card, .stat-card');
+        // --- 1. SMOOTH TILT EFFECT WITH RETURN ---
+        const tiltCards = document.querySelectorAll('.tilt-card');
 
         tiltCards.forEach(card => {
             card.addEventListener('mousemove', (e) => {
@@ -561,41 +480,58 @@
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
                 
-                // Calculate position relative to center
                 const centerX = rect.width / 2;
                 const centerY = rect.height / 2;
                 
-                // Calculate rotation (Sensitivity controlled by division)
-                // "Mouse point goes down" means we rotate towards that point.
-                // Standard rotateX: positive tilts top BACK (away).
-                // If mouse is at top (y < centerY), we want top to go AWAY (down into screen).
-                const rotateX = ((y - centerY) / centerY) * -10; // Max 10 deg rotation
+                // Rotation calc
+                const rotateX = ((y - centerY) / centerY) * -10;
                 const rotateY = ((x - centerX) / centerX) * 10;
 
+                // When moving, use a very fast transition (linear) so it feels responsive
+                card.style.transition = 'transform 0.05s linear, background 0.3s, border 0.3s';
                 card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
             });
 
             card.addEventListener('mouseleave', () => {
-                // Reset on mouse leave
+                // When leaving, use a slow transition (cubic-bezier) to drift back smoothly
+                card.style.transition = 'transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), background 0.3s, border 0.3s';
                 card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)';
             });
         });
 
-        // --- 2. TEXT ANIMATION SETUP ---
+        // --- 2. APPLE-STYLE SCROLL OBSERVER ---
+        const observerOptions = {
+            threshold: 0.1, // Trigger when 10% of element is visible
+            rootMargin: "0px"
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('reveal-visible');
+                    observer.unobserve(entry.target); // Only animate once
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.reveal-on-scroll').forEach(el => {
+            observer.observe(el);
+        });
+
+        // --- 3. TEXT ANIMATION SETUP ---
         const mainTitle = document.getElementById('mainTitle');
         const text = "CloudCraft";
-        mainTitle.innerHTML = ''; // Clear text
+        mainTitle.innerHTML = '';
         
-        // Create spans for each letter
         [...text].forEach((char, index) => {
             const span = document.createElement('span');
             span.textContent = char;
             span.className = 'char-span';
-            span.style.animationDelay = `${index * 0.1}s`; // Stagger animation
+            span.style.animationDelay = `${index * 0.1}s`;
             mainTitle.appendChild(span);
         });
 
-        // --- 3. CURSOR & TYPING (Existing) ---
+        // --- 4. CURSOR & TYPING ---
         const cursor = document.querySelector('.cursor');
         const cursorGlow = document.querySelector('.cursor-glow');
         const typingText = document.getElementById('typingText');
@@ -605,10 +541,13 @@
         let isDeleting = false;
 
         document.addEventListener('mousemove', (e) => {
-            cursor.style.left = e.clientX + 'px';
-            cursor.style.top = e.clientY + 'px';
-            cursorGlow.style.left = e.clientX + 'px';
-            cursorGlow.style.top = e.clientY + 'px';
+            // Using requestAnimationFrame for smoother performance
+            requestAnimationFrame(() => {
+                cursor.style.left = e.clientX + 'px';
+                cursor.style.top = e.clientY + 'px';
+                cursorGlow.style.left = e.clientX + 'px';
+                cursorGlow.style.top = e.clientY + 'px';
+            });
         });
 
         function type() {
@@ -632,17 +571,8 @@
             const speed = isDeleting ? 100 : 200;
             setTimeout(type, speed);
         }
-
         type();
 
-        // Simulate Player Count
-        function updatePlayerCount() {
-            const count = Math.floor(Math.random() * (1500 - 800) + 800);
-            document.getElementById('playerCount').textContent = count + ' Online';
-            document.getElementById('onlinePlayers').textContent = count;
-        }
-        updatePlayerCount();
-        setInterval(updatePlayerCount, 5000);
     </script>
 </body>
 </html>
