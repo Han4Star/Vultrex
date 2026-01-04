@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DonutSMP - Ultimate PvP Network</title>
+    <title>CloudCraft - Ultimate PvP Network</title>
     <style>
         * {
             margin: 0;
@@ -356,6 +356,7 @@
             cursor: pointer;
             transition: all 0.3s;
             filter: drop-shadow(0 0 20px rgba(88, 101, 242, 0.5));
+            display: inline-block;
         }
 
         .discord-icon:hover {
@@ -403,7 +404,7 @@
     <div class="cursor-glow"></div>
 
     <nav>
-        <div class="logo" id="logoText"></div>
+        <div class="logo" id="logoText">CloudCraft</div>
         <button class="join-btn" onclick="document.getElementById('play').scrollIntoView({behavior: 'smooth'})">Join Now!</button>
     </nav>
 
@@ -414,7 +415,7 @@
                 <span class="status-dot"></span>
                 <span id="playerCount">Loading...</span>
             </div>
-            <h1 class="gradient-text">DonutSMP</h1>
+            <h1 class="gradient-text">CloudCraft</h1>
             <p class="hero-subtitle">Ultimate <span class="typing-text" id="typingText">PvP</span> Experience</p>
             <button class="cta-button" onclick="document.getElementById('play').scrollIntoView({behavior: 'smooth'})">Join Now</button>
         </div>
@@ -440,12 +441,12 @@
                 <p>Classic soup PvP with instant healing. Quick reflexes are key.</p>
             </div>
             <div class="card">
-                <img src="https://minecraft.wiki/images/Trident_JE2_BE2.png" class="item-img" alt="Spear">
+                <img src="https://minecraft.wiki/images/Trident_JE3_BE3.png" class="item-img" alt="Spear">
                 <h3>Spear Combat</h3>
                 <p>Long-range melee combat. Keep distance and strike with precision.</p>
             </div>
             <div class="card">
-                <img src="https://minecraft.wiki/images/Bow_%28item%29_JE2_BE1.png" class="item-img" alt="Bow">
+                <img src="https://minecraft.wiki/images/Bow_JE3_BE1.png" class="item-img" alt="Bow">
                 <h3>Bow Duels</h3>
                 <p>Test your aim in archery battles. Every shot counts.</p>
             </div>
@@ -458,7 +459,7 @@
     </section>
 
     <section class="section" id="why">
-        <h2 class="section-title gradient-text">Why DonutSMP?</h2>
+        <h2 class="section-title gradient-text">Why CloudCraft?</h2>
         <p class="section-subtitle">The best PvP experience in Europe</p>
         <div class="grid">
             <div class="card">
@@ -506,11 +507,11 @@
             </div>
             <div class="stat-card">
                 <div class="stat-number">24/7</div>
-                <div>Uptime</div>
+                <div>Availability</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number" id="serverStatus">--</div>
-                <div>Status</div>
+                <div class="stat-number">99.98%</div>
+                <div>Uptime</div>
             </div>
         </div>
     </section>
@@ -524,80 +525,23 @@
         </div>
     </section>
 
-    <section class="section" id="store">
-        <h2 class="section-title gradient-text">🛒 Ranks & Store</h2>
-        <p class="section-subtitle">Unlock exclusive perks and features</p>
-        <div class="grid">
-            <div class="card">
-                <div style="font-size: 2.5em; margin-bottom: 20px;">⚔️</div>
-                <h3>VIP</h3>
-                <div style="font-size: 2em; font-weight: 900; color: #00d9ff; margin: 20px 0;">$4.99</div>
-                <div style="text-align: left; margin-bottom: 20px;">
-                    <div style="padding: 8px 0;">✓ Colored chat</div>
-                    <div style="padding: 8px 0;">✓ /fly command</div>
-                    <div style="padding: 8px 0;">✓ 2 homes</div>
-                    <div style="padding: 8px 0;">✓ Priority join</div>
-                </div>
-                <button style="width: 100%; padding: 15px; background: linear-gradient(135deg, #00d9ff, #7dd3fc); border: none; border-radius: 12px; color: #000; font-weight: 700; cursor: pointer;">Buy Now</button>
-            </div>
-            <div class="card" style="border-color: #ffd700;">
-                <div style="font-size: 2.5em; margin-bottom: 20px;">👑</div>
-                <h3 style="color: #ffd700;">MVP</h3>
-                <div style="font-size: 2em; font-weight: 900; color: #ffd700; margin: 20px 0;">$9.99</div>
-                <div style="text-align: left; margin-bottom: 20px;">
-                    <div style="padding: 8px 0;">✓ All VIP perks</div>
-                    <div style="padding: 8px 0;">✓ Custom nicknames</div>
-                    <div style="padding: 8px 0;">✓ 5 homes</div>
-                    <div style="padding: 8px 0;">✓ Exclusive cosmetics</div>
-                </div>
-                <button style="width: 100%; padding: 15px; background: linear-gradient(135deg, #ffd700, #ffed4e); border: none; border-radius: 12px; color: #000; font-weight: 700; cursor: pointer;">Buy Now</button>
-            </div>
-            <div class="card">
-                <div style="font-size: 2.5em; margin-bottom: 20px;">💎</div>
-                <h3>ELITE</h3>
-                <div style="font-size: 2em; font-weight: 900; color: #00d9ff; margin: 20px 0;">$19.99</div>
-                <div style="text-align: left; margin-bottom: 20px;">
-                    <div style="padding: 8px 0;">✓ All MVP perks</div>
-                    <div style="padding: 8px 0;">✓ Unique particle effects</div>
-                    <div style="padding: 8px 0;">✓ 10 homes</div>
-                    <div style="padding: 8px 0;">✓ Double XP boost</div>
-                </div>
-                <button style="width: 100%; padding: 15px; background: linear-gradient(135deg, #00d9ff, #7dd3fc); border: none; border-radius: 12px; color: #000; font-weight: 700; cursor: pointer;">Buy Now</button>
-            </div>
-        </div>
-    </section>
-
-    <section class="section" id="events" style="background: rgba(0, 217, 255, 0.02);">
-        <h2 class="section-title gradient-text">📅 Upcoming Events</h2>
-        <p class="section-subtitle">Don't miss out on exciting tournaments</p>
-        <div class="grid">
-            <div class="card">
-                <div style="display: inline-block; padding: 8px 20px; background: rgba(0, 217, 255, 0.2); border-radius: 50px; font-size: 0.9em; font-weight: 700; color: #00d9ff; margin-bottom: 20px;">Jan 15, 2026</div>
-                <h3>Weekend Tournament</h3>
-                <p>Sword PvP championship with amazing prizes for top 3 players.</p>
-                <div style="font-size: 1.5em; font-weight: 900; color: #ffd700; margin-top: 20px;">Prize: $100</div>
-            </div>
-            <div class="card">
-                <div style="display: inline-block; padding: 8px 20px; background: rgba(0, 217, 255, 0.2); border-radius: 50px; font-size: 0.9em; font-weight: 700; color: #00d9ff; margin-bottom: 20px;">Jan 22, 2026</div>
-                <h3>Bow Master Challenge</h3>
-                <p>Archery competition to crown the best bowman. Limited slots available!</p>
-                <div style="font-size: 1.5em; font-weight: 900; color: #ffd700; margin-top: 20px;">Prize: $75</div>
-            </div>
-            <div class="card">
-                <div style="display: inline-block; padding: 8px 20px; background: rgba(0, 217, 255, 0.2); border-radius: 50px; font-size: 0.9em; font-weight: 700; color: #00d9ff; margin-bottom: 20px;">Feb 1, 2026</div>
-                <h3>Monthly Championship</h3>
-                <p>Mixed combat event featuring all game modes. Battle royale style elimination.</p>
-                <div style="font-size: 1.5em; font-weight: 900; color: #ffd700; margin-top: 20px;">Prize: $200</div>
-            </div>
-        </div>
-    </section>
-
     <section class="ip-section" id="play">
         <h2 class="section-title gradient-text">Server IP</h2>
         <p class="section-subtitle">Join the battle</p>
         <div class="coming-soon-box">
             <div class="coming-soon-text">COMING SOON</div>
             <p style="font-size: 1.1em; color: rgba(255, 255, 255, 0.6); margin-bottom: 30px;">Server opening soon! Join our Discord for updates</p>
-            <div class="discord-icon" onclick="window.open('https://discord.gg/donutsmp', '_blank')">
+            <div class="discord-icon" onclick="window.open('https://discord.gg/HHY9yAhp8y', '_blank')">
                 <svg viewBox="0 0 24 24" width="100" height="100" fill="#5865f2">
-                    <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.
+                    <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.974 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
+                </svg>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 CloudCraft. All rights reserved.</p>
+    </footer>
+
+</body>
+</html>
