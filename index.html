@@ -30,12 +30,15 @@
             z-index: 9999;
             transform: translate(-50%, -50%);
             transition: transform 0.1s;
+            /* Added mix-blend-mode to ensure it doesn't vanish on white/colors */
+            mix-blend-mode: difference;
+            background: rgba(0, 217, 255, 0.3);
         }
 
         .cursor-glow {
-            width: 120px;
-            height: 120px;
-            background: radial-gradient(circle, rgba(0, 217, 255, 0.12) 0%, transparent 70%);
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, rgba(0, 217, 255, 0.15) 0%, transparent 70%);
             border-radius: 50%;
             position: fixed;
             pointer-events: none;
@@ -126,31 +129,6 @@
         .hero-content {
             position: relative;
             z-index: 2;
-        }
-
-        .hero-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 25px;
-            background: rgba(0, 217, 255, 0.1);
-            border: 1px solid rgba(0, 217, 255, 0.3);
-            border-radius: 50px;
-            margin-bottom: 30px;
-            animation: fadeIn 0.6s 0.2s both;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            background: #4ade80;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7); }
-            50% { box-shadow: 0 0 0 10px rgba(74, 222, 128, 0); }
         }
 
         .title-wrapper {
@@ -304,10 +282,9 @@
         .stat-number {
             font-size: 3em;
             font-weight: 900;
-            /* Default Red, JS will animate to Green */
             color: #ff4b4b; 
             transform: translateZ(20px);
-            transition: color 2s ease-out;
+            transition: color 5s ease-out; /* Match script duration */
         }
 
         /* --- IP SECTION --- */
@@ -378,13 +355,7 @@
     <section class="hero" id="home">
         <div class="hero-grid"></div>
         <div class="hero-content">
-            <div class="hero-badge">
-                <span class="status-dot"></span>
-                <span id="latencyBadge">1027ms</span>
-            </div>
-            
             <h1 class="title-wrapper" id="mainTitle">CloudCraft</h1>
-
             <p class="hero-subtitle">Ultimate <span class="typing-text" id="typingText">PvP</span> Experience</p>
             <button class="cta-button" onclick="document.getElementById('play').scrollIntoView({behavior: 'smooth'})">Join Now</button>
         </div>
@@ -437,7 +408,7 @@
                 <div>Average Latency</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number" id="uptimeStat" style="color: #ff4b4b;">1</div>
+                <div class="stat-number" id="uptimeStat">1</div>
                 <div style="color: #00d9ff; font-weight: bold; margin-top: 5px;">%</div>
                 <div>Server Uptime</div>
             </div>
@@ -549,23 +520,16 @@
             if (entries[0].isIntersecting && !animated) {
                 animated = true;
                 
-                // Latency: 1027 -> 1
-                animateValue("latencyStat", 1027, 1, 2500);
+                // Animation speed set to 5000ms (5 seconds) for a slower feel
+                const duration = 5000;
+
+                // Latency: 1027 (Red) -> 1 (Green)
+                animateValue("latencyStat", 1027, 1, duration);
                 document.getElementById('latencyStat').style.color = "#4ade80";
                 
-                // Uptime: 1 -> 99.98
-                animateValue("uptimeStat", 1, 99.98, 2500, true);
+                // Uptime: 1% (Red) -> 99.98% (Green)
+                animateValue("uptimeStat", 1, 99.98, duration, true);
                 document.getElementById('uptimeStat').style.color = "#4ade80";
-
-                // Update Hero Badge too
-                const badge = document.getElementById('latencyBadge');
-                badge.style.transition = "color 2s";
-                badge.style.color = "#4ade80";
-                animateValue("latencyBadge", 1027, 1, 2500);
-                // Note: animateValue overrides the innerHTML, we might need a small fix to keep 'ms'
-                setTimeout(() => {
-                    document.getElementById('latencyBadge').innerHTML += "ms";
-                }, 2600);
             }
         }, { threshold: 0.5 });
 
