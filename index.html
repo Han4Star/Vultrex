@@ -16,8 +16,10 @@
             background: #000;
             color: #fff;
             overflow-x: hidden;
+            perspective: 1000px; /* Essential for 3D effects */
         }
 
+        /* --- MOUSE CURSOR --- */
         .cursor {
             width: 20px;
             height: 20px;
@@ -42,6 +44,7 @@
             transition: transform 0.15s;
         }
 
+        /* --- UPDATED NAVBAR --- */
         nav {
             position: fixed;
             top: 20px;
@@ -56,9 +59,15 @@
             padding: 12px 30px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4),
                         inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            
+            /* CHANGE: Layout Layout split */
             display: flex;
+            justify-content: space-between; /* Pushes items to edges */
             align-items: center;
-            gap: 30px;
+            
+            /* CHANGE: Defined width to allow spacing */
+            width: 90%;
+            max-width: 800px;
         }
 
         .logo {
@@ -67,29 +76,8 @@
             background: linear-gradient(135deg, #00d9ff, #7dd3fc);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            display: flex;
-            gap: 0;
-        }
-
-        .logo-char {
-            opacity: 0;
-            transform: translateY(-50px) rotateX(-90deg);
-            display: inline-block;
-            animation: dropIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        }
-
-        @keyframes dropIn {
-            0% {
-                opacity: 0;
-                transform: translateY(-50px) rotateX(-90deg);
-            }
-            70% {
-                transform: translateY(8px) rotateX(15deg);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0) rotateX(0);
-            }
+            /* Ensure text doesn't wrap */
+            white-space: nowrap;
         }
 
         .join-btn {
@@ -104,15 +92,16 @@
             cursor: pointer;
             transition: all 0.3s;
             box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2);
+            white-space: nowrap;
         }
 
         .join-btn:hover {
             background: rgba(0, 217, 255, 0.2);
             border-color: rgba(0, 217, 255, 0.3);
-            transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(0, 217, 255, 0.3);
         }
 
+        /* --- HERO SECTION --- */
         .hero {
             min-height: 100vh;
             display: flex;
@@ -170,36 +159,45 @@
             50% { box-shadow: 0 0 0 10px rgba(74, 222, 128, 0); }
         }
 
-        h1 {
+        /* --- NEW TEXT ANIMATION (CloudCraft) --- */
+        .title-wrapper {
             font-size: 6em;
             font-weight: 900;
             letter-spacing: -3px;
             margin-bottom: 25px;
-            animation: popIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s both;
+            display: flex;
+            justify-content: center;
+            gap: 5px; /* Slight gap between letters if needed */
         }
 
-        @keyframes popIn {
-            0% { opacity: 0; transform: scale(0.5) translateY(50px); }
-            60% { transform: scale(1.1) translateY(-10px); }
-            100% { opacity: 1; transform: scale(1) translateY(0); }
-        }
-
-        .gradient-text {
+        .char-span {
+            opacity: 0;
+            display: inline-block;
             background: linear-gradient(135deg, #fff 0%, #00d9ff 50%, #7dd3fc 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-size: 200% auto;
-            animation: gradientShift 3s linear infinite;
+            /* The specific animation */
+            animation: elegantReveal 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards,
+                       gradientShift 3s linear infinite;
+        }
+
+        @keyframes elegantReveal {
+            0% {
+                opacity: 0;
+                transform: translateY(40px) skewY(10deg);
+                filter: blur(10px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) skewY(0);
+                filter: blur(0);
+            }
         }
 
         @keyframes gradientShift {
             0% { background-position: 0% center; }
             100% { background-position: 200% center; }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
         .hero-subtitle {
@@ -236,6 +234,7 @@
             box-shadow: 0 20px 40px rgba(0, 217, 255, 0.4);
         }
 
+        /* --- GENERAL SECTIONS --- */
         .section {
             padding: 100px 20px;
             max-width: 1400px;
@@ -263,40 +262,53 @@
             gap: 30px;
         }
 
+        /* --- 3D TILT CARDS --- */
         .card {
             background: rgba(0, 217, 255, 0.03);
             border: 1px solid rgba(0, 217, 255, 0.2);
             border-radius: 20px;
             padding: 40px;
-            transition: transform 0.05s ease-out, border-color 0.3s, background 0.3s, box-shadow 0.3s;
             cursor: pointer;
-            transform-style: preserve-3d;
             position: relative;
+            
+            /* Important for the 3D effect */
+            transform-style: preserve-3d;
+            transform: perspective(1000px);
+            transition: transform 0.1s ease-out; /* Fast transition for mouse movement */
+            
+            /* Default non-hover properties */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
 
+        /* We remove the hover transform here because JS handles it, 
+           but we keep the color/border changes */
         .card:hover {
             border-color: #00d9ff;
             background: rgba(0, 217, 255, 0.08);
             box-shadow: 0 20px 60px rgba(0, 217, 255, 0.3);
         }
 
+        /* Fix image z-index so it pops out a bit in 3D space */
         .item-img {
             width: 80px;
             height: 80px;
             margin-bottom: 20px;
             filter: drop-shadow(0 0 15px rgba(0, 217, 255, 0.5));
             image-rendering: pixelated;
+            transform: translateZ(20px); /* Pops the item out */
         }
 
         .card h3 {
             font-size: 1.8em;
             color: #00d9ff;
             margin-bottom: 15px;
+            transform: translateZ(15px); /* Pops text out slightly */
         }
 
         .card p {
             color: rgba(255, 255, 255, 0.7);
             line-height: 1.8;
+            transform: translateZ(10px);
         }
 
         .stats-grid {
@@ -312,11 +324,16 @@
             background: rgba(0, 217, 255, 0.03);
             border: 1px solid rgba(0, 217, 255, 0.2);
             border-radius: 20px;
-            transition: transform 0.05s ease-out, border-color 0.3s;
+            
+            /* 3D Props */
+            transform-style: preserve-3d;
+            transform: perspective(1000px);
+            transition: transform 0.1s ease-out;
         }
 
         .stat-card:hover {
             border-color: #00d9ff;
+            background: rgba(0, 217, 255, 0.05);
         }
 
         .stat-number {
@@ -325,6 +342,7 @@
             background: linear-gradient(135deg, #00d9ff, #7dd3fc);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            transform: translateZ(20px);
         }
 
         .ip-section {
@@ -370,29 +388,14 @@
             border-top: 1px solid rgba(0, 217, 255, 0.1);
         }
 
-        .notification {
-            position: fixed;
-            top: 100px;
-            right: 30px;
-            background: linear-gradient(135deg, #00d9ff, #7dd3fc);
-            color: #000;
-            padding: 18px 35px;
-            border-radius: 15px;
-            font-weight: bold;
-            opacity: 0;
-            transform: translateX(400px);
-            transition: all 0.5s;
-            z-index: 10000;
-        }
-
-        .notification.show {
-            opacity: 1;
-            transform: translateX(0);
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         @media (max-width: 768px) {
-            h1 { font-size: 3em; }
-            nav { padding: 10px 20px; gap: 15px; }
+            .title-wrapper { font-size: 3em; flex-wrap: wrap; }
+            nav { width: 95%; padding: 10px 20px; }
             .logo { font-size: 1.2em; }
             .grid { grid-template-columns: 1fr; }
             .cursor, .cursor-glow { display: none; }
@@ -404,8 +407,8 @@
     <div class="cursor-glow"></div>
 
     <nav>
-        <div class="logo" id="logoText">CloudCraft</div>
-        <button class="join-btn" onclick="document.getElementById('play').scrollIntoView({behavior: 'smooth'})">Join Now!</button>
+        <div class="logo">CloudCraft</div>
+        <button class="join-btn" onclick="document.getElementById('play').scrollIntoView({behavior: 'smooth'})">Join Now</button>
     </nav>
 
     <section class="hero" id="home">
@@ -415,7 +418,11 @@
                 <span class="status-dot"></span>
                 <span id="playerCount">Loading...</span>
             </div>
-            <h1 class="gradient-text">CloudCraft</h1>
+            
+            <h1 class="title-wrapper" id="mainTitle">
+                CloudCraft
+            </h1>
+
             <p class="hero-subtitle">Ultimate <span class="typing-text" id="typingText">PvP</span> Experience</p>
             <button class="cta-button" onclick="document.getElementById('play').scrollIntoView({behavior: 'smooth'})">Join Now</button>
         </div>
@@ -425,32 +432,32 @@
         <h2 class="section-title gradient-text">Game Modes</h2>
         <p class="section-subtitle">Choose your weapon and dominate</p>
         <div class="grid">
-            <div class="card">
+            <div class="card tilt-card">
                 <img src="https://minecraft.wiki/images/Diamond_Sword_JE3_BE3.png" class="item-img" alt="Sword">
                 <h3>Sword PvP</h3>
                 <p>Master sword combat with custom enchantments and combos. Fast-paced skill-based gameplay.</p>
             </div>
-            <div class="card">
+            <div class="card tilt-card">
                 <img src="https://minecraft.wiki/images/Diamond_Axe_JE3_BE3.png" class="item-img" alt="Axe">
                 <h3>Axe PvP</h3>
                 <p>Heavy-hitting axe battles. Time your strikes for maximum damage.</p>
             </div>
-            <div class="card">
+            <div class="card tilt-card">
                 <img src="https://minecraft.wiki/images/Mushroom_Stew_JE2_BE2.png" class="item-img" alt="Soup">
                 <h3>Soup PvP</h3>
                 <p>Classic soup PvP with instant healing. Quick reflexes are key.</p>
             </div>
-            <div class="card">
+            <div class="card tilt-card">
                 <img src="https://minecraft.wiki/images/Trident_JE3_BE3.png" class="item-img" alt="Spear">
                 <h3>Spear Combat</h3>
                 <p>Long-range melee combat. Keep distance and strike with precision.</p>
             </div>
-            <div class="card">
+            <div class="card tilt-card">
                 <img src="https://minecraft.wiki/images/Bow_JE3_BE1.png" class="item-img" alt="Bow">
                 <h3>Bow Duels</h3>
                 <p>Test your aim in archery battles. Every shot counts.</p>
             </div>
-            <div class="card">
+            <div class="card tilt-card">
                 <img src="https://minecraft.wiki/images/Nether_Star_JE3_BE2.png" class="item-img" alt="More">
                 <h3>Even More...</h3>
                 <p>Discover additional unique game modes and special events. New content added regularly!</p>
@@ -462,33 +469,33 @@
         <h2 class="section-title gradient-text">Why CloudCraft?</h2>
         <p class="section-subtitle">The best PvP experience in Europe</p>
         <div class="grid">
-            <div class="card">
-                <div style="font-size: 3em; margin-bottom: 20px;">⚡</div>
+            <div class="card tilt-card">
+                <div style="font-size: 3em; margin-bottom: 20px; transform: translateZ(20px);">⚡</div>
                 <h3>Low Ping</h3>
                 <p>EU-based servers ensure ultra-low latency for European players. Competitive advantage with minimal lag.</p>
             </div>
-            <div class="card">
-                <div style="font-size: 3em; margin-bottom: 20px;">🌍</div>
+            <div class="card tilt-card">
+                <div style="font-size: 3em; margin-bottom: 20px; transform: translateZ(20px);">🌍</div>
                 <h3>EU Only</h3>
                 <p>Servers located in Europe for the best possible connection. Optimized for EU players.</p>
             </div>
-            <div class="card">
-                <div style="font-size: 3em; margin-bottom: 20px;">🔄</div>
+            <div class="card tilt-card">
+                <div style="font-size: 3em; margin-bottom: 20px; transform: translateZ(20px);">🔄</div>
                 <h3>24/7 Uptime</h3>
                 <p>Our servers run non-stop with 99.9% uptime guarantee. Play whenever you want, day or night.</p>
             </div>
-            <div class="card">
-                <div style="font-size: 3em; margin-bottom: 20px;">👥</div>
+            <div class="card tilt-card">
+                <div style="font-size: 3em; margin-bottom: 20px; transform: translateZ(20px);">👥</div>
                 <h3>Active Community</h3>
                 <p>Join a thriving community of passionate PvP players. Make friends and form teams.</p>
             </div>
-            <div class="card">
-                <div style="font-size: 3em; margin-bottom: 20px;">🛡️</div>
+            <div class="card tilt-card">
+                <div style="font-size: 3em; margin-bottom: 20px; transform: translateZ(20px);">🛡️</div>
                 <h3>Active Staff</h3>
                 <p>Our moderation team is always online to help, handle reports, and keep the server fair.</p>
             </div>
-            <div class="card">
-                <div style="font-size: 3em; margin-bottom: 20px;">🎮</div>
+            <div class="card tilt-card">
+                <div style="font-size: 3em; margin-bottom: 20px; transform: translateZ(20px);">🎮</div>
                 <h3>Regular Updates</h3>
                 <p>New features, game modes, and content added weekly. We listen to player feedback.</p>
             </div>
@@ -497,19 +504,19 @@
 
     <section class="section">
         <div class="stats-grid">
-            <div class="stat-card">
+            <div class="stat-card tilt-card">
                 <div class="stat-number" id="onlinePlayers">--</div>
                 <div>Players Online</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card tilt-card">
                 <div class="stat-number" id="serverVersion">1.21.1</div>
                 <div>Version</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card tilt-card">
                 <div class="stat-number">24/7</div>
                 <div>Availability</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card tilt-card">
                 <div class="stat-number">99.98%</div>
                 <div>Uptime</div>
             </div>
@@ -543,5 +550,99 @@
         <p>&copy; 2026 CloudCraft. All rights reserved.</p>
     </footer>
 
+    <script>
+        // --- 1. TILT EFFECT LOGIC (like norisk.gg) ---
+        // We select all elements with class 'card' or 'stat-card' (added tilt-card class for clarity)
+        const tiltCards = document.querySelectorAll('.card, .stat-card');
+
+        tiltCards.forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                // Calculate position relative to center
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                // Calculate rotation (Sensitivity controlled by division)
+                // "Mouse point goes down" means we rotate towards that point.
+                // Standard rotateX: positive tilts top BACK (away).
+                // If mouse is at top (y < centerY), we want top to go AWAY (down into screen).
+                const rotateX = ((y - centerY) / centerY) * -10; // Max 10 deg rotation
+                const rotateY = ((x - centerX) / centerX) * 10;
+
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+            });
+
+            card.addEventListener('mouseleave', () => {
+                // Reset on mouse leave
+                card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)';
+            });
+        });
+
+        // --- 2. TEXT ANIMATION SETUP ---
+        const mainTitle = document.getElementById('mainTitle');
+        const text = "CloudCraft";
+        mainTitle.innerHTML = ''; // Clear text
+        
+        // Create spans for each letter
+        [...text].forEach((char, index) => {
+            const span = document.createElement('span');
+            span.textContent = char;
+            span.className = 'char-span';
+            span.style.animationDelay = `${index * 0.1}s`; // Stagger animation
+            mainTitle.appendChild(span);
+        });
+
+        // --- 3. CURSOR & TYPING (Existing) ---
+        const cursor = document.querySelector('.cursor');
+        const cursorGlow = document.querySelector('.cursor-glow');
+        const typingText = document.getElementById('typingText');
+        const words = ['PvP', 'SMP', 'Fun', 'Events'];
+        let wordIndex = 0;
+        let charIndex = 0;
+        let isDeleting = false;
+
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+            cursorGlow.style.left = e.clientX + 'px';
+            cursorGlow.style.top = e.clientY + 'px';
+        });
+
+        function type() {
+            const currentWord = words[wordIndex];
+            
+            if (isDeleting) {
+                typingText.textContent = currentWord.substring(0, charIndex - 1);
+                charIndex--;
+            } else {
+                typingText.textContent = currentWord.substring(0, charIndex + 1);
+                charIndex++;
+            }
+
+            if (!isDeleting && charIndex === currentWord.length) {
+                setTimeout(() => isDeleting = true, 2000);
+            } else if (isDeleting && charIndex === 0) {
+                isDeleting = false;
+                wordIndex = (wordIndex + 1) % words.length;
+            }
+
+            const speed = isDeleting ? 100 : 200;
+            setTimeout(type, speed);
+        }
+
+        type();
+
+        // Simulate Player Count
+        function updatePlayerCount() {
+            const count = Math.floor(Math.random() * (1500 - 800) + 800);
+            document.getElementById('playerCount').textContent = count + ' Online';
+            document.getElementById('onlinePlayers').textContent = count;
+        }
+        updatePlayerCount();
+        setInterval(updatePlayerCount, 5000);
+    </script>
 </body>
 </html>
