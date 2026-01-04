@@ -44,52 +44,73 @@
 
         nav {
             position: fixed;
-            top: 0;
-            width: 100%;
-            padding: 15px 60px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
             z-index: 1000;
-            background: rgba(0, 0, 0, 0.95);
-            backdrop-filter: blur(20px);
-            border-bottom: 2px solid rgba(0, 217, 255, 0.2);
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 12px 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4),
+                        inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 30px;
         }
 
         .logo {
-            font-size: 1.8em;
+            font-size: 1.5em;
             font-weight: 900;
             background: linear-gradient(135deg, #00d9ff, #7dd3fc);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-        }
-
-        .nav-links {
             display: flex;
-            gap: 8px;
-            background: rgba(0, 217, 255, 0.05);
-            padding: 8px;
-            border-radius: 10px;
-            border: 1px solid rgba(0, 217, 255, 0.2);
+            gap: 0;
         }
 
-        .nav-links a {
-            color: rgba(255, 255, 255, 0.6);
-            text-decoration: none;
+        .logo-char {
+            opacity: 0;
+            transform: translateY(-50px) rotateX(-90deg);
+            display: inline-block;
+            animation: dropIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        @keyframes dropIn {
+            0% {
+                opacity: 0;
+                transform: translateY(-50px) rotateX(-90deg);
+            }
+            70% {
+                transform: translateY(8px) rotateX(15deg);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) rotateX(0);
+            }
+        }
+
+        .join-btn {
+            padding: 10px 25px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
             font-size: 0.9em;
-            font-weight: 600;
             cursor: pointer;
-            padding: 10px 18px;
-            border-radius: 8px;
             transition: all 0.3s;
-            position: relative;
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2);
         }
 
-        .nav-links a.active,
-        .nav-links a:hover {
-            color: #000;
-            background: linear-gradient(135deg, #00d9ff, #7dd3fc);
+        .join-btn:hover {
+            background: rgba(0, 217, 255, 0.2);
+            border-color: rgba(0, 217, 255, 0.3);
             transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 217, 255, 0.3);
         }
 
         .hero {
@@ -247,22 +268,24 @@
             border: 1px solid rgba(0, 217, 255, 0.2);
             border-radius: 20px;
             padding: 40px;
-            transition: all 0.4s;
+            transition: transform 0.05s ease-out, border-color 0.3s, background 0.3s, box-shadow 0.3s;
             cursor: pointer;
+            transform-style: preserve-3d;
+            position: relative;
         }
 
         .card:hover {
-            transform: translateY(-10px);
             border-color: #00d9ff;
             background: rgba(0, 217, 255, 0.08);
             box-shadow: 0 20px 60px rgba(0, 217, 255, 0.3);
         }
 
-        .item-icon {
-            width: 70px;
-            height: 70px;
+        .item-img {
+            width: 80px;
+            height: 80px;
             margin-bottom: 20px;
-            filter: drop-shadow(0 0 10px rgba(0, 217, 255, 0.5));
+            filter: drop-shadow(0 0 15px rgba(0, 217, 255, 0.5));
+            image-rendering: pixelated;
         }
 
         .card h3 {
@@ -289,6 +312,11 @@
             background: rgba(0, 217, 255, 0.03);
             border: 1px solid rgba(0, 217, 255, 0.2);
             border-radius: 20px;
+            transition: transform 0.05s ease-out, border-color 0.3s;
+        }
+
+        .stat-card:hover {
+            border-color: #00d9ff;
         }
 
         .stat-number {
@@ -299,102 +327,40 @@
             -webkit-text-fill-color: transparent;
         }
 
-        .leaderboard-item {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            padding: 20px 30px;
+        .ip-section {
+            padding: 100px 20px;
+            text-align: center;
             background: rgba(0, 217, 255, 0.03);
-            border: 1px solid rgba(0, 217, 255, 0.2);
-            border-radius: 15px;
-            margin-bottom: 15px;
-            transition: all 0.3s;
         }
 
-        .leaderboard-item:hover {
-            background: rgba(0, 217, 255, 0.08);
-            transform: translateX(10px);
+        .coming-soon-box {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 50px;
+            background: rgba(0, 217, 255, 0.05);
+            border: 2px solid rgba(0, 217, 255, 0.3);
+            border-radius: 20px;
         }
 
-        .rank {
-            font-size: 2em;
+        .coming-soon-text {
+            font-size: 3em;
             font-weight: 900;
             background: linear-gradient(135deg, #00d9ff, #7dd3fc);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            min-width: 50px;
+            margin-bottom: 30px;
         }
 
-        .player-name {
-            font-size: 1.3em;
-            font-weight: 700;
-        }
-
-        .kills {
-            font-size: 1.5em;
-            font-weight: 700;
-            color: #00d9ff;
-            margin-left: auto;
-        }
-
-        .search-box {
-            display: flex;
-            gap: 15px;
-            max-width: 600px;
-            margin: 0 auto 50px;
-        }
-
-        .search-input {
-            flex: 1;
-            padding: 18px 25px;
-            background: rgba(0, 217, 255, 0.05);
-            border: 2px solid rgba(0, 217, 255, 0.3);
-            border-radius: 12px;
-            color: #fff;
-            font-size: 1em;
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: #00d9ff;
-        }
-
-        .search-btn {
-            padding: 18px 35px;
-            background: linear-gradient(135deg, #00d9ff, #7dd3fc);
-            border: none;
-            border-radius: 12px;
-            color: #000;
-            font-weight: 700;
+        .discord-icon {
+            font-size: 4em;
             cursor: pointer;
+            transition: all 0.3s;
+            filter: drop-shadow(0 0 20px rgba(88, 101, 242, 0.5));
         }
 
-        .ip-box {
-            display: inline-flex;
-            align-items: center;
-            gap: 30px;
-            background: rgba(0, 217, 255, 0.05);
-            padding: 30px 50px;
-            border-radius: 20px;
-            border: 2px solid rgba(0, 217, 255, 0.3);
-            margin-top: 30px;
-        }
-
-        .ip-text {
-            font-size: 2.5em;
-            font-family: monospace;
-            color: #00d9ff;
-            font-weight: bold;
-        }
-
-        .copy-btn {
-            padding: 15px 35px;
-            background: linear-gradient(135deg, #00d9ff, #7dd3fc);
-            color: #000;
-            border: none;
-            border-radius: 12px;
-            font-weight: 700;
-            cursor: pointer;
+        .discord-icon:hover {
+            transform: scale(1.2);
+            filter: drop-shadow(0 0 30px rgba(88, 101, 242, 0.8));
         }
 
         footer {
@@ -425,8 +391,8 @@
 
         @media (max-width: 768px) {
             h1 { font-size: 3em; }
-            nav { padding: 15px 20px; }
-            .nav-links { display: none; }
+            nav { padding: 10px 20px; gap: 15px; }
+            .logo { font-size: 1.2em; }
             .grid { grid-template-columns: 1fr; }
             .cursor, .cursor-glow { display: none; }
         }
@@ -437,16 +403,8 @@
     <div class="cursor-glow"></div>
 
     <nav>
-        <div class="logo">⚔️ DonutSMP</div>
-        <div class="nav-links">
-            <a href="#home" class="nav-link">Home</a>
-            <a href="#modes" class="nav-link">Modes</a>
-            <a href="#leaderboard" class="nav-link">Leaderboard</a>
-            <a href="#stats" class="nav-link">Stats</a>
-            <a href="#store" class="nav-link">Store</a>
-            <a href="#events" class="nav-link">Events</a>
-            <a href="#discord" class="nav-link">Discord</a>
-        </div>
+        <div class="logo" id="logoText"></div>
+        <button class="join-btn" onclick="document.getElementById('play').scrollIntoView({behavior: 'smooth'})">Join Now!</button>
     </nav>
 
     <section class="hero" id="home">
@@ -467,34 +425,71 @@
         <p class="section-subtitle">Choose your weapon and dominate</p>
         <div class="grid">
             <div class="card">
-                <svg class="item-icon" viewBox="0 0 16 16"><rect x="7" y="1" width="2" height="13" fill="#c0c0c0"/><polygon points="6,13 10,13 9,15 7,15" fill="#8b4513"/></svg>
+                <img src="https://minecraft.wiki/images/Diamond_Sword_JE3_BE3.png" class="item-img" alt="Sword">
                 <h3>Sword PvP</h3>
                 <p>Master sword combat with custom enchantments and combos. Fast-paced skill-based gameplay.</p>
             </div>
             <div class="card">
-                <svg class="item-icon" viewBox="0 0 16 16"><rect x="7" y="8" width="2" height="7" fill="#8b4513"/><polygon points="5,8 11,8 9,4 7,4" fill="#505050"/></svg>
+                <img src="https://minecraft.wiki/images/Diamond_Axe_JE3_BE3.png" class="item-img" alt="Axe">
                 <h3>Axe PvP</h3>
                 <p>Heavy-hitting axe battles. Time your strikes for maximum damage.</p>
             </div>
             <div class="card">
-                <svg class="item-icon" viewBox="0 0 16 16"><ellipse cx="8" cy="10" rx="5" ry="3" fill="#dc143c"/></svg>
+                <img src="https://minecraft.wiki/images/Mushroom_Stew_JE2_BE2.png" class="item-img" alt="Soup">
                 <h3>Soup PvP</h3>
                 <p>Classic soup PvP with instant healing. Quick reflexes are key.</p>
             </div>
             <div class="card">
-                <svg class="item-icon" viewBox="0 0 16 16"><rect x="7.5" y="2" width="1" height="12" fill="#8b4513"/><polygon points="8,1 6,3 10,3" fill="#a9a9a9"/></svg>
+                <img src="https://minecraft.wiki/images/Trident_JE2_BE2.png" class="item-img" alt="Spear">
                 <h3>Spear Combat</h3>
                 <p>Long-range melee combat. Keep distance and strike with precision.</p>
             </div>
             <div class="card">
-                <svg class="item-icon" viewBox="0 0 16 16"><path d="M 2,8 Q 5,5 8,8 Q 11,5 14,8" stroke="#8b4513" stroke-width="1.5" fill="none"/><polygon points="8,2 7,4 9,4" fill="#fff"/></svg>
+                <img src="https://minecraft.wiki/images/Bow_%28item%29_JE2_BE1.png" class="item-img" alt="Bow">
                 <h3>Bow Duels</h3>
                 <p>Test your aim in archery battles. Every shot counts.</p>
             </div>
             <div class="card">
-                <svg class="item-icon" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="#00d9ff" stroke-width="2"/><circle cx="8" cy="8" r="3" fill="#00d9ff"/></svg>
-                <h3>Mixed Combat</h3>
-                <p>All weapons and tactics combined. Ultimate versatility test.</p>
+                <img src="https://minecraft.wiki/images/Nether_Star_JE3_BE2.png" class="item-img" alt="More">
+                <h3>Even More...</h3>
+                <p>Discover additional unique game modes and special events. New content added regularly!</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" id="why">
+        <h2 class="section-title gradient-text">Why DonutSMP?</h2>
+        <p class="section-subtitle">The best PvP experience in Europe</p>
+        <div class="grid">
+            <div class="card">
+                <div style="font-size: 3em; margin-bottom: 20px;">⚡</div>
+                <h3>Low Ping</h3>
+                <p>EU-based servers ensure ultra-low latency for European players. Competitive advantage with minimal lag.</p>
+            </div>
+            <div class="card">
+                <div style="font-size: 3em; margin-bottom: 20px;">🌍</div>
+                <h3>EU Only</h3>
+                <p>Servers located in Europe for the best possible connection. Optimized for EU players.</p>
+            </div>
+            <div class="card">
+                <div style="font-size: 3em; margin-bottom: 20px;">🔄</div>
+                <h3>24/7 Uptime</h3>
+                <p>Our servers run non-stop with 99.9% uptime guarantee. Play whenever you want, day or night.</p>
+            </div>
+            <div class="card">
+                <div style="font-size: 3em; margin-bottom: 20px;">👥</div>
+                <h3>Active Community</h3>
+                <p>Join a thriving community of passionate PvP players. Make friends and form teams.</p>
+            </div>
+            <div class="card">
+                <div style="font-size: 3em; margin-bottom: 20px;">🛡️</div>
+                <h3>Active Staff</h3>
+                <p>Our moderation team is always online to help, handle reports, and keep the server fair.</p>
+            </div>
+            <div class="card">
+                <div style="font-size: 3em; margin-bottom: 20px;">🎮</div>
+                <h3>Regular Updates</h3>
+                <p>New features, game modes, and content added weekly. We listen to player feedback.</p>
             </div>
         </div>
     </section>
@@ -520,79 +515,12 @@
         </div>
     </section>
 
-    <section class="section" id="leaderboard" style="background: rgba(0, 217, 255, 0.02);">
-        <h2 class="section-title gradient-text">🏆 Leaderboard</h2>
-        <p class="section-subtitle">Top Players This Month</p>
-        <div style="max-width: 800px; margin: 0 auto;">
-            <div class="leaderboard-item">
-                <div class="rank">#1</div>
-                <div>
-                    <div class="player-name">xXPro_GamerXx</div>
-                    <div style="color: rgba(255,255,255,0.5);">K/D: 4.2</div>
-                </div>
-                <div class="kills">1,247</div>
-            </div>
-            <div class="leaderboard-item">
-                <div class="rank">#2</div>
-                <div>
-                    <div class="player-name">ShadowNinja</div>
-                    <div style="color: rgba(255,255,255,0.5);">K/D: 3.8</div>
-                </div>
-                <div class="kills">1,103</div>
-            </div>
-            <div class="leaderboard-item">
-                <div class="rank">#3</div>
-                <div>
-                    <div class="player-name">IceDragon</div>
-                    <div style="color: rgba(255,255,255,0.5);">K/D: 3.5</div>
-                </div>
-                <div class="kills">987</div>
-            </div>
-            <div class="leaderboard-item">
-                <div class="rank">#4</div>
-                <div>
-                    <div class="player-name">ThunderBolt</div>
-                    <div style="color: rgba(255,255,255,0.5);">K/D: 3.2</div>
-                </div>
-                <div class="kills">876</div>
-            </div>
-            <div class="leaderboard-item">
-                <div class="rank">#5</div>
-                <div>
-                    <div class="player-name">PhoenixRising</div>
-                    <div style="color: rgba(255,255,255,0.5);">K/D: 3.0</div>
-                </div>
-                <div class="kills">823</div>
-            </div>
-        </div>
-    </section>
-
     <section class="section" id="stats">
         <h2 class="section-title gradient-text">📊 Player Stats</h2>
         <p class="section-subtitle">Search your statistics</p>
-        <div class="search-box">
-            <input type="text" class="search-input" placeholder="Enter player name..." id="playerSearch">
-            <button class="search-btn" onclick="searchPlayer()">Search</button>
-        </div>
-        <div id="playerResult" style="max-width: 600px; margin: 0 auto; padding: 30px; background: rgba(0, 217, 255, 0.05); border: 2px solid rgba(0, 217, 255, 0.3); border-radius: 20px; display: none;">
-            <h3 style="color: #00d9ff; margin-bottom: 20px;">Player Stats</h3>
-            <div style="display: grid; gap: 15px;">
-                <div style="display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid rgba(0, 217, 255, 0.1);">
-                    <span>Total Kills</span><strong>547</strong>
-                </div>
-                <div style="display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid rgba(0, 217, 255, 0.1);">
-                    <span>Deaths</span><strong>213</strong>
-                </div>
-                <div style="display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid rgba(0, 217, 255, 0.1);">
-                    <span>K/D Ratio</span><strong style="color: #00d9ff;">2.57</strong>
-                </div>
-                <div style="display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid rgba(0, 217, 255, 0.1);">
-                    <span>Win Streak</span><strong style="color: #4ade80;">12</strong>
-                </div>
-                <div style="display: flex; justify-content: space-between; padding: 15px 0;">
-                    <span>Time Played</span><strong>147 hours</strong>
-                </div>
-            </div>
+        <div style="max-width: 600px; margin: 0 auto; display: flex; gap: 15px;">
+            <input type="text" placeholder="Enter player name..." style="flex: 1; padding: 18px 25px; background: rgba(0, 217, 255, 0.05); border: 2px solid rgba(0, 217, 255, 0.3); border-radius: 12px; color: #fff; font-size: 1em;">
+            <button style="padding: 18px 35px; background: linear-gradient(135deg, #00d9ff, #7dd3fc); border: none; border-radius: 12px; color: #000; font-weight: 700; cursor: pointer;">Search</button>
         </div>
     </section>
 
@@ -656,4 +584,20 @@
                 <div style="font-size: 1.5em; font-weight: 900; color: #ffd700; margin-top: 20px;">Prize: $75</div>
             </div>
             <div class="card">
-                <div style="display: inline-block; padding: 8px 20px; backgroun
+                <div style="display: inline-block; padding: 8px 20px; background: rgba(0, 217, 255, 0.2); border-radius: 50px; font-size: 0.9em; font-weight: 700; color: #00d9ff; margin-bottom: 20px;">Feb 1, 2026</div>
+                <h3>Monthly Championship</h3>
+                <p>Mixed combat event featuring all game modes. Battle royale style elimination.</p>
+                <div style="font-size: 1.5em; font-weight: 900; color: #ffd700; margin-top: 20px;">Prize: $200</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="ip-section" id="play">
+        <h2 class="section-title gradient-text">Server IP</h2>
+        <p class="section-subtitle">Join the battle</p>
+        <div class="coming-soon-box">
+            <div class="coming-soon-text">COMING SOON</div>
+            <p style="font-size: 1.1em; color: rgba(255, 255, 255, 0.6); margin-bottom: 30px;">Server opening soon! Join our Discord for updates</p>
+            <div class="discord-icon" onclick="window.open('https://discord.gg/donutsmp', '_blank')">
+                <svg viewBox="0 0 24 24" width="100" height="100" fill="#5865f2">
+                    <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.
