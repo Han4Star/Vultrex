@@ -1,540 +1,840 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CloudCraft - Ultimate PvP Network</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+import React, { useState, useEffect } from 'react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Moon, Sun, Plus, LogOut, TrendingUp, TrendingDown, ChevronRight, Menu, X, Settings, Home, Trash2 } from 'lucide-react';
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #000;
-            color: #fff;
-            overflow-x: hidden;
-            perspective: 1000px;
-        }
+const translations = {
+  de: {
+    login: 'Anmelden',
+    username: 'Benutzername',
+    password: 'Passwort',
+    loading: 'Lädt...',
+    logout: 'Abmelden',
+    totalBalance: 'Gesamtbilanz',
+    entries: 'Einträge',
+    history: 'Verlauf',
+    categories: 'Kategorien',
+    addEntry: 'Eintrag',
+    newEntry: 'Neuer Eintrag',
+    income: 'Einnahme',
+    expense: 'Ausgabe',
+    category: 'Kategorie',
+    amount: 'Betrag',
+    description: 'Beschreibung',
+    cancel: 'Abbrechen',
+    save: 'Speichern',
+    noEntries: 'Keine Einträge vorhanden',
+    showAll: 'Alle anzeigen',
+    settings: 'Einstellungen',
+    language: 'Sprache',
+    theme: 'Design',
+    darkMode: 'Dark Mode',
+    lightMode: 'Light Mode',
+    mainPage: 'Hauptseite',
+    newCategory: 'Neue Kategorie',
+    categoryName: 'Kategoriename',
+    addCategory: 'Kategorie hinzufügen',
+    deleteCategory: 'Löschen'
+  },
+  en: {
+    login: 'Login',
+    username: 'Username',
+    password: 'Password',
+    loading: 'Loading...',
+    logout: 'Logout',
+    totalBalance: 'Total Balance',
+    entries: 'Entries',
+    history: 'History',
+    categories: 'Categories',
+    addEntry: 'Entry',
+    newEntry: 'New Entry',
+    income: 'Income',
+    expense: 'Expense',
+    category: 'Category',
+    amount: 'Amount',
+    description: 'Description',
+    cancel: 'Cancel',
+    save: 'Save',
+    noEntries: 'No entries available',
+    showAll: 'Show all',
+    settings: 'Settings',
+    language: 'Language',
+    theme: 'Theme',
+    darkMode: 'Dark Mode',
+    lightMode: 'Light Mode',
+    mainPage: 'Main Page',
+    newCategory: 'New Category',
+    categoryName: 'Category Name',
+    addCategory: 'Add Category',
+    deleteCategory: 'Delete'
+  },
+  fr: {
+    login: 'Connexion',
+    username: 'Nom d\'utilisateur',
+    password: 'Mot de passe',
+    loading: 'Chargement...',
+    logout: 'Déconnexion',
+    totalBalance: 'Solde Total',
+    entries: 'Entrées',
+    history: 'Historique',
+    categories: 'Catégories',
+    addEntry: 'Entrée',
+    newEntry: 'Nouvelle Entrée',
+    income: 'Revenu',
+    expense: 'Dépense',
+    category: 'Catégorie',
+    amount: 'Montant',
+    description: 'Description',
+    cancel: 'Annuler',
+    save: 'Enregistrer',
+    noEntries: 'Aucune entrée disponible',
+    showAll: 'Tout afficher',
+    settings: 'Paramètres',
+    language: 'Langue',
+    theme: 'Thème',
+    darkMode: 'Mode Sombre',
+    lightMode: 'Mode Clair',
+    mainPage: 'Page Principale',
+    newCategory: 'Nouvelle Catégorie',
+    categoryName: 'Nom de la catégorie',
+    addCategory: 'Ajouter une catégorie',
+    deleteCategory: 'Supprimer'
+  }
+};
 
-        /* --- MOUSE CURSOR --- */
-        .cursor {
-            width: 20px;
-            height: 20px;
-            border: 2px solid #00d9ff;
-            border-radius: 50%;
-            position: fixed;
-            pointer-events: none;
-            z-index: 9999;
-            transform: translate(-50%, -50%);
-            transition: transform 0.1s;
-            /* Added mix-blend-mode to ensure it doesn't vanish on white/colors */
-            mix-blend-mode: difference;
-            background: rgba(0, 217, 255, 0.3);
-        }
+export default function PhoneRepairTracker() {
+  const [darkMode, setDarkMode] = useState(true);
+  const [language, setLanguage] = useState('de');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [entries, setEntries] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [amount, setAmount] = useState('');
+  const [description, setDescription] = useState('');
+  const [category, setCategory] = useState('');
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [type, setType] = useState('income');
+  const [loading, setLoading] = useState(false);
+  const [currentUser, setCurrentUser] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState('main');
 
-        .cursor-glow {
-            width: 150px;
-            height: 150px;
-            background: radial-gradient(circle, rgba(0, 217, 255, 0.15) 0%, transparent 70%);
-            border-radius: 50%;
-            position: fixed;
-            pointer-events: none;
-            z-index: 9998;
-            transform: translate(-50%, -50%);
-            transition: transform 0.15s;
-        }
+  const t = translations[language];
 
-        /* --- NAVBAR --- */
-        nav {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(40px) saturate(180%);
-            -webkit-backdrop-filter: blur(40px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
-            padding: 12px 30px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 90%;
-            max-width: 800px;
-        }
+  useEffect(() => {
+    checkLoginStatus();
+  }, []);
 
-        .logo {
-            font-size: 1.5em;
-            font-weight: 900;
-            background: linear-gradient(135deg, #00d9ff, #7dd3fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            white-space: nowrap;
-        }
+  useEffect(() => {
+    if (categories.length > 0) {
+      setCategory(categories[0]);
+    }
+  }, [categories]);
 
-        .join-btn {
-            padding: 10px 25px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            color: #fff;
-            font-weight: 700;
-            font-size: 0.9em;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2);
-            white-space: nowrap;
-        }
+  const checkLoginStatus = async () => {
+    try {
+      const result = await window.storage.get('current_user');
+      if (result) {
+        setCurrentUser(result.value);
+        setIsLoggedIn(true);
+        await loadUserData(result.value);
+      }
+    } catch (error) {
+      console.log('No user logged in');
+    }
+  };
 
-        .join-btn:hover {
-            background: rgba(0, 217, 255, 0.2);
-            border-color: rgba(0, 217, 255, 0.3);
-            box-shadow: 0 8px 20px rgba(0, 217, 255, 0.3);
-        }
+  const loadUserData = async (user) => {
+    try {
+      const entriesResult = await window.storage.get(`entries_${user}`);
+      if (entriesResult) {
+        setEntries(JSON.parse(entriesResult.value));
+      }
+    } catch (error) {
+      setEntries([]);
+    }
 
-        /* --- HERO SECTION --- */
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 120px 20px 80px;
-            position: relative;
-        }
+    try {
+      const categoriesResult = await window.storage.get(`categories_${user}`);
+      if (categoriesResult) {
+        setCategories(JSON.parse(categoriesResult.value));
+      }
+    } catch (error) {
+      setCategories([]);
+    }
 
-        .hero-grid {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                linear-gradient(rgba(0, 217, 255, 0.02) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 217, 255, 0.02) 1px, transparent 1px);
-            background-size: 50px 50px;
-            animation: gridMove 20s linear infinite;
-        }
+    try {
+      const settingsResult = await window.storage.get(`settings_${user}`);
+      if (settingsResult) {
+        const settings = JSON.parse(settingsResult.value);
+        setDarkMode(settings.darkMode ?? true);
+        setLanguage(settings.language ?? 'de');
+      }
+    } catch (error) {
+      setDarkMode(true);
+      setLanguage('de');
+    }
+  };
 
-        @keyframes gridMove {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(50px, 50px); }
-        }
+  const saveSettings = async () => {
+    try {
+      await window.storage.set(`settings_${currentUser}`, JSON.stringify({
+        darkMode,
+        language
+      }));
+    } catch (error) {
+      console.error('Settings save error:', error);
+    }
+  };
 
-        .hero-content {
-            position: relative;
-            z-index: 2;
-        }
+  useEffect(() => {
+    if (currentUser) {
+      saveSettings();
+    }
+  }, [darkMode, language]);
 
-        .title-wrapper {
-            font-size: 6em;
-            font-weight: 900;
-            letter-spacing: -3px;
-            margin-bottom: 25px;
-            display: flex;
-            justify-content: center;
-        }
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      const userKey = `user_${username}`;
+      let storedPassword;
+      
+      try {
+        const result = await window.storage.get(userKey);
+        storedPassword = result ? result.value : null;
+      } catch (error) {
+        storedPassword = null;
+      }
 
-        .char-span {
-            opacity: 0;
-            display: inline-block;
-            background: linear-gradient(135deg, #fff 0%, #00d9ff 50%, #7dd3fc 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-size: 200% auto;
-            animation: elegantReveal 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards, gradientShift 3s linear infinite;
-        }
+      if (!storedPassword) {
+        await window.storage.set(userKey, password);
+        await window.storage.set('current_user', username);
+        setCurrentUser(username);
+        setIsLoggedIn(true);
+        setEntries([]);
+        setCategories([]);
+      } else if (storedPassword === password) {
+        await window.storage.set('current_user', username);
+        setCurrentUser(username);
+        setIsLoggedIn(true);
+        await loadUserData(username);
+      } else {
+        alert('Falsches Passwort!');
+      }
+    } catch (error) {
+      alert('Login fehlgeschlagen');
+    }
+    
+    setLoading(false);
+  };
 
-        @keyframes elegantReveal {
-            0% { opacity: 0; transform: translateY(40px) skewY(10deg); filter: blur(10px); }
-            100% { opacity: 1; transform: translateY(0) skewY(0); filter: blur(0); }
-        }
+  const handleLogout = async () => {
+    try {
+      await window.storage.delete('current_user');
+      setIsLoggedIn(false);
+      setCurrentUser('');
+      setEntries([]);
+      setCategories([]);
+      setUsername('');
+      setPassword('');
+      setMenuOpen(false);
+      setCurrentPage('main');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
 
-        @keyframes gradientShift {
-            0% { background-position: 0% center; }
-            100% { background-position: 200% center; }
-        }
+  const handleAddCategory = async (e) => {
+    e.preventDefault();
+    if (!newCategoryName.trim()) return;
 
-        .hero-subtitle {
-            font-size: 1.6em;
-            margin-bottom: 50px;
-            color: rgba(255, 255, 255, 0.6);
-            animation: fadeIn 0.6s 0.6s both;
-        }
+    const updatedCategories = [...categories, newCategoryName.trim()];
+    setCategories(updatedCategories);
+    
+    try {
+      await window.storage.set(`categories_${currentUser}`, JSON.stringify(updatedCategories));
+    } catch (error) {
+      console.error('Save error:', error);
+    }
 
-        .typing-text {
-            border-right: 2px solid #00d9ff;
-            animation: blink 1s step-end infinite;
-        }
+    setNewCategoryName('');
+    setShowCategoryModal(false);
+  };
 
-        @keyframes blink { 50% { border-color: transparent; } }
+  const handleDeleteCategory = async (catToDelete) => {
+    const updatedCategories = categories.filter(c => c !== catToDelete);
+    setCategories(updatedCategories);
+    
+    try {
+      await window.storage.set(`categories_${currentUser}`, JSON.stringify(updatedCategories));
+    } catch (error) {
+      console.error('Save error:', error);
+    }
+  };
 
-        .cta-button {
-            padding: 20px 50px;
-            font-size: 1.1em;
-            background: linear-gradient(135deg, #00d9ff, #7dd3fc);
-            border: none;
-            border-radius: 12px;
-            color: #000;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s;
-            animation: fadeIn 0.6s 0.8s both;
-        }
+  const handleAddEntry = async (e) => {
+    e.preventDefault();
+    const newEntry = {
+      id: Date.now(),
+      amount: type === 'expense' ? -Math.abs(parseFloat(amount)) : Math.abs(parseFloat(amount)),
+      description,
+      category,
+      type,
+      date: new Date().toLocaleDateString(language === 'de' ? 'de-DE' : language === 'fr' ? 'fr-FR' : 'en-US'),
+      timestamp: Date.now()
+    };
 
-        .cta-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 20px 40px rgba(0, 217, 255, 0.4);
-        }
+    const updatedEntries = [...entries, newEntry];
+    setEntries(updatedEntries);
+    
+    try {
+      await window.storage.set(`entries_${currentUser}`, JSON.stringify(updatedEntries));
+    } catch (error) {
+      console.error('Save error:', error);
+    }
 
-        /* --- SECTIONS --- */
-        .section {
-            padding: 100px 20px;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
+    setAmount('');
+    setDescription('');
+    setShowAddModal(false);
+  };
 
-        .section-title {
-            font-size: 3.5em;
-            text-align: center;
-            margin-bottom: 20px;
-            font-weight: 900;
-            letter-spacing: -2px;
-        }
+  const totalBalance = entries.reduce((sum, entry) => sum + entry.amount, 0);
+  const chartData = entries.map((entry, index) => {
+    const runningTotal = entries.slice(0, index + 1).reduce((sum, e) => sum + e.amount, 0);
+    return {
+      date: entry.date,
+      balance: runningTotal
+    };
+  });
 
-        .section-subtitle {
-            text-align: center;
-            font-size: 1.2em;
-            color: rgba(255, 255, 255, 0.5);
-            margin-bottom: 60px;
-        }
+  const getCategoryStats = () => {
+    const stats = {};
+    entries.forEach(entry => {
+      if (!stats[entry.category]) {
+        stats[entry.category] = { total: 0, count: 0 };
+      }
+      stats[entry.category].total += entry.amount;
+      stats[entry.category].count += 1;
+    });
+    return stats;
+  };
 
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-        }
+  const categoryStats = getCategoryStats();
+  const filteredEntries = selectedCategory 
+    ? entries.filter(e => e.category === selectedCategory)
+    : entries;
 
-        .card {
-            background: rgba(0, 217, 255, 0.03);
-            border: 1px solid rgba(0, 217, 255, 0.2);
-            border-radius: 20px;
-            padding: 40px;
-            cursor: pointer;
-            position: relative;
-            transform-style: preserve-3d;
-            transform: perspective(1000px);
-            transition: transform 0.1s ease-out;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-
-        .card:hover {
-            border-color: #00d9ff;
-            background: rgba(0, 217, 255, 0.08);
-            box-shadow: 0 20px 60px rgba(0, 217, 255, 0.3);
-        }
-
-        .item-img {
-            width: 80px;
-            height: 80px;
-            margin-bottom: 20px;
-            filter: drop-shadow(0 0 15px rgba(0, 217, 255, 0.5));
-            transform: translateZ(20px);
-        }
-
-        .card h3 {
-            font-size: 1.8em;
-            color: #00d9ff;
-            margin-bottom: 15px;
-            transform: translateZ(15px);
-        }
-
-        .card p {
-            color: rgba(255, 255, 255, 0.7);
-            line-height: 1.8;
-            transform: translateZ(10px);
-        }
-
-        /* --- STATS --- */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 30px;
-            margin: 50px 0;
-        }
-
-        .stat-card {
-            text-align: center;
-            padding: 30px;
-            background: rgba(0, 217, 255, 0.03);
-            border: 1px solid rgba(0, 217, 255, 0.2);
-            border-radius: 20px;
-            transform-style: preserve-3d;
-            transform: perspective(1000px);
-            transition: transform 0.1s ease-out;
-        }
-
-        .stat-number {
-            font-size: 3em;
-            font-weight: 900;
-            color: #ff4b4b; 
-            transform: translateZ(20px);
-            transition: color 5s ease-out; /* Match script duration */
-        }
-
-        /* --- IP SECTION --- */
-        .ip-section {
-            padding: 100px 20px;
-            text-align: center;
-            background: rgba(0, 217, 255, 0.03);
-        }
-
-        .coming-soon-box {
-            max-width: 500px;
-            margin: 0 auto;
-            padding: 50px;
-            background: rgba(0, 217, 255, 0.05);
-            border: 2px solid rgba(0, 217, 255, 0.3);
-            border-radius: 20px;
-        }
-
-        .coming-soon-text {
-            font-size: 3em;
-            font-weight: 900;
-            background: linear-gradient(135deg, #00d9ff, #7dd3fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 30px;
-        }
-
-        .discord-icon {
-            font-size: 4em;
-            cursor: pointer;
-            transition: all 0.3s;
-            filter: drop-shadow(0 0 20px rgba(88, 101, 242, 0.5));
-            display: inline-block;
-        }
-
-        .discord-icon:hover {
-            transform: scale(1.2);
-            filter: drop-shadow(0 0 30px rgba(88, 101, 242, 0.8));
-        }
-
-        footer {
-            padding: 60px 20px;
-            text-align: center;
-            border-top: 1px solid rgba(0, 217, 255, 0.1);
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @media (max-width: 768px) {
-            .title-wrapper { font-size: 3em; }
-            nav { width: 95%; }
-            .cursor, .cursor-glow { display: none; }
-        }
-    </style>
-</head>
-<body>
-    <div class="cursor"></div>
-    <div class="cursor-glow"></div>
-
-    <nav>
-        <div class="logo">CloudCraft</div>
-        <button class="join-btn" onclick="document.getElementById('play').scrollIntoView({behavior: 'smooth'})">Join Now</button>
-    </nav>
-
-    <section class="hero" id="home">
-        <div class="hero-grid"></div>
-        <div class="hero-content">
-            <h1 class="title-wrapper" id="mainTitle">CloudCraft</h1>
-            <p class="hero-subtitle">Ultimate <span class="typing-text" id="typingText">PvP</span> Experience</p>
-            <button class="cta-button" onclick="document.getElementById('play').scrollIntoView({behavior: 'smooth'})">Join Now</button>
+  if (!isLoggedIn) {
+    return (
+      <div className={`min-h-screen flex items-center justify-center transition-all duration-500 ${darkMode ? 'bg-gray-950' : 'bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50'}`}>
+        <div className={`w-full max-w-md p-8 rounded-2xl backdrop-blur-lg shadow-2xl transform transition-all duration-500 hover:scale-105 ${darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}`}>
+          <div className="text-center mb-8">
+            <h1 className={`text-4xl font-bold mb-2 ${darkMode ? 'text-white' : 'bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent'}`}>
+              Phone Repair
+            </h1>
+            <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Business Tracker</p>
+          </div>
+          
+          <div className="space-y-6">
+            <input
+              type="text"
+              placeholder={t.username}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className={`w-full px-4 py-3 rounded-xl transition-all duration-300 focus:ring-2 focus:ring-blue-500 outline-none ${darkMode ? 'bg-gray-800 text-white placeholder-gray-500' : 'bg-white/50 text-gray-900 placeholder-gray-500'}`}
+            />
+            
+            <input
+              type="password"
+              placeholder={t.password}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className={`w-full px-4 py-3 rounded-xl transition-all duration-300 focus:ring-2 focus:ring-blue-500 outline-none ${darkMode ? 'bg-gray-800 text-white placeholder-gray-500' : 'bg-white/50 text-gray-900 placeholder-gray-500'}`}
+            />
+            
+            <button
+              onClick={handleLogin}
+              disabled={loading}
+              className={`w-full py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${darkMode ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'} ${loading ? 'opacity-50' : ''}`}
+            >
+              {loading ? t.loading : t.login}
+            </button>
+          </div>
         </div>
-    </section>
-
-    <section class="section" id="modes">
-        <h2 class="section-title">Game Modes</h2>
-        <p class="section-subtitle">Choose your weapon and dominate</p>
-        <div class="grid">
-            <div class="card">
-                <img src="https://raw.githubusercontent.com/soufianesakhi/minecraft-assets/master/assets/pc/items/diamond_sword.png" class="item-img" alt="Sword">
-                <h3>Sword PvP</h3>
-                <p>Master sword combat with custom enchantments and combos. Fast-paced skill-based gameplay.</p>
-            </div>
-            <div class="card">
-                <img src="https://raw.githubusercontent.com/soufianesakhi/minecraft-assets/master/assets/pc/items/diamond_axe.png" class="item-img" alt="Axe">
-                <h3>Axe PvP</h3>
-                <p>Heavy-hitting axe battles. Time your strikes for maximum damage.</p>
-            </div>
-            <div class="card">
-                <img src="https://raw.githubusercontent.com/soufianesakhi/minecraft-assets/master/assets/pc/items/mushroom_stew.png" class="item-img" alt="Soup">
-                <h3>Soup PvP</h3>
-                <p>Classic soup PvP with instant healing. Quick reflexes are key.</p>
-            </div>
-            <div class="card">
-                <img src="https://raw.githubusercontent.com/soufianesakhi/minecraft-assets/master/assets/pc/items/trident.png" class="item-img" alt="Spear">
-                <h3>Spear Combat</h3>
-                <p>Long-range melee combat. Keep distance and strike with precision.</p>
-            </div>
-            <div class="card">
-                <img src="https://raw.githubusercontent.com/soufianesakhi/minecraft-assets/master/assets/pc/items/bow_pulling_2.png" class="item-img" alt="Bow">
-                <h3>Bow Duels</h3>
-                <p>Test your aim in archery battles. Every shot counts.</p>
-            </div>
-            <div class="card">
-                <img src="https://raw.githubusercontent.com/soufianesakhi/minecraft-assets/master/assets/pc/items/nether_star.png" class="item-img" alt="More">
-                <h3>Even More...</h3>
-                <p>Discover additional unique game modes and special events. New content added regularly!</p>
-            </div>
-        </div>
-    </section>
-
-    <section class="section" id="metricsSection">
-        <h2 class="section-title">Server Metrics</h2>
-        <p class="section-subtitle">Real-time performance indicators</p>
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-number" id="latencyStat">1027</div>
-                <div style="color: #00d9ff; font-weight: bold; margin-top: 5px;">MS</div>
-                <div>Average Latency</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="uptimeStat">1</div>
-                <div style="color: #00d9ff; font-weight: bold; margin-top: 5px;">%</div>
-                <div>Server Uptime</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" style="color: #00d9ff;">1.21.1</div>
-                <div style="color: #00d9ff; font-weight: bold; margin-top: 5px;">VERSION</div>
-                <div>Latest Release</div>
-            </div>
-        </div>
-    </section>
-
-    <section class="ip-section" id="play">
-        <h2 class="section-title">Server IP</h2>
-        <div class="coming-soon-box">
-            <div class="coming-soon-text">COMING SOON</div>
-            <p style="color: rgba(255,255,255,0.6); margin-bottom: 30px;">Server opening soon! Join our Discord for updates</p>
-            <div class="discord-icon" onclick="window.open('https://discord.gg/HHY9yAhp8y', '_blank')">
-                <svg viewBox="0 0 24 24" width="80" height="80" fill="#5865f2">
-                    <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.974 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
-                </svg>
-            </div>
-        </div>
-    </section>
-
-    <footer>
-        <p>&copy; 2026 CloudCraft. All rights reserved.</p>
-    </footer>
-
-    <script>
-        // --- 1. TILT EFFECT ---
-        const tiltCards = document.querySelectorAll('.card, .stat-card');
-        tiltCards.forEach(card => {
-            card.addEventListener('mousemove', (e) => {
-                const rect = card.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                const centerX = rect.width / 2;
-                const centerY = rect.height / 2;
-                const rotateX = ((y - centerY) / centerY) * -10;
-                const rotateY = ((x - centerX) / centerX) * 10;
-                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
-            });
-            card.addEventListener('mouseleave', () => {
-                card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)';
-            });
-        });
-
-        // --- 2. TEXT REVEAL ---
-        const mainTitle = document.getElementById('mainTitle');
-        const titleText = "CloudCraft";
-        mainTitle.innerHTML = '';
-        [...titleText].forEach((char, index) => {
-            const span = document.createElement('span');
-            span.textContent = char;
-            span.className = 'char-span';
-            span.style.animationDelay = `${index * 0.1}s`;
-            mainTitle.appendChild(span);
-        });
-
-        // --- 3. CURSOR & TYPING ---
-        const cursor = document.querySelector('.cursor');
-        const cursorGlow = document.querySelector('.cursor-glow');
-        const typingText = document.getElementById('typingText');
-        const words = ['PvP', 'SMP', 'Fun', 'Events'];
-        let wordIndex = 0, charIndex = 0, isDeleting = false;
-
-        document.addEventListener('mousemove', (e) => {
-            cursor.style.left = e.clientX + 'px';
-            cursor.style.top = e.clientY + 'px';
-            cursorGlow.style.left = e.clientX + 'px';
-            cursorGlow.style.top = e.clientY + 'px';
-        });
-
-        function type() {
-            const currentWord = words[wordIndex];
-            typingText.textContent = isDeleting ? currentWord.substring(0, charIndex - 1) : currentWord.substring(0, charIndex + 1);
-            charIndex = isDeleting ? charIndex - 1 : charIndex + 1;
-
-            if (!isDeleting && charIndex === currentWord.length) {
-                setTimeout(() => isDeleting = true, 2000);
-            } else if (isDeleting && charIndex === 0) {
-                isDeleting = false;
-                wordIndex = (wordIndex + 1) % words.length;
-            }
-            setTimeout(type, isDeleting ? 100 : 200);
-        }
-        type();
-
-        // --- 4. SCROLL ANIMATION FOR METRICS ---
-        let animated = false;
-        const metricsSection = document.getElementById('metricsSection');
         
-        const animateValue = (id, start, end, duration, decimal = false) => {
-            const obj = document.getElementById(id);
-            let startTimestamp = null;
-            const step = (timestamp) => {
-                if (!startTimestamp) startTimestamp = timestamp;
-                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                let current = progress * (end - start) + start;
-                obj.innerHTML = decimal ? current.toFixed(2) : Math.floor(current);
-                if (progress < 1) {
-                    window.requestAnimationFrame(step);
-                }
-            };
-            window.requestAnimationFrame(step);
-        };
+        <button
+          onClick={() => setDarkMode(!darkMode)}
+          className={`fixed top-8 right-8 p-3 rounded-full transition-all duration-300 hover:scale-110 ${darkMode ? 'bg-gray-800 text-yellow-400' : 'bg-white text-gray-900'} shadow-lg`}
+        >
+          {darkMode ? <Sun size={24} /> : <Moon size={24} />}
+        </button>
+      </div>
+    );
+  }
 
-        const observer = new IntersectionObserver((entries) => {
-            if (entries[0].isIntersecting && !animated) {
-                animated = true;
+  if (currentPage === 'settings') {
+    return (
+      <div className={`min-h-screen transition-all duration-500 ${darkMode ? 'bg-gray-950' : 'bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50'}`}>
+        <nav className={`backdrop-blur-lg border-b transition-all duration-300 ${darkMode ? 'bg-gray-900/90 border-gray-800' : 'bg-white/70 border-purple-200'}`}>
+          <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setMenuOpen(!menuOpen)}
+                className={`p-2 rounded-lg transition-all duration-300 hover:scale-110 ${darkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-900'}`}
+              >
+                <Menu size={24} />
+              </button>
+              <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent'}`}>
+                {t.settings}
+              </h1>
+            </div>
+          </div>
+        </nav>
+
+        {menuOpen && (
+          <div className={`fixed top-0 left-0 w-64 h-full z-50 transition-transform duration-300 ${darkMode ? 'bg-gray-900 border-r border-gray-800' : 'bg-white border-r border-gray-200'} shadow-2xl`}>
+            <div className="p-6">
+              <button
+                onClick={() => setMenuOpen(false)}
+                className={`mb-6 p-2 rounded-lg ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
+              >
+                <X size={24} />
+              </button>
+
+              <div className="space-y-4">
+                <button
+                  onClick={() => { setCurrentPage('main'); setMenuOpen(false); }}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${darkMode ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-700 hover:bg-gray-100'}`}
+                >
+                  <Home size={20} />
+                  {t.mainPage}
+                </button>
+
+                <button
+                  onClick={() => { setCurrentPage('settings'); setMenuOpen(false); }}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${darkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-900'}`}
+                >
+                  <Settings size={20} />
+                  {t.settings}
+                </button>
+
+                <button
+                  onClick={handleLogout}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${darkMode ? 'text-red-400 hover:bg-gray-800' : 'text-red-600 hover:bg-gray-100'}`}
+                >
+                  <LogOut size={20} />
+                  {t.logout}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <main className="max-w-3xl mx-auto px-6 py-8">
+          <div className={`p-8 rounded-2xl backdrop-blur-lg shadow-2xl mb-6 ${darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}`}>
+            <h2 className={`text-xl font-semibold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t.theme}</h2>
+            
+            <div className="flex items-center justify-between">
+              <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>{darkMode ? t.darkMode : t.lightMode}</span>
+              
+              <button
+                onClick={() => setDarkMode(!darkMode)}
+                className={`relative w-16 h-8 rounded-full transition-all duration-300 ${darkMode ? 'bg-blue-600' : 'bg-gray-300'}`}
+              >
+                <div className={`absolute top-1 left-1 w-6 h-6 rounded-full bg-white transition-transform duration-300 ${darkMode ? 'translate-x-8' : 'translate-x-0'} flex items-center justify-center`}>
+                  {darkMode ? <Moon size={14} /> : <Sun size={14} />}
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <div className={`p-8 rounded-2xl backdrop-blur-lg shadow-2xl ${darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}`}>
+            <h2 className={`text-xl font-semibold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t.language}</h2>
+            
+            <div className="space-y-4">
+              {[
+                { code: 'de', name: 'Deutsch' },
+                { code: 'en', name: 'English' },
+                { code: 'fr', name: 'Français' }
+              ].map(lang => (
+                <button
+                  key={lang.code}
+                  onClick={() => setLanguage(lang.code)}
+                  className={`w-full px-4 py-3 rounded-xl font-semibold transition-all duration-300 ${
+                    language === lang.code
+                      ? darkMode ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white'
+                      : darkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {lang.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`min-h-screen transition-all duration-500 ${darkMode ? 'bg-gray-950' : 'bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50'}`}>
+      <nav className={`backdrop-blur-lg border-b transition-all duration-300 ${darkMode ? 'bg-gray-900/90 border-gray-800' : 'bg-white/70 border-purple-200'}`}>
+        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className={`p-2 rounded-lg transition-all duration-300 hover:scale-110 ${darkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-900'}`}
+            >
+              <Menu size={24} />
+            </button>
+            <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent'}`}>
+              Phone Repair Tracker
+            </h1>
+          </div>
+          
+          <span className={`${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{currentUser}</span>
+        </div>
+      </nav>
+
+      {menuOpen && (
+        <div className={`fixed top-0 left-0 w-64 h-full z-50 transition-transform duration-300 ${darkMode ? 'bg-gray-900 border-r border-gray-800' : 'bg-white border-r border-gray-200'} shadow-2xl`}>
+          <div className="p-6">
+            <button
+              onClick={() => setMenuOpen(false)}
+              className={`mb-6 p-2 rounded-lg ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
+            >
+              <X size={24} />
+            </button>
+
+            <div className="space-y-4">
+              <button
+                onClick={() => { setCurrentPage('main'); setMenuOpen(false); }}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${darkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-900'}`}
+              >
+                <Home size={20} />
+                {t.mainPage}
+              </button>
+
+              <button
+                onClick={() => { setCurrentPage('settings'); setMenuOpen(false); }}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${darkMode ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-700 hover:bg-gray-100'}`}
+              >
+                <Settings size={20} />
+                {t.settings}
+              </button>
+
+              <button
+                onClick={handleLogout}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${darkMode ? 'text-red-400 hover:bg-gray-800' : 'text-red-600 hover:bg-gray-100'}`}
+              >
+                <LogOut size={20} />
+                {t.logout}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <main className="max-w-7xl mx-auto px-6 py-8">
+        <div className={`p-8 rounded-2xl backdrop-blur-lg shadow-2xl mb-8 transform transition-all duration-500 hover:scale-[1.02] ${darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}`}>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className={`text-lg ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t.totalBalance}</h2>
+            {totalBalance >= 0 ? (
+              <TrendingUp className="text-green-500 animate-bounce" size={24} />
+            ) : (
+              <TrendingDown className="text-red-500 animate-bounce" size={24} />
+            )}
+          </div>
+          
+          <p className={`text-5xl font-bold mb-2 ${totalBalance >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+            {totalBalance.toFixed(2)} €
+          </p>
+          
+          <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+            {entries.length} {t.entries}
+          </p>
+        </div>
+
+        {chartData.length > 0 && (
+          <div className={`p-8 rounded-2xl backdrop-blur-lg shadow-2xl mb-8 transform transition-all duration-500 hover:scale-[1.02] ${darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}`}>
+            <h2 className={`text-xl font-semibold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t.history}</h2>
+            
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#1f2937' : '#e5e7eb'} />
+                <XAxis dataKey="date" stroke={darkMode ? '#6b7280' : '#6b7280'} />
+                <YAxis stroke={darkMode ? '#6b7280' : '#6b7280'} />
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: darkMode ? '#111827' : '#ffffff',
+                    border: `1px solid ${darkMode ? '#374151' : '#a855f7'}`,
+                    borderRadius: '12px',
+                    color: darkMode ? '#fff' : '#000'
+                  }}
+                />
+                <defs>
+                  <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#10b981" />
+                    <stop offset="50%" stopColor="#3b82f6" />
+                    <stop offset="100%" stopColor="#ef4444" />
+                  </linearGradient>
+                </defs>
+                <Line 
+                  type="monotone" 
+                  dataKey="balance" 
+                  stroke="url(#colorGradient)"
+                  strokeWidth={3}
+                  dot={(props) => {
+                    const { cx, cy, payload } = props;
+                    return (
+                      <circle
+                        cx={cx}
+                        cy={cy}
+                        r={5}
+                        fill={payload.balance >= 0 ? '#10b981' : '#ef4444'}
+                      />
+                    );
+                  }}
+                  activeDot={{ r: 8 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+
+        <div className={`p-8 rounded-2xl backdrop-blur-lg shadow-2xl mb-8 ${darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}`}>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t.categories}</h2>
+            <button
+              onClick={() => setShowCategoryModal(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-all duration-300 transform hover:scale-105"
+            >
+              <Plus size={20} />
+              {t.newCategory}
+            </button>
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {categories.map((cat) => (
+              <div key={cat} className="relative group">
+                <button
+                  onClick={() => setSelectedCategory(selectedCategory === cat ? null : cat)}
+                  className={`w-full p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
+                    selectedCategory === cat 
+                      ? darkMode ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white'
+                      : darkMode ? 'bg-gray-800 text-gray-300' : 'bg-white text-gray-900'
+                  }`}
+                >
+                  <div className="text-sm mb-1">{cat}</div>
+                  {categoryStats[cat] && (
+                    <>
+                      <div className={`text-lg font-bold ${categoryStats[cat].total >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                        {categoryStats[cat].total >= 0 ? '+' : ''}{categoryStats[cat].total.toFixed(2)} €
+                      </div>
+                      <div className="text-xs opacity-75">{categoryStats[cat].count} {t.entries}</div>
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={() => handleDeleteCategory(cat)}
+                  className={`absolute top-2 right-2 p-1 rounded opacity-0 group-hover:opacity-100 transition-all ${darkMode ? 'bg-red-500 text-white' : 'bg-red-500 text-white'}`}
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className={`p-8 rounded-2xl backdrop-blur-lg shadow-2xl ${darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}`}>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+              {selectedCategory ? `${selectedCategory} - ${t.history}` : t.history}
+            </h2>
+            
+            {selectedCategory && (
+              <button
+                onClick={() => setSelectedCategory(null)}
+                className={`text-sm px-3 py-1 rounded-lg ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-200 text-gray-700'}`}
+              >
+                {t.showAll}
+              </button>
+            )}
+            
+            <button
+              onClick={() => setShowAddModal(true)}
+              disabled={categories.length === 0}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${
+                categories.length === 0 
+                  ? 'bg-gray-500 text-gray-300 cursor-not-allowed'
+                  : 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-lg'
+              }`}
+            >
+              <Plus size={20} />
+              {t.addEntry}
+            </button>
+          </div>
+
+          <div className="space-y-3">
+            {filteredEntries.length === 0 ? (
+              <p className={`text-center py-8 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                {t.noEntries}
+              </p>
+            ) : (
+              filteredEntries.slice().reverse().map((entry) => (
+                <div
+                  key={entry.id}
+                  onClick={() => setSelectedCategory(entry.category)}
+                  className={`p-4 rounded-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-lg cursor-pointer ${darkMode ? 'bg-gray-800' : 'bg-white/50'}`}
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className={`text-xs px-2 py-1 rounded ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'}`}>
+                          {entry.category}
+                        </span>
+                        <ChevronRight size={14} className={darkMode ? 'text-gray-500' : 'text-gray-400'} />
+                      </div>
+                      <p className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                        {entry.description}
+                      </p>
+                      <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        {entry.date}
+                      </p>
+                    </div>
+                    
+                    <p className={`text-xl font-bold ${entry.amount >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                      {entry.amount >= 0 ? '+' : ''}{entry.amount.toFixed(2)} €
+                    </p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </main>
+
+      {showCategoryModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className={`w-full max-w-md p-8 rounded-2xl shadow-2xl ${darkMode ? 'bg-gray-900 border border-gray-800' : 'bg-white border border-purple-200'}`}>
+            <h2 className={`text-2xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+              {t.newCategory}
+            </h2>
+            
+            <div className="space-y-6">
+              <input
+                type="text"
+                placeholder={t.categoryName}
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                className={`w-full px-4 py-3 rounded-xl transition-all duration-300 focus:ring-2 focus:ring-blue-500 outline-none ${darkMode ? 'bg-gray-800 text-white placeholder-gray-500' : 'bg-gray-50 text-gray-900 placeholder-gray-500'}`}
+              />
+              
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowCategoryModal(false)}
+                  className={`flex-1 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 ${darkMode ? 'bg-gray-800 text-white' : 'bg-gray-200 text-gray-900'}`}
+                >
+                  {t.cancel}
+                </button>
                 
-                // Animation speed set to 5000ms (5 seconds) for a slower feel
-                const duration = 5000;
+                <button
+                  onClick={handleAddCategory}
+                  className="flex-1 py-3 rounded-xl font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 hover:scale-105"
+                >
+                  {t.addCategory}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
-                // Latency: 1027 (Red) -> 1 (Green)
-                animateValue("latencyStat", 1027, 1, duration);
-                document.getElementById('latencyStat').style.color = "#4ade80";
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className={`w-full max-w-md p-8 rounded-2xl shadow-2xl ${darkMode ? 'bg-gray-900 border border-gray-800' : 'bg-white border border-purple-200'}`}>
+            <h2 className={`text-2xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+              {t.newEntry}
+            </h2>
+            
+            <div className="space-y-6">
+              <div>
+                <div className={`text-sm mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Typ</div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setType('income')}
+                    className={`flex-1 py-3 rounded-xl font-semibold transition-all duration-300 ${
+                      type === 'income'
+                        ? 'bg-green-600 text-white scale-105'
+                        : darkMode ? 'bg-gray-800 text-gray-400' : 'bg-gray-200 text-gray-600'
+                    }`}
+                  >
+                    {t.income}
+                  </button>
+                  <button
+                    onClick={() => setType('expense')}
+                    className={`flex-1 py-3 rounded-xl font-semibold transition-all duration-300 ${
+                      type === 'expense'
+                        ? 'bg-red-600 text-white scale-105'
+                        : darkMode ? 'bg-gray-800 text-gray-400' : 'bg-gray-200 text-gray-600'
+                    }`}
+                  >
+                    {t.expense}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className={`text-sm mb-2 block ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t.category}</label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className={`w-full px-4 py-3 rounded-xl transition-all duration-300 focus:ring-2 focus:ring-blue-500 outline-none ${darkMode ? 'bg-gray-800 text-white' : 'bg-gray-50 text-gray-900'}`}
+                >
+                  {categories.map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div>
+                <label className={`text-sm mb-2 block ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t.amount} (€)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  className={`w-full px-4 py-3 rounded-xl transition-all duration-300 focus:ring-2 focus:ring-blue-500 outline-none ${darkMode ? 'bg-gray-800 text-white placeholder-gray-500' : 'bg-gray-50 text-gray-900 placeholder-gray-500'}`}
+                />
+              </div>
+              
+              <div>
+                <label className={`text-sm mb-2 block ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t.description}</label>
+                <input
+                  type="text"
+                  placeholder="z.B. Display Reparatur"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className={`w-full px-4 py-3 rounded-xl transition-all duration-300 focus:ring-2 focus:ring-blue-500 outline-none ${darkMode ? 'bg-gray-800 text-white placeholder-gray-500' : 'bg-gray-50 text-gray-900 placeholder-gray-500'}`}
+                />
+              </div>
+              
+              <div className="flex gap-3 pt-4">
+                <button
+                  onClick={() => setShowAddModal(false)}
+                  className={`flex-1 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 ${darkMode ? 'bg-gray-800 text-white' : 'bg-gray-200 text-gray-900'}`}
+                >
+                  {t.cancel}
+                </button>
                 
-                // Uptime: 1% (Red) -> 99.98% (Green)
-                animateValue("uptimeStat", 1, 99.98, duration, true);
-                document.getElementById('uptimeStat').style.color = "#4ade80";
-            }
-        }, { threshold: 0.5 });
-
-        observer.observe(metricsSection);
-
-    </script>
-</body>
-</html>
+                <button
+                  onClick={handleAddEntry}
+                  className="flex-1 py-3 rounded-xl font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 hover:scale-105"
+                >
+                  {t.save}
