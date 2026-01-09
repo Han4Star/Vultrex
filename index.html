@@ -7,23 +7,20 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
         
         @keyframes slideInLeft {
-            from { transform: translateX(-100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        
-        @keyframes slideInRight {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+            from { transform: translateX(-100%); }
+            to { transform: translateX(0); }
         }
         
         @keyframes scaleIn {
-            from { transform: scale(0.8); opacity: 0; }
+            from { transform: scale(0.9); opacity: 0; }
             to { transform: scale(1); opacity: 1; }
         }
         
@@ -32,80 +29,29 @@
             50% { transform: scale(1.05); }
         }
         
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-        
         @keyframes glow {
             0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
             50% { box-shadow: 0 0 40px rgba(59, 130, 246, 0.8); }
         }
         
-        .animate-fade-in {
-            animation: fadeIn 0.6s ease-out forwards;
-        }
+        .animate-fade-in { animation: fadeIn 0.5s ease-out; }
+        .animate-slide-in-left { animation: slideInLeft 0.4s ease-out; }
+        .animate-scale-in { animation: scaleIn 0.3s ease-out; }
+        .animate-pulse-slow { animation: pulse 2s ease-in-out infinite; }
+        .animate-glow { animation: glow 2s ease-in-out infinite; }
         
-        .animate-slide-in-left {
-            animation: slideInLeft 0.4s ease-out forwards;
-        }
+        .hover-lift { transition: all 0.3s ease; }
+        .hover-lift:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
         
-        .animate-slide-in-right {
-            animation: slideInRight 0.4s ease-out forwards;
-        }
+        .hover-grow { transition: all 0.3s ease; }
+        .hover-grow:hover { transform: scale(1.05); }
         
-        .animate-scale-in {
-            animation: scaleIn 0.3s ease-out forwards;
-        }
+        .button-press:active { transform: scale(0.95); }
         
-        .animate-pulse-slow {
-            animation: pulse 2s ease-in-out infinite;
-        }
+        .input-focus { transition: all 0.3s ease; }
+        .input-focus:focus { transform: scale(1.02); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3); }
         
-        .animate-shake {
-            animation: shake 0.3s ease-in-out;
-        }
-        
-        .animate-glow {
-            animation: glow 2s ease-in-out infinite;
-        }
-        
-        .transition-all {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .hover-lift:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-        }
-        
-        .hover-grow:hover {
-            transform: scale(1.1);
-        }
-        
-        .hover-glow:hover {
-            box-shadow: 0 0 30px rgba(59, 130, 246, 0.6);
-        }
-        
-        .input-focus {
-            transition: all 0.3s ease;
-        }
-        
-        .input-focus:focus {
-            transform: scale(1.02);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
-        }
-        
-        .button-press:active {
-            transform: scale(0.95);
-        }
-        
-        .stagger-item {
-            opacity: 0;
-            animation: fadeIn 0.5s ease-out forwards;
-        }
-        
+        .stagger-item { opacity: 0; animation: fadeIn 0.5s ease-out forwards; }
         .stagger-item:nth-child(1) { animation-delay: 0.1s; }
         .stagger-item:nth-child(2) { animation-delay: 0.2s; }
         .stagger-item:nth-child(3) { animation-delay: 0.3s; }
@@ -114,323 +60,380 @@
         .stagger-item:nth-child(6) { animation-delay: 0.6s; }
         .stagger-item:nth-child(7) { animation-delay: 0.7s; }
         .stagger-item:nth-child(8) { animation-delay: 0.8s; }
-        
-        .backdrop-blur-custom {
-            backdrop-filter: blur(12px);
-        }
-        
-        .gradient-animate {
-            background-size: 200% 200%;
-            animation: gradient 3s ease infinite;
-        }
-        
-        @keyframes gradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-        
-        .ripple {
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .ripple::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.5);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-        
-        .ripple:active::after {
-            width: 300px;
-            height: 300px;
-        }
     </style>
 </head>
-<body class="m-0 p-0 overflow-x-hidden">
+<body>
     <div id="app"></div>
 
     <script>
         const translations = {
             de: {
-                login: 'Anmelden',
-                username: 'Benutzername',
-                password: 'Passwort',
-                loading: 'Lädt...',
-                logout: 'Abmelden',
-                totalBalance: 'Gesamtbilanz',
-                entries: 'Einträge',
-                history: 'Verlauf',
-                categories: 'Kategorien',
-                addEntry: 'Eintrag',
-                newEntry: 'Neuer Eintrag',
-                income: 'Einnahme',
-                expense: 'Ausgabe',
-                category: 'Kategorie',
-                amount: 'Betrag',
-                description: 'Beschreibung',
-                cancel: 'Abbrechen',
-                save: 'Speichern',
-                noEntries: 'Keine Einträge vorhanden',
-                showAll: 'Alle anzeigen',
-                settings: 'Einstellungen',
-                language: 'Sprache',
-                theme: 'Design',
-                darkMode: 'Dark Mode',
-                lightMode: 'Light Mode',
-                mainPage: 'Hauptseite',
-                newCategory: 'Neue Kategorie',
-                categoryName: 'Kategoriename',
-                addCategory: 'Kategorie hinzufügen',
-                deleteCategory: 'Löschen'
+                login: 'Anmelden', username: 'Benutzername', password: 'Passwort', loading: 'Lädt...',
+                logout: 'Abmelden', totalBalance: 'Gesamtbilanz', entries: 'Einträge', history: 'Verlauf',
+                categories: 'Kategorien', addEntry: 'Eintrag', newEntry: 'Neuer Eintrag',
+                income: 'Einnahme', expense: 'Ausgabe', category: 'Kategorie', amount: 'Betrag',
+                description: 'Beschreibung', cancel: 'Abbrechen', save: 'Speichern',
+                noEntries: 'Keine Einträge vorhanden', showAll: 'Alle anzeigen',
+                settings: 'Einstellungen', language: 'Sprache', theme: 'Design',
+                darkMode: 'Dark Mode', lightMode: 'Light Mode', mainPage: 'Hauptseite',
+                newCategory: 'Neue Kategorie', categoryName: 'Kategoriename',
+                addCategory: 'Kategorie hinzufügen', deleteCategory: 'Löschen'
             },
             en: {
-                login: 'Login',
-                username: 'Username',
-                password: 'Password',
-                loading: 'Loading...',
-                logout: 'Logout',
-                totalBalance: 'Total Balance',
-                entries: 'Entries',
-                history: 'History',
-                categories: 'Categories',
-                addEntry: 'Entry',
-                newEntry: 'New Entry',
-                income: 'Income',
-                expense: 'Expense',
-                category: 'Category',
-                amount: 'Amount',
-                description: 'Description',
-                cancel: 'Cancel',
-                save: 'Save',
-                noEntries: 'No entries available',
-                showAll: 'Show all',
-                settings: 'Settings',
-                language: 'Language',
-                theme: 'Theme',
-                darkMode: 'Dark Mode',
-                lightMode: 'Light Mode',
-                mainPage: 'Main Page',
-                newCategory: 'New Category',
-                categoryName: 'Category Name',
-                addCategory: 'Add Category',
-                deleteCategory: 'Delete'
+                login: 'Login', username: 'Username', password: 'Password', loading: 'Loading...',
+                logout: 'Logout', totalBalance: 'Total Balance', entries: 'Entries', history: 'History',
+                categories: 'Categories', addEntry: 'Entry', newEntry: 'New Entry',
+                income: 'Income', expense: 'Expense', category: 'Category', amount: 'Amount',
+                description: 'Description', cancel: 'Cancel', save: 'Save',
+                noEntries: 'No entries available', showAll: 'Show all',
+                settings: 'Settings', language: 'Language', theme: 'Theme',
+                darkMode: 'Dark Mode', lightMode: 'Light Mode', mainPage: 'Main Page',
+                newCategory: 'New Category', categoryName: 'Category Name',
+                addCategory: 'Add Category', deleteCategory: 'Delete'
             },
             fr: {
-                login: 'Connexion',
-                username: 'Nom d\'utilisateur',
-                password: 'Mot de passe',
-                loading: 'Chargement...',
-                logout: 'Déconnexion',
-                totalBalance: 'Solde Total',
-                entries: 'Entrées',
-                history: 'Historique',
-                categories: 'Catégories',
-                addEntry: 'Entrée',
-                newEntry: 'Nouvelle Entrée',
-                income: 'Revenu',
-                expense: 'Dépense',
-                category: 'Catégorie',
-                amount: 'Montant',
-                description: 'Description',
-                cancel: 'Annuler',
-                save: 'Enregistrer',
-                noEntries: 'Aucune entrée disponible',
-                showAll: 'Tout afficher',
-                settings: 'Paramètres',
-                language: 'Langue',
-                theme: 'Thème',
-                darkMode: 'Mode Sombre',
-                lightMode: 'Mode Clair',
-                mainPage: 'Page Principale',
-                newCategory: 'Nouvelle Catégorie',
-                categoryName: 'Nom de la catégorie',
-                addCategory: 'Ajouter une catégorie',
-                deleteCategory: 'Supprimer'
+                login: 'Connexion', username: 'Nom d\'utilisateur', password: 'Mot de passe', loading: 'Chargement...',
+                logout: 'Déconnexion', totalBalance: 'Solde Total', entries: 'Entrées', history: 'Historique',
+                categories: 'Catégories', addEntry: 'Entrée', newEntry: 'Nouvelle Entrée',
+                income: 'Revenu', expense: 'Dépense', category: 'Catégorie', amount: 'Montant',
+                description: 'Description', cancel: 'Annuler', save: 'Enregistrer',
+                noEntries: 'Aucune entrée disponible', showAll: 'Tout afficher',
+                settings: 'Paramètres', language: 'Langue', theme: 'Thème',
+                darkMode: 'Mode Sombre', lightMode: 'Mode Clair', mainPage: 'Page Principale',
+                newCategory: 'Nouvelle Catégorie', categoryName: 'Nom de la catégorie',
+                addCategory: 'Ajouter une catégorie', deleteCategory: 'Supprimer'
             }
         };
 
-        class PhoneRepairTracker {
+        class App {
             constructor() {
-                this.darkMode = true;
-                this.language = 'de';
-                this.isLoggedIn = false;
-                this.username = '';
-                this.password = '';
-                this.entries = [];
-                this.categories = [];
-                this.showAddModal = false;
-                this.showCategoryModal = false;
-                this.amount = '';
-                this.description = '';
-                this.category = '';
-                this.newCategoryName = '';
-                this.type = 'income';
-                this.loading = false;
-                this.currentUser = '';
-                this.selectedCategory = null;
-                this.menuOpen = false;
-                this.currentPage = 'main';
-                this.chart = null;
-                
+                this.state = {
+                    darkMode: true,
+                    language: 'de',
+                    isLoggedIn: false,
+                    username: '',
+                    password: '',
+                    entries: [],
+                    categories: [],
+                    showAddModal: false,
+                    showCategoryModal: false,
+                    amount: '',
+                    description: '',
+                    category: '',
+                    newCategoryName: '',
+                    type: 'income',
+                    loading: false,
+                    currentUser: '',
+                    selectedCategory: null,
+                    menuOpen: false,
+                    currentPage: 'main',
+                    chart: null
+                };
                 this.init();
             }
 
+            get t() { return translations[this.state.language]; }
+
             init() {
-                this.checkLoginStatus();
+                const user = localStorage.getItem('current_user');
+                if (user) {
+                    this.state.currentUser = user;
+                    this.state.isLoggedIn = true;
+                    this.loadUserData(user);
+                }
                 this.render();
             }
 
-            get t() {
-                return translations[this.language];
-            }
-
-            checkLoginStatus() {
-                const user = localStorage.getItem('current_user');
-                if (user) {
-                    this.currentUser = user;
-                    this.isLoggedIn = true;
-                    this.loadUserData(user);
-                }
-            }
-
             loadUserData(user) {
-                const entriesData = localStorage.getItem(`entries_${user}`);
-                if (entriesData) {
-                    this.entries = JSON.parse(entriesData);
-                }
-
-                const categoriesData = localStorage.getItem(`categories_${user}`);
-                if (categoriesData) {
-                    this.categories = JSON.parse(categoriesData);
-                }
-
-                const settingsData = localStorage.getItem(`settings_${user}`);
-                if (settingsData) {
-                    const settings = JSON.parse(settingsData);
-                    this.darkMode = settings.darkMode ?? true;
-                    this.language = settings.language ?? 'de';
+                const entries = localStorage.getItem(`entries_${user}`);
+                const categories = localStorage.getItem(`categories_${user}`);
+                const settings = localStorage.getItem(`settings_${user}`);
+                
+                if (entries) this.state.entries = JSON.parse(entries);
+                if (categories) this.state.categories = JSON.parse(categories);
+                if (settings) {
+                    const s = JSON.parse(settings);
+                    this.state.darkMode = s.darkMode ?? true;
+                    this.state.language = s.language ?? 'de';
                 }
             }
 
             saveSettings() {
-                if (this.currentUser) {
-                    localStorage.setItem(`settings_${this.currentUser}`, JSON.stringify({
-                        darkMode: this.darkMode,
-                        language: this.language
+                if (this.state.currentUser) {
+                    localStorage.setItem(`settings_${this.state.currentUser}`, JSON.stringify({
+                        darkMode: this.state.darkMode,
+                        language: this.state.language
                     }));
                 }
             }
 
-            handleLogin(e) {
-                e.preventDefault();
-                this.loading = true;
-                this.render();
-
-                setTimeout(() => {
-                    const userKey = `user_${this.username}`;
-                    const storedPassword = localStorage.getItem(userKey);
-
-                    if (!storedPassword) {
-                        localStorage.setItem(userKey, this.password);
-                        localStorage.setItem('current_user', this.username);
-                        this.currentUser = this.username;
-                        this.isLoggedIn = true;
-                        this.entries = [];
-                        this.categories = [];
-                    } else if (storedPassword === this.password) {
-                        localStorage.setItem('current_user', this.username);
-                        this.currentUser = this.username;
-                        this.isLoggedIn = true;
-                        this.loadUserData(this.username);
-                    } else {
-                        alert('Falsches Passwort!');
-                        this.loading = false;
-                        this.render();
-                        return;
-                    }
-
-                    this.loading = false;
-                    this.render();
-                }, 500);
+            render() {
+                const app = document.getElementById('app');
+                if (!this.state.isLoggedIn) {
+                    app.innerHTML = this.renderLogin();
+                } else if (this.state.currentPage === 'settings') {
+                    app.innerHTML = this.renderSettings();
+                } else {
+                    app.innerHTML = this.renderMain();
+                    if (this.getChartData().length > 0) this.renderChart();
+                }
+                this.attachEvents();
             }
 
-            handleLogout() {
-                localStorage.removeItem('current_user');
-                this.isLoggedIn = false;
-                this.currentUser = '';
-                this.entries = [];
-                this.categories = [];
-                this.username = '';
-                this.password = '';
-                this.menuOpen = false;
-                this.currentPage = 'main';
-                this.render();
+            renderLogin() {
+                const { darkMode } = this.state;
+                return `
+                    <div class="min-h-screen flex items-center justify-center ${darkMode ? 'bg-gray-950' : 'bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50'}">
+                        <div class="w-full max-w-md p-8 rounded-2xl shadow-2xl hover-lift animate-scale-in ${darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}">
+                            <div class="text-center mb-8">
+                                <h1 class="text-4xl font-bold mb-2 animate-pulse-slow ${darkMode ? 'text-white' : 'bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent'}">
+                                    Phone Repair
+                                </h1>
+                                <p class="${darkMode ? 'text-gray-400' : 'text-gray-600'}">Business Tracker</p>
+                            </div>
+                            
+                            <div class="space-y-6">
+                                <input type="text" id="username" placeholder="${this.t.username}" 
+                                    class="w-full px-4 py-3 rounded-xl input-focus outline-none stagger-item ${darkMode ? 'bg-gray-800 text-white placeholder-gray-500' : 'bg-white text-gray-900 placeholder-gray-500'}" />
+                                
+                                <input type="password" id="password" placeholder="${this.t.password}" 
+                                    class="w-full px-4 py-3 rounded-xl input-focus outline-none stagger-item ${darkMode ? 'bg-gray-800 text-white placeholder-gray-500' : 'bg-white text-gray-900 placeholder-gray-500'}" />
+                                
+                                <button id="loginBtn" class="w-full py-3 rounded-xl font-semibold button-press stagger-item ${darkMode ? 'bg-blue-600 hover:bg-blue-700 text-white animate-glow' : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'}">
+                                    ${this.state.loading ? this.t.loading : this.t.login}
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <button id="themeToggle" class="fixed top-8 right-8 p-3 rounded-full hover-grow shadow-lg ${darkMode ? 'bg-gray-800 text-yellow-400' : 'bg-white text-gray-900'}">
+                            ${darkMode ? '☀️' : '🌙'}
+                        </button>
+                    </div>
+                `;
             }
 
-            handleAddCategory(e) {
-                e.preventDefault();
-                if (!this.newCategoryName.trim()) return;
+            renderSettings() {
+                const { darkMode, language } = this.state;
+                return `
+                    <div class="min-h-screen ${darkMode ? 'bg-gray-950' : 'bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50'}">
+                        ${this.renderNav()}
+                        ${this.state.menuOpen ? this.renderMenu() : ''}
+                        
+                        <main class="max-w-3xl mx-auto px-6 py-8">
+                            <div class="p-8 rounded-2xl shadow-2xl mb-6 hover-lift animate-fade-in ${darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}">
+                                <h2 class="text-xl font-semibold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}">${this.t.theme}</h2>
+                                <div class="flex items-center justify-between">
+                                    <span class="${darkMode ? 'text-gray-300' : 'text-gray-700'}">${darkMode ? this.t.darkMode : this.t.lightMode}</span>
+                                    <button id="darkModeToggle" class="relative w-16 h-8 rounded-full hover-grow ${darkMode ? 'bg-blue-600' : 'bg-gray-300'}">
+                                        <div class="absolute top-1 left-1 w-6 h-6 rounded-full bg-white transition-transform duration-300 ${darkMode ? 'translate-x-8' : ''} flex items-center justify-center text-sm">
+                                            ${darkMode ? '🌙' : '☀️'}
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
 
-                this.categories.push(this.newCategoryName.trim());
-                localStorage.setItem(`categories_${this.currentUser}`, JSON.stringify(this.categories));
-                
-                this.newCategoryName = '';
-                this.showCategoryModal = false;
-                this.render();
+                            <div class="p-8 rounded-2xl shadow-2xl hover-lift animate-fade-in ${darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}">
+                                <h2 class="text-xl font-semibold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}">${this.t.language}</h2>
+                                <div class="space-y-4">
+                                    ${['de', 'en', 'fr'].map(lang => `
+                                        <button data-lang="${lang}" class="w-full px-4 py-3 rounded-xl font-semibold hover-grow button-press ${language === lang ? (darkMode ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white') : (darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-700')}">
+                                            ${lang === 'de' ? 'Deutsch' : lang === 'en' ? 'English' : 'Français'}
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </main>
+                    </div>
+                `;
             }
 
-            handleDeleteCategory(catToDelete) {
-                this.categories = this.categories.filter(c => c !== catToDelete);
-                localStorage.setItem(`categories_${this.currentUser}`, JSON.stringify(this.categories));
-                this.render();
+            renderNav() {
+                const { darkMode, currentUser } = this.state;
+                return `
+                    <nav class="border-b ${darkMode ? 'bg-gray-900/90 border-gray-800' : 'bg-white/70 border-purple-200'}">
+                        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+                            <div class="flex items-center gap-4">
+                                <button id="menuToggle" class="p-2 rounded-lg hover-grow ${darkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-900'}">☰</button>
+                                <h1 class="text-2xl font-bold ${darkMode ? 'text-white' : 'bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent'}">Phone Repair Tracker</h1>
+                            </div>
+                            <span class="${darkMode ? 'text-gray-300' : 'text-gray-700'}">${currentUser}</span>
+                        </div>
+                    </nav>
+                `;
             }
 
-            handleAddEntry(e) {
-                e.preventDefault();
-                const newEntry = {
-                    id: Date.now(),
-                    amount: this.type === 'expense' ? -Math.abs(parseFloat(this.amount)) : Math.abs(parseFloat(this.amount)),
-                    description: this.description,
-                    category: this.category,
-                    type: this.type,
-                    date: new Date().toLocaleDateString(this.language === 'de' ? 'de-DE' : this.language === 'fr' ? 'fr-FR' : 'en-US'),
-                    timestamp: Date.now()
-                };
+            renderMenu() {
+                const { darkMode, currentPage } = this.state;
+                return `
+                    <div class="fixed top-0 left-0 w-64 h-full z-50 animate-slide-in-left shadow-2xl ${darkMode ? 'bg-gray-900 border-r border-gray-800' : 'bg-white border-r border-gray-200'}">
+                        <div class="p-6">
+                            <button id="menuClose" class="mb-6 p-2 rounded-lg ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600'}">✕</button>
+                            <div class="space-y-4">
+                                <button id="navMain" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg ${currentPage === 'main' ? (darkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-900') : (darkMode ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-700 hover:bg-gray-100')}">
+                                    🏠 ${this.t.mainPage}
+                                </button>
+                                <button id="navSettings" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg ${currentPage === 'settings' ? (darkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-900') : (darkMode ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-700 hover:bg-gray-100')}">
+                                    ⚙️ ${this.t.settings}
+                                </button>
+                                <button id="logoutBtn" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg ${darkMode ? 'text-red-400 hover:bg-gray-800' : 'text-red-600 hover:bg-gray-100'}">
+                                    🚪 ${this.t.logout}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
 
-                this.entries.push(newEntry);
-                localStorage.setItem(`entries_${this.currentUser}`, JSON.stringify(this.entries));
+            renderMain() {
+                const { darkMode } = this.state;
+                const total = this.getTotalBalance();
+                const stats = this.getCategoryStats();
+                const filtered = this.getFilteredEntries();
 
-                this.amount = '';
-                this.description = '';
-                this.showAddModal = false;
-                this.render();
+                return `
+                    <div class="min-h-screen ${darkMode ? 'bg-gray-950' : 'bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50'}">
+                        ${this.renderNav()}
+                        ${this.state.menuOpen ? this.renderMenu() : ''}
+                        
+                        <main class="max-w-7xl mx-auto px-6 py-8">
+                            <div class="p-8 rounded-2xl shadow-2xl mb-8 hover-lift animate-fade-in ${darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h2 class="text-lg ${darkMode ? 'text-gray-400' : 'text-gray-600'}">${this.t.totalBalance}</h2>
+                                    <div class="animate-bounce">${total >= 0 ? '📈' : '📉'}</div>
+                                </div>
+                                <p class="text-5xl font-bold mb-2 ${total >= 0 ? 'text-green-500' : 'text-red-500'}">${total.toFixed(2)} €</p>
+                                <p class="text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}">${this.state.entries.length} ${this.t.entries}</p>
+                            </div>
+
+                            ${this.getChartData().length > 0 ? `
+                                <div class="p-8 rounded-2xl shadow-2xl mb-8 hover-lift animate-fade-in ${darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}">
+                                    <h2 class="text-xl font-semibold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}">${this.t.history}</h2>
+                                    <div style="height: 300px;"><canvas id="chart"></canvas></div>
+                                </div>
+                            ` : ''}
+
+                            <div class="p-8 rounded-2xl shadow-2xl mb-8 ${darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}">
+                                <div class="flex justify-between items-center mb-6">
+                                    <h2 class="text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}">${this.t.categories}</h2>
+                                    <button id="newCatBtn" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold hover-grow button-press">➕ ${this.t.newCategory}</button>
+                                </div>
+                                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                    ${this.state.categories.map(cat => `
+                                        <div class="relative group stagger-item">
+                                            <button data-cat="${cat}" class="w-full p-4 rounded-xl hover-lift button-press ${this.state.selectedCategory === cat ? (darkMode ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white') : (darkMode ? 'bg-gray-800 text-gray-300' : 'bg-white text-gray-900')}">
+                                                <div class="text-sm mb-1">${cat}</div>
+                                                ${stats[cat] ? `
+                                                    <div class="text-lg font-bold ${stats[cat].total >= 0 ? 'text-green-500' : 'text-red-500'}">${stats[cat].total >= 0 ? '+' : ''}${stats[cat].total.toFixed(2)} €</div>
+                                                    <div class="text-xs opacity-75">${stats[cat].count} ${this.t.entries}</div>
+                                                ` : ''}
+                                            </button>
+                                            <button data-delcat="${cat}" class="absolute top-2 right-2 p-1 rounded bg-red-500 text-white opacity-0 group-hover:opacity-100 hover-grow">🗑️</button>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            <div class="p-8 rounded-2xl shadow-2xl ${darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}">
+                                <div class="flex justify-between items-center mb-6">
+                                    <h2 class="text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}">${this.state.selectedCategory ? `${this.state.selectedCategory} - ${this.t.history}` : this.t.history}</h2>
+                                    ${this.state.selectedCategory ? `<button id="clearFilter" class="text-sm px-3 py-1 rounded-lg ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-200 text-gray-700'}">${this.t.showAll}</button>` : ''}
+                                    <button id="newEntryBtn" ${this.state.categories.length === 0 ? 'disabled' : ''} class="px-4 py-2 rounded-xl font-semibold hover-grow button-press ${this.state.categories.length === 0 ? 'bg-gray-500 text-gray-300 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'}">➕ ${this.t.addEntry}</button>
+                                </div>
+                                <div class="space-y-3">
+                                    ${filtered.length === 0 ? `<p class="text-center py-8 ${darkMode ? 'text-gray-400' : 'text-gray-600'}">${this.t.noEntries}</p>` : filtered.slice().reverse().map(e => `
+                                        <div class="p-4 rounded-xl hover-lift cursor-pointer ${darkMode ? 'bg-gray-800' : 'bg-white/50'}">
+                                            <div class="flex justify-between items-start">
+                                                <div class="flex-1">
+                                                    <div class="flex items-center gap-2 mb-1">
+                                                        <span class="text-xs px-2 py-1 rounded ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'}">${e.category}</span>
+                                                    </div>
+                                                    <p class="font-medium ${darkMode ? 'text-white' : 'text-gray-900'}">${e.description}</p>
+                                                    <p class="text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}">${e.date}</p>
+                                                </div>
+                                                <p class="text-xl font-bold ${e.amount >= 0 ? 'text-green-500' : 'text-red-500'}">${e.amount >= 0 ? '+' : ''}${e.amount.toFixed(2)} €</p>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </main>
+
+                        ${this.state.showCategoryModal ? this.renderCategoryModal() : ''}
+                        ${this.state.showAddModal ? this.renderAddModal() : ''}
+                    </div>
+                `;
+            }
+
+            renderCategoryModal() {
+                const { darkMode } = this.state;
+                return `
+                    <div class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-fade-in">
+                        <div class="w-full max-w-md p-8 rounded-2xl shadow-2xl animate-scale-in ${darkMode ? 'bg-gray-900 border border-gray-800' : 'bg-white border border-purple-200'}">
+                            <h2 class="text-2xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}">${this.t.newCategory}</h2>
+                            <div class="space-y-6">
+                                <input type="text" id="newCatName" placeholder="${this.t.categoryName}" class="w-full px-4 py-3 rounded-xl input-focus outline-none ${darkMode ? 'bg-gray-800 text-white placeholder-gray-500' : 'bg-gray-50 text-gray-900 placeholder-gray-500'}" />
+                                <div class="flex gap-3">
+                                    <button id="cancelCat" class="flex-1 py-3 rounded-xl font-semibold button-press ${darkMode ? 'bg-gray-800 text-white' : 'bg-gray-200 text-gray-900'}">${this.t.cancel}</button>
+                                    <button id="saveCat" class="flex-1 py-3 rounded-xl font-semibold bg-blue-600 hover:bg-blue-700 text-white button-press">${this.t.addCategory}</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            renderAddModal() {
+                const { darkMode, type, categories } = this.state;
+                return `
+                    <div class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-fade-in">
+                        <div class="w-full max-w-md p-8 rounded-2xl shadow-2xl animate-scale-in ${darkMode ? 'bg-gray-900 border border-gray-800' : 'bg-white border border-purple-200'}">
+                            <h2 class="text-2xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}">${this.t.newEntry}</h2>
+                            <div class="space-y-6">
+                                <div>
+                                    <div class="text-sm mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}">Typ</div>
+                                    <div class="flex gap-3">
+                                        <button id="typeIncome" class="flex-1 py-3 rounded-xl font-semibold button-press ${type === 'income' ? 'bg-green-600 text-white' : (darkMode ? 'bg-gray-800 text-gray-400' : 'bg-gray-200 text-gray-600')}">${this.t.income}</button>
+                                        <button id="typeExpense" class="flex-1 py-3 rounded-xl font-semibold button-press ${type === 'expense' ? 'bg-red-600 text-white' : (darkMode ? 'bg-gray-800 text-gray-400' : 'bg-gray-200 text-gray-600')}">${this.t.expense}</button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="text-sm mb-2 block ${darkMode ? 'text-gray-400' : 'text-gray-600'}">${this.t.category}</label>
+                                    <select id="entryCat" class="w-full px-4 py-3 rounded-xl outline-none ${darkMode ? 'bg-gray-800 text-white' : 'bg-gray-50 text-gray-900'}">
+                                        ${categories.map(c => `<option value="${c}">${c}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-sm mb-2 block ${darkMode ? 'text-gray-400' : 'text-gray-600'}">${this.t.amount} (€)</label>
+                                    <input type="number" step="0.01" id="entryAmount" placeholder="0.00" class="w-full px-4 py-3 rounded-xl input-focus outline-none ${darkMode ? 'bg-gray-800 text-white placeholder-gray-500' : 'bg-gray-50 text-gray-900 placeholder-gray-500'}" />
+                                </div>
+                                <div>
+                                    <label class="text-sm mb-2 block ${darkMode ? 'text-gray-400' : 'text-gray-600'}">${this.t.description}</label>
+                                    <input type="text" id="entryDesc" placeholder="z.B. Display Reparatur" class="w-full px-4 py-3 rounded-xl input-focus outline-none ${darkMode ? 'bg-gray-800 text-white placeholder-gray-500' : 'bg-gray-50 text-gray-900 placeholder-gray-500'}" />
+                                </div>
+                                <div class="flex gap-3 pt-4">
+                                    <button id="cancelEntry" class="flex-1 py-3 rounded-xl font-semibold button-press ${darkMode ? 'bg-gray-800 text-white' : 'bg-gray-200 text-gray-900'}">${this.t.cancel}</button>
+                                    <button id="saveEntry" class="flex-1 py-3 rounded-xl font-semibold bg-blue-600 hover:bg-blue-700 text-white button-press">${this.t.save}</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
             }
 
             getTotalBalance() {
-                return this.entries.reduce((sum, entry) => sum + entry.amount, 0);
+                return this.state.entries.reduce((sum, e) => sum + e.amount, 0);
             }
 
             getChartData() {
-                return this.entries.map((entry, index) => {
-                    const runningTotal = this.entries.slice(0, index + 1).reduce((sum, e) => sum + e.amount, 0);
-                    return {
-                        date: entry.date,
-                        balance: runningTotal
-                    };
+                return this.state.entries.map((entry, index) => {
+                    const runningTotal = this.state.entries.slice(0, index + 1).reduce((sum, e) => sum + e.amount, 0);
+                    return { date: entry.date, balance: runningTotal };
                 });
             }
 
             getCategoryStats() {
                 const stats = {};
-                this.entries.forEach(entry => {
+                this.state.entries.forEach(entry => {
                     if (!stats[entry.category]) {
                         stats[entry.category] = { total: 0, count: 0 };
                     }
@@ -441,35 +444,32 @@
             }
 
             getFilteredEntries() {
-                return this.selectedCategory 
-                    ? this.entries.filter(e => e.category === this.selectedCategory)
-                    : this.entries;
+                return this.state.selectedCategory 
+                    ? this.state.entries.filter(e => e.category === this.state.selectedCategory)
+                    : this.state.entries;
             }
 
             renderChart() {
                 setTimeout(() => {
-                    const canvas = document.getElementById('balanceChart');
+                    const canvas = document.getElementById('chart');
                     if (!canvas) return;
+                    if (this.state.chart) this.state.chart.destroy();
 
-                    if (this.chart) {
-                        this.chart.destroy();
-                    }
-
-                    const chartData = this.getChartData();
+                    const data = this.getChartData();
                     const ctx = canvas.getContext('2d');
 
-                    this.chart = new Chart(ctx, {
+                    this.state.chart = new Chart(ctx, {
                         type: 'line',
                         data: {
-                            labels: chartData.map(d => d.date),
+                            labels: data.map(d => d.date),
                             datasets: [{
                                 label: this.t.totalBalance,
-                                data: chartData.map(d => d.balance),
+                                data: data.map(d => d.balance),
                                 borderColor: '#3b82f6',
                                 backgroundColor: 'rgba(59, 130, 246, 0.1)',
                                 borderWidth: 3,
                                 tension: 0.4,
-                                pointBackgroundColor: chartData.map(d => d.balance >= 0 ? '#10b981' : '#ef4444'),
+                                pointBackgroundColor: data.map(d => d.balance >= 0 ? '#10b981' : '#ef4444'),
                                 pointBorderColor: '#fff',
                                 pointBorderWidth: 2,
                                 pointRadius: 5,
@@ -482,213 +482,214 @@
                             plugins: {
                                 legend: { display: false },
                                 tooltip: {
-                                    backgroundColor: this.darkMode ? '#111827' : '#ffffff',
-                                    titleColor: this.darkMode ? '#fff' : '#000',
-                                    bodyColor: this.darkMode ? '#fff' : '#000',
-                                    borderColor: this.darkMode ? '#374151' : '#a855f7',
+                                    backgroundColor: this.state.darkMode ? '#111827' : '#ffffff',
+                                    titleColor: this.state.darkMode ? '#fff' : '#000',
+                                    bodyColor: this.state.darkMode ? '#fff' : '#000',
+                                    borderColor: this.state.darkMode ? '#374151' : '#a855f7',
                                     borderWidth: 1,
                                     padding: 12,
                                     displayColors: false,
-                                    callbacks: {
-                                        label: (context) => `${context.parsed.y.toFixed(2)} €`
-                                    }
+                                    callbacks: { label: (ctx) => `${ctx.parsed.y.toFixed(2)} €` }
                                 }
                             },
                             scales: {
                                 y: {
-                                    grid: {
-                                        color: this.darkMode ? '#1f2937' : '#e5e7eb'
-                                    },
+                                    grid: { color: this.state.darkMode ? '#1f2937' : '#e5e7eb' },
                                     ticks: {
-                                        color: this.darkMode ? '#6b7280' : '#6b7280',
-                                        callback: (value) => `${value} €`
+                                        color: this.state.darkMode ? '#6b7280' : '#6b7280',
+                                        callback: (val) => `${val} €`
                                     }
                                 },
                                 x: {
-                                    grid: {
-                                        color: this.darkMode ? '#1f2937' : '#e5e7eb'
-                                    },
-                                    ticks: {
-                                        color: this.darkMode ? '#6b7280' : '#6b7280'
-                                    }
+                                    grid: { color: this.state.darkMode ? '#1f2937' : '#e5e7eb' },
+                                    ticks: { color: this.state.darkMode ? '#6b7280' : '#6b7280' }
                                 }
                             },
-                            animation: {
-                                duration: 1000,
-                                easing: 'easeInOutQuart'
-                            }
+                            animation: { duration: 1000, easing: 'easeInOutQuart' }
                         }
                     });
                 }, 100);
             }
 
-            render() {
-                const app = document.getElementById('app');
+            attachEvents() {
+                // Login
+                const loginBtn = document.getElementById('loginBtn');
+                const username = document.getElementById('username');
+                const password = document.getElementById('password');
                 
-                if (!this.isLoggedIn) {
-                    app.innerHTML = this.renderLogin();
-                } else if (this.currentPage === 'settings') {
-                    app.innerHTML = this.renderSettings();
-                } else {
-                    app.innerHTML = this.renderMain();
-                    if (this.getChartData().length > 0) {
-                        this.renderChart();
-                    }
+                if (loginBtn) {
+                    loginBtn.onclick = () => {
+                        this.state.username = username.value;
+                        this.state.password = password.value;
+                        this.state.loading = true;
+                        this.render();
+                        
+                        setTimeout(() => {
+                            const userKey = `user_${this.state.username}`;
+                            const stored = localStorage.getItem(userKey);
+                            
+                            if (!stored) {
+                                localStorage.setItem(userKey, this.state.password);
+                                localStorage.setItem('current_user', this.state.username);
+                                this.state.currentUser = this.state.username;
+                                this.state.isLoggedIn = true;
+                            } else if (stored === this.state.password) {
+                                localStorage.setItem('current_user', this.state.username);
+                                this.state.currentUser = this.state.username;
+                                this.state.isLoggedIn = true;
+                                this.loadUserData(this.state.username);
+                            } else {
+                                alert('Falsches Passwort!');
+                            }
+                            
+                            this.state.loading = false;
+                            this.render();
+                        }, 500);
+                    };
                 }
 
-                this.attachEventListeners();
-            }
+                // Theme Toggle
+                const themeToggle = document.getElementById('themeToggle');
+                if (themeToggle) {
+                    themeToggle.onclick = () => {
+                        this.state.darkMode = !this.state.darkMode;
+                        this.saveSettings();
+                        this.render();
+                    };
+                }
 
-            renderLogin() {
-                return `
-                    <div class="min-h-screen flex items-center justify-center transition-all duration-500 ${this.darkMode ? 'bg-gray-950' : 'bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50'}">
-                        <div class="w-full max-w-md p-8 rounded-2xl backdrop-blur-custom shadow-2xl transform transition-all duration-500 hover-lift animate-scale-in ${this.darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}">
-                            <div class="text-center mb-8 animate-fade-in">
-                                <h1 class="text-4xl font-bold mb-2 animate-pulse-slow ${this.darkMode ? 'text-white' : 'bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent'}">
-                                    Phone Repair
-                                </h1>
-                                <p class="${this.darkMode ? 'text-gray-400' : 'text-gray-600'}">Business Tracker</p>
-                            </div>
-                            
-                            <div class="space-y-6">
-                                <input
-                                    type="text"
-                                    id="username"
-                                    placeholder="${this.t.username}"
-                                    value="${this.username}"
-                                    class="w-full px-4 py-3 rounded-xl input-focus outline-none stagger-item ${this.darkMode ? 'bg-gray-800 text-white placeholder-gray-500' : 'bg-white/50 text-gray-900 placeholder-gray-500'}"
-                                />
-                                
-                                <input
-                                    type="password"
-                                    id="password"
-                                    placeholder="${this.t.password}"
-                                    value="${this.password}"
-                                    class="w-full px-4 py-3 rounded-xl input-focus outline-none stagger-item ${this.darkMode ? 'bg-gray-800 text-white placeholder-gray-500' : 'bg-white/50 text-gray-900 placeholder-gray-500'}"
-                                />
-                                
-                                <button
-                                    id="loginBtn"
-                                    class="w-full py-3 rounded-xl font-semibold transition-all duration-300 transform hover-grow button-press ripple stagger-item ${this.darkMode ? 'bg-blue-600 hover:bg-blue-700 text-white animate-glow' : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white gradient-animate'} ${this.loading ? 'opacity-50 cursor-not-allowed' : ''}"
-                                    ${this.loading ? 'disabled' : ''}
-                                >
-                                    ${this.loading ? this.t.loading : this.t.login}
-                                </button>
-                            </div>
-                        </div>
+                // Dark Mode Toggle
+                const darkModeToggle = document.getElementById('darkModeToggle');
+                if (darkModeToggle) {
+                    darkModeToggle.onclick = () => {
+                        this.state.darkMode = !this.state.darkMode;
+                        this.saveSettings();
+                        this.render();
+                    };
+                }
+
+                // Language buttons
+                document.querySelectorAll('[data-lang]').forEach(btn => {
+                    btn.onclick = () => {
+                        this.state.language = btn.dataset.lang;
+                        this.saveSettings();
+                        this.render();
+                    };
+                });
+
+                // Menu
+                const menuToggle = document.getElementById('menuToggle');
+                const menuClose = document.getElementById('menuClose');
+                if (menuToggle) menuToggle.onclick = () => { this.state.menuOpen = true; this.render(); };
+                if (menuClose) menuClose.onclick = () => { this.state.menuOpen = false; this.render(); };
+
+                // Navigation
+                const navMain = document.getElementById('navMain');
+                const navSettings = document.getElementById('navSettings');
+                const logoutBtn = document.getElementById('logoutBtn');
+                
+                if (navMain) navMain.onclick = () => { this.state.currentPage = 'main'; this.state.menuOpen = false; this.render(); };
+                if (navSettings) navSettings.onclick = () => { this.state.currentPage = 'settings'; this.state.menuOpen = false; this.render(); };
+                if (logoutBtn) {
+                    logoutBtn.onclick = () => {
+                        localStorage.removeItem('current_user');
+                        this.state.isLoggedIn = false;
+                        this.state.currentUser = '';
+                        this.state.entries = [];
+                        this.state.categories = [];
+                        this.state.menuOpen = false;
+                        this.render();
+                    };
+                }
+
+                // Categories
+                const newCatBtn = document.getElementById('newCatBtn');
+                if (newCatBtn) newCatBtn.onclick = () => { this.state.showCategoryModal = true; this.render(); };
+
+                const cancelCat = document.getElementById('cancelCat');
+                if (cancelCat) cancelCat.onclick = () => { this.state.showCategoryModal = false; this.render(); };
+
+                const saveCat = document.getElementById('saveCat');
+                const newCatName = document.getElementById('newCatName');
+                if (saveCat && newCatName) {
+                    saveCat.onclick = () => {
+                        if (newCatName.value.trim()) {
+                            this.state.categories.push(newCatName.value.trim());
+                            localStorage.setItem(`categories_${this.state.currentUser}`, JSON.stringify(this.state.categories));
+                            this.state.showCategoryModal = false;
+                            this.render();
+                        }
+                    };
+                }
+
+                document.querySelectorAll('[data-cat]').forEach(btn => {
+                    btn.onclick = () => {
+                        const cat = btn.dataset.cat;
+                        this.state.selectedCategory = this.state.selectedCategory === cat ? null : cat;
+                        this.render();
+                    };
+                });
+
+                document.querySelectorAll('[data-delcat]').forEach(btn => {
+                    btn.onclick = (e) => {
+                        e.stopPropagation();
+                        this.state.categories = this.state.categories.filter(c => c !== btn.dataset.delcat);
+                        localStorage.setItem(`categories_${this.state.currentUser}`, JSON.stringify(this.state.categories));
+                        this.render();
+                    };
+                });
+
+                const clearFilter = document.getElementById('clearFilter');
+                if (clearFilter) clearFilter.onclick = () => { this.state.selectedCategory = null; this.render(); };
+
+                // Entries
+                const newEntryBtn = document.getElementById('newEntryBtn');
+                if (newEntryBtn && !newEntryBtn.disabled) {
+                    newEntryBtn.onclick = () => {
+                        this.state.category = this.state.categories[0] || '';
+                        this.state.showAddModal = true;
+                        this.render();
+                    };
+                }
+
+                const typeIncome = document.getElementById('typeIncome');
+                const typeExpense = document.getElementById('typeExpense');
+                if (typeIncome) typeIncome.onclick = () => { this.state.type = 'income'; this.render(); };
+                if (typeExpense) typeExpense.onclick = () => { this.state.type = 'expense'; this.render(); };
+
+                const cancelEntry = document.getElementById('cancelEntry');
+                if (cancelEntry) cancelEntry.onclick = () => { this.state.showAddModal = false; this.render(); };
+
+                const saveEntry = document.getElementById('saveEntry');
+                const entryAmount = document.getElementById('entryAmount');
+                const entryDesc = document.getElementById('entryDesc');
+                const entryCat = document.getElementById('entryCat');
+                
+                if (saveEntry && entryAmount && entryDesc && entryCat) {
+                    saveEntry.onclick = () => {
+                        if (!entryAmount.value || !entryDesc.value) return;
                         
-                        <button
-                            id="themeToggle"
-                            class="fixed top-8 right-8 p-3 rounded-full transition-all duration-300 hover-grow shadow-lg animate-fade-in ${this.darkMode ? 'bg-gray-800 text-yellow-400' : 'bg-white text-gray-900'}"
-                        >
-                            ${this.darkMode ? '☀️' : '🌙'}
-                        </button>
-                    </div>
-                `;
+                        const newEntry = {
+                            id: Date.now(),
+                            amount: this.state.type === 'expense' ? -Math.abs(parseFloat(entryAmount.value)) : Math.abs(parseFloat(entryAmount.value)),
+                            description: entryDesc.value,
+                            category: entryCat.value,
+                            type: this.state.type,
+                            date: new Date().toLocaleDateString(this.state.language === 'de' ? 'de-DE' : this.state.language === 'fr' ? 'fr-FR' : 'en-US'),
+                            timestamp: Date.now()
+                        };
+
+                        this.state.entries.push(newEntry);
+                        localStorage.setItem(`entries_${this.state.currentUser}`, JSON.stringify(this.state.entries));
+                        this.state.showAddModal = false;
+                        this.render();
+                    };
+                }
             }
+        }
 
-            renderSettings() {
-                return `
-                    <div class="min-h-screen transition-all duration-500 ${this.darkMode ? 'bg-gray-950' : 'bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50'}">
-                        ${this.renderNav()}
-                        ${this.menuOpen ? this.renderMenu() : ''}
-                        
-                        <main class="max-w-3xl mx-auto px-6 py-8">
-                            <div class="p-8 rounded-2xl backdrop-blur-custom shadow-2xl mb-6 hover-lift animate-fade-in ${this.darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}">
-                                <h2 class="text-xl font-semibold mb-6 ${this.darkMode ? 'text-white' : 'text-gray-900'}">${this.t.theme}</h2>
-                                
-                                <div class="flex items-center justify-between">
-                                    <span class="${this.darkMode ? 'text-gray-300' : 'text-gray-700'}">${this.darkMode ? this.t.darkMode : this.t.lightMode}</span>
-                                    
-                                    <button id="darkModeToggle" class="relative w-16 h-8 rounded-full transition-all duration-300 hover-grow ${this.darkMode ? 'bg-blue-600' : 'bg-gray-300'}">
-                                        <div class="absolute top-1 left-1 w-6 h-6 rounded-full bg-white transition-transform duration-300 ${this.darkMode ? 'translate-x-8' : 'translate-x-0'} flex items-center justify-center">
-                                            ${this.darkMode ? '🌙' : '☀️'}
-                                        </div>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="p-8 rounded-2xl backdrop-blur-custom shadow-2xl hover-lift animate-fade-in ${this.darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}" style="animation-delay: 0.1s">
-                                <h2 class="text-xl font-semibold mb-6 ${this.darkMode ? 'text-white' : 'text-gray-900'}">${this.t.language}</h2>
-                                
-                                <div class="space-y-4">
-                                    ${['de', 'en', 'fr'].map((lang, idx) => `
-                                        <button
-                                            data-lang="${lang}"
-                                            class="w-full px-4 py-3 rounded-xl font-semibold transition-all duration-300 hover-grow button-press ripple stagger-item ${
-                                                this.language === lang
-                                                    ? this.darkMode ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white'
-                                                    : this.darkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                            }"
-                                        >
-                                            ${lang === 'de' ? 'Deutsch' : lang === 'en' ? 'English' : 'Français'}
-                                        </button>
-                                    `).join('')}
-                                </div>
-                            </div>
-                        </main>
-                    </div>
-                `;
-            }
-
-            renderMain() {
-                const totalBalance = this.getTotalBalance();
-                const categoryStats = this.getCategoryStats();
-                const filteredEntries = this.getFilteredEntries();
-
-                return `
-                    <div class="min-h-screen transition-all duration-500 ${this.darkMode ? 'bg-gray-950' : 'bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50'}">
-                        ${this.renderNav()}
-                        ${this.menuOpen ? this.renderMenu() : ''}
-                        
-                        <main class="max-w-7xl mx-auto px-6 py-8">
-                            <div class="p-8 rounded-2xl backdrop-blur-custom shadow-2xl mb-8 transform transition-all duration-500 hover-lift animate-fade-in ${this.darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}">
-                                <div class="flex items-center justify-between mb-4">
-                                    <h2 class="text-lg ${this.darkMode ? 'text-gray-400' : 'text-gray-600'}">${this.t.totalBalance}</h2>
-                                    <div class="animate-bounce">
-                                        ${totalBalance >= 0 ? '📈' : '📉'}
-                                    </div>
-                                </div>
-                                
-                                <p class="text-5xl font-bold mb-2 transition-all duration-500 ${totalBalance >= 0 ? 'text-green-500' : 'text-red-500'}">
-                                    ${totalBalance.toFixed(2)} €
-                                </p>
-                                
-                                <p class="text-sm ${this.darkMode ? 'text-gray-400' : 'text-gray-600'}">
-                                    ${this.entries.length} ${this.t.entries}
-                                </p>
-                            </div>
-
-                            ${this.getChartData().length > 0 ? `
-                                <div class="p-8 rounded-2xl backdrop-blur-custom shadow-2xl mb-8 transform transition-all duration-500 hover-lift animate-fade-in ${this.darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}" style="animation-delay: 0.1s">
-                                    <h2 class="text-xl font-semibold mb-6 ${this.darkMode ? 'text-white' : 'text-gray-900'}">${this.t.history}</h2>
-                                    <div style="height: 300px;">
-                                        <canvas id="balanceChart"></canvas>
-                                    </div>
-                                </div>
-                            ` : ''}
-
-                            <div class="p-8 rounded-2xl backdrop-blur-custom shadow-2xl mb-8 animate-fade-in ${this.darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}" style="animation-delay: 0.2s">
-                                <div class="flex justify-between items-center mb-6">
-                                    <h2 class="text-xl font-semibold ${this.darkMode ? 'text-white' : 'text-gray-900'}">${this.t.categories}</h2>
-                                    <button
-                                        id="newCategoryBtn"
-                                        class="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-all duration-300 transform hover-grow button-press ripple"
-                                    >
-                                        ➕ ${this.t.newCategory}
-                                    </button>
-                                </div>
-                                
-                                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                                    ${this.categories.map((cat, idx) => `
-                                        <div class="relative group stagger-item">
-                                            <button
-                                                data-category="${cat}"
-                                                class="w-full p-4 rounded-xl transition-all duration-300 hover-lift button-press ${
-                                                    this.selectedCategory === cat 
-                                                        ? this.darkMode ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white'
-                                                        : this.darkMode ? 'bg-gray-800 text-gray-300' : 'bg-white text-gray-900'
-                                                }"
-                                            >
-                                                <div class="text-sm mb-1">${cat}</div>
-                                                ${categoryStats[
+        // Start App
+        new App();
+    </script>
+</body>
+</html>
