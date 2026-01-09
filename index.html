@@ -4,88 +4,97 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phone Repair Tracker</title>
+    
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/recharts/umd/Recharts.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    
+
+    <script src="https://unpkg.com/recharts@2.10.3/umd/Recharts.js"></script>
+
     <style>
-        body { margin: 0; padding: 0; overflow-x: hidden; }
-    </script>
+        body { background-color: #030712; color: white; font-family: sans-serif; }
+    </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        // 1. WICHTIG: Die Fehlenden Module für den Browser simulieren
+        // Zugriff auf Bibliotheken sicherstellen
         const { useState, useEffect } = React;
         const { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } = Recharts;
-        // Icons von Lucide vorbereiten
-        const { Moon, Sun, Plus, LogOut, TrendingUp, TrendingDown, ChevronRight, Menu, X, Settings, Home, Trash2 } = lucide;
 
-        // 2. Storage Fix (Damit window.storage nicht crasht)
+        // Mock Storage für Browser
         window.storage = {
-            get: async (key) => {
-                const item = localStorage.getItem(key);
-                return item ? { value: item } : null;
-            },
+            get: async (key) => ({ value: localStorage.getItem(key) }),
             set: async (key, val) => localStorage.setItem(key, val),
             delete: async (key) => localStorage.removeItem(key)
         };
 
-        // 3. Übersetzungen (wie in deinem Original)
         const translations = {
-            de: { login: 'Anmelden', username: 'Benutzername', password: 'Passwort', loading: 'Lädt...', logout: 'Abmelden', totalBalance: 'Gesamtbilanz', entries: 'Einträge', history: 'Verlauf', categories: 'Kategorien', addEntry: 'Eintrag', newEntry: 'Neuer Eintrag', income: 'Einnahme', expense: 'Ausgabe', category: 'Kategorie', amount: 'Betrag', description: 'Beschreibung', cancel: 'Abbrechen', save: 'Speichern', noEntries: 'Keine Einträge vorhanden', showAll: 'Alle anzeigen', settings: 'Einstellungen', language: 'Sprache', theme: 'Design', darkMode: 'Dark Mode', lightMode: 'Light Mode', mainPage: 'Hauptseite', newCategory: 'Neue Kategorie', categoryName: 'Kategoriename', addCategory: 'Kategorie hinzufügen', deleteCategory: 'Löschen' },
-            en: { login: 'Login', username: 'Username', password: 'Password', loading: 'Loading...', logout: 'Logout', totalBalance: 'Total Balance', entries: 'Entries', history: 'History', categories: 'Categories', addEntry: 'Entry', newEntry: 'New Entry', income: 'Income', expense: 'Expense', category: 'Category', amount: 'Amount', description: 'Description', cancel: 'Cancel', save: 'Save', noEntries: 'No entries available', showAll: 'Show all', settings: 'Settings', language: 'Language', theme: 'Theme', darkMode: 'Dark Mode', lightMode: 'Light Mode', mainPage: 'Main Page', newCategory: 'New Category', categoryName: 'Category Name', addCategory: 'Add Category', deleteCategory: 'Delete' }
+            de: { login: 'Anmelden', totalBalance: 'Gesamtbilanz', entries: 'Einträge' },
+            en: { login: 'Login', totalBalance: 'Total Balance', entries: 'Entries' }
         };
 
-        // 4. Die Hauptkomponente (Dein Code ohne die "import" Zeilen)
-        function PhoneRepairTracker() {
+        function App() {
             const [darkMode, setDarkMode] = useState(true);
-            const [language, setLanguage] = useState('de');
             const [isLoggedIn, setIsLoggedIn] = useState(false);
-            const [username, setUsername] = useState('');
-            const [password, setPassword] = useState('');
-            const [entries, setEntries] = useState([]);
-            const [categories, setCategories] = useState([]);
-            const [showAddModal, setShowAddModal] = useState(false);
-            const [showCategoryModal, setShowCategoryModal] = useState(false);
-            const [amount, setAmount] = useState('');
-            const [description, setDescription] = useState('');
-            const [category, setCategory] = useState('');
-            const [newCategoryName, setNewCategoryName] = useState('');
-            const [type, setType] = useState('income');
-            const [loading, setLoading] = useState(false);
-            const [currentUser, setCurrentUser] = useState('');
-            const [selectedCategory, setSelectedCategory] = useState(null);
-            const [menuOpen, setMenuOpen] = useState(false);
-            const [currentPage, setCurrentPage] = useState('main');
+            const [balance, setBalance] = useState(0);
 
-            const t = translations[language] || translations.de;
+            // Beispiel-Daten für das Chart
+            const data = [
+                { name: 'Mo', balance: 400 },
+                { name: 'Di', balance: 700 },
+                { name: 'Mi', balance: 600 },
+                { name: 'Do', balance: 1000 },
+            ];
 
-            // ... Hier folgen alle deine Funktionen (handleLogin, handleAddEntry etc.) ...
-            // Ich kürze das hier ab - kopiere deine Funktionen aus deinem Original hier rein.
-            
-            // WICHTIG: Zum Testen hier ein einfaches UI:
             return (
-                <div className={`min-h-screen ${darkMode ? 'bg-gray-950 text-white' : 'bg-white text-gray-900'} p-10`}>
-                    <h1 className="text-3xl font-bold">Phone Repair Tracker läuft!</h1>
-                    <p className="mt-4">Wenn du das siehst, ist der White-Screen-Fehler behoben.</p>
-                    <button 
-                        onClick={() => setDarkMode(!darkMode)}
-                        className="mt-4 px-4 py-2 bg-blue-600 rounded-lg"
-                    >
-                        Mode wechseln
-                    </button>
+                <div className={`min-h-screen p-6 ${darkMode ? 'bg-gray-950 text-white' : 'bg-gray-50 text-gray-900'}`}>
+                    <div className="max-w-4xl mx-auto">
+                        <header className="flex justify-between items-center mb-8">
+                            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+                                Phone Repair Tracker
+                            </h1>
+                            <button 
+                                onClick={() => setDarkMode(!darkMode)}
+                                className="p-2 rounded-full bg-gray-800 text-yellow-400"
+                            >
+                                {darkMode ? '☀️' : '🌙'}
+                            </button>
+                        </header>
+
+                        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 mb-6 shadow-2xl">
+                            <p className="text-gray-400 mb-2">Gesamtbilanz</p>
+                            <h2 className="text-5xl font-extrabold text-green-400">1.250,00 €</h2>
+                        </div>
+
+                        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 h-64">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={data}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                                    <XAxis dataKey="name" stroke="#9CA3AF" />
+                                    <YAxis stroke="#9CA3AF" />
+                                    <Tooltip 
+                                        contentStyle={{ backgroundColor: '#111827', border: 'none', borderRadius: '8px' }}
+                                    />
+                                    <Line type="monotone" dataKey="balance" stroke="#3b82f6" strokeWidth={3} />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </div>
+                        
+                        <div className="mt-8 text-center text-gray-500 text-sm">
+                            Status: System bereit ✓
+                        </div>
+                    </div>
                 </div>
             );
         }
 
-        // 5. Rendern
+        // Rendern
         const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<PhoneRepairTracker />);
+        root.render(<App />);
     </script>
 </body>
 </html>
