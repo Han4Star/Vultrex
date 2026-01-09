@@ -1,23 +1,45 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8" />
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phone Repair Tracker</title>
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-  </head>
-  <body>
+    <script src="https://unpkg.com/recharts/umd/Recharts.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
     <div id="root"></div>
 
-    <script type="text/babel" src="App.js"></script>
-
     <script type="text/babel">
-      // Damit der "export default" Befehl in der HTML-Umgebung funktioniert:
-      import App from './App.js';
-      const root = ReactDOM.createRoot(document.getElementById('root'));
-      root.render(<App />);
+        // --- HIER DEIN FIX FÜR DEN STORAGE ---
+        window.storage = {
+            get: async (key) => ({ value: localStorage.getItem(key) }),
+            set: async (key, val) => localStorage.setItem(key, val),
+            delete: async (key) => localStorage.removeItem(key)
+        };
+
+        // --- DEIN CODE STARTET HIER ---
+        // WICHTIG: Entferne die "import" Zeilen oben im Code!
+        // In diesem Modus nutzt man globale Variablen:
+        const { useState, useEffect } = React;
+        const { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } = Recharts;
+        // Icons müssen hier anders geladen werden, oder du nutzt einfache Emojis für den Test.
+
+        function PhoneRepairTracker() {
+            // ... (Hier der Rest deines Codes) ...
+            return (
+                <div className="p-10 text-white bg-black">
+                    <h1>Es funktioniert!</h1>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<PhoneRepairTracker />);
     </script>
-  </body>
+</body>
 </html>
