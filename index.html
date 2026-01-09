@@ -3,94 +3,692 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phone Repair Tracker</title>
-    
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <title>Phone Repair Business Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <script src="https://unpkg.com/recharts@2.10.3/umd/Recharts.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { background-color: #030712; color: white; font-family: sans-serif; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideInLeft {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes scaleIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(59, 130, 246, 0.8); }
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+        
+        .animate-slide-in-left {
+            animation: slideInLeft 0.4s ease-out forwards;
+        }
+        
+        .animate-slide-in-right {
+            animation: slideInRight 0.4s ease-out forwards;
+        }
+        
+        .animate-scale-in {
+            animation: scaleIn 0.3s ease-out forwards;
+        }
+        
+        .animate-pulse-slow {
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        .animate-shake {
+            animation: shake 0.3s ease-in-out;
+        }
+        
+        .animate-glow {
+            animation: glow 2s ease-in-out infinite;
+        }
+        
+        .transition-all {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .hover-lift:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .hover-grow:hover {
+            transform: scale(1.1);
+        }
+        
+        .hover-glow:hover {
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.6);
+        }
+        
+        .input-focus {
+            transition: all 0.3s ease;
+        }
+        
+        .input-focus:focus {
+            transform: scale(1.02);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+        
+        .button-press:active {
+            transform: scale(0.95);
+        }
+        
+        .stagger-item {
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        
+        .stagger-item:nth-child(1) { animation-delay: 0.1s; }
+        .stagger-item:nth-child(2) { animation-delay: 0.2s; }
+        .stagger-item:nth-child(3) { animation-delay: 0.3s; }
+        .stagger-item:nth-child(4) { animation-delay: 0.4s; }
+        .stagger-item:nth-child(5) { animation-delay: 0.5s; }
+        .stagger-item:nth-child(6) { animation-delay: 0.6s; }
+        .stagger-item:nth-child(7) { animation-delay: 0.7s; }
+        .stagger-item:nth-child(8) { animation-delay: 0.8s; }
+        
+        .backdrop-blur-custom {
+            backdrop-filter: blur(12px);
+        }
+        
+        .gradient-animate {
+            background-size: 200% 200%;
+            animation: gradient 3s ease infinite;
+        }
+        
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .ripple {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .ripple::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .ripple:active::after {
+            width: 300px;
+            height: 300px;
+        }
     </style>
 </head>
-<body>
-    <div id="root"></div>
+<body class="m-0 p-0 overflow-x-hidden">
+    <div id="app"></div>
 
-    <script type="text/babel">
-        // Sicherstellen, dass wir auf die globalen Variablen zugreifen
-        const { useState, useEffect } = React;
-        const { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } = Recharts;
-
-        // Speicher-Emulator (Damit dein Code nicht crasht)
-        window.storage = {
-            get: async (key) => {
-                const item = localStorage.getItem(key);
-                return item ? { value: item } : null;
+    <script>
+        const translations = {
+            de: {
+                login: 'Anmelden',
+                username: 'Benutzername',
+                password: 'Passwort',
+                loading: 'Lädt...',
+                logout: 'Abmelden',
+                totalBalance: 'Gesamtbilanz',
+                entries: 'Einträge',
+                history: 'Verlauf',
+                categories: 'Kategorien',
+                addEntry: 'Eintrag',
+                newEntry: 'Neuer Eintrag',
+                income: 'Einnahme',
+                expense: 'Ausgabe',
+                category: 'Kategorie',
+                amount: 'Betrag',
+                description: 'Beschreibung',
+                cancel: 'Abbrechen',
+                save: 'Speichern',
+                noEntries: 'Keine Einträge vorhanden',
+                showAll: 'Alle anzeigen',
+                settings: 'Einstellungen',
+                language: 'Sprache',
+                theme: 'Design',
+                darkMode: 'Dark Mode',
+                lightMode: 'Light Mode',
+                mainPage: 'Hauptseite',
+                newCategory: 'Neue Kategorie',
+                categoryName: 'Kategoriename',
+                addCategory: 'Kategorie hinzufügen',
+                deleteCategory: 'Löschen'
             },
-            set: async (key, val) => localStorage.setItem(key, val),
-            delete: async (key) => localStorage.removeItem(key)
+            en: {
+                login: 'Login',
+                username: 'Username',
+                password: 'Password',
+                loading: 'Loading...',
+                logout: 'Logout',
+                totalBalance: 'Total Balance',
+                entries: 'Entries',
+                history: 'History',
+                categories: 'Categories',
+                addEntry: 'Entry',
+                newEntry: 'New Entry',
+                income: 'Income',
+                expense: 'Expense',
+                category: 'Category',
+                amount: 'Amount',
+                description: 'Description',
+                cancel: 'Cancel',
+                save: 'Save',
+                noEntries: 'No entries available',
+                showAll: 'Show all',
+                settings: 'Settings',
+                language: 'Language',
+                theme: 'Theme',
+                darkMode: 'Dark Mode',
+                lightMode: 'Light Mode',
+                mainPage: 'Main Page',
+                newCategory: 'New Category',
+                categoryName: 'Category Name',
+                addCategory: 'Add Category',
+                deleteCategory: 'Delete'
+            },
+            fr: {
+                login: 'Connexion',
+                username: 'Nom d\'utilisateur',
+                password: 'Mot de passe',
+                loading: 'Chargement...',
+                logout: 'Déconnexion',
+                totalBalance: 'Solde Total',
+                entries: 'Entrées',
+                history: 'Historique',
+                categories: 'Catégories',
+                addEntry: 'Entrée',
+                newEntry: 'Nouvelle Entrée',
+                income: 'Revenu',
+                expense: 'Dépense',
+                category: 'Catégorie',
+                amount: 'Montant',
+                description: 'Description',
+                cancel: 'Annuler',
+                save: 'Enregistrer',
+                noEntries: 'Aucune entrée disponible',
+                showAll: 'Tout afficher',
+                settings: 'Paramètres',
+                language: 'Langue',
+                theme: 'Thème',
+                darkMode: 'Mode Sombre',
+                lightMode: 'Mode Clair',
+                mainPage: 'Page Principale',
+                newCategory: 'Nouvelle Catégorie',
+                categoryName: 'Nom de la catégorie',
+                addCategory: 'Ajouter une catégorie',
+                deleteCategory: 'Supprimer'
+            }
         };
 
-        function App() {
-            const [darkMode, setDarkMode] = useState(true);
-            
-            // Beispiel-Daten für das Diagramm
-            const data = [
-                { name: 'Mo', balance: 400 },
-                { name: 'Di', balance: 700 },
-                { name: 'Mi', balance: 600 },
-                { name: 'Do', balance: 1000 },
-            ];
+        class PhoneRepairTracker {
+            constructor() {
+                this.darkMode = true;
+                this.language = 'de';
+                this.isLoggedIn = false;
+                this.username = '';
+                this.password = '';
+                this.entries = [];
+                this.categories = [];
+                this.showAddModal = false;
+                this.showCategoryModal = false;
+                this.amount = '';
+                this.description = '';
+                this.category = '';
+                this.newCategoryName = '';
+                this.type = 'income';
+                this.loading = false;
+                this.currentUser = '';
+                this.selectedCategory = null;
+                this.menuOpen = false;
+                this.currentPage = 'main';
+                this.chart = null;
+                
+                this.init();
+            }
 
-            return (
-                <div className={`min-h-screen p-6 ${darkMode ? 'bg-gray-950 text-white' : 'bg-gray-50 text-gray-900'}`}>
-                    <div className="max-w-4xl mx-auto">
-                        <header className="flex justify-between items-center mb-8">
-                            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-                                Phone Repair Tracker
-                            </h1>
-                            <button 
-                                onClick={() => setDarkMode(!darkMode)}
-                                className="p-2 rounded-full bg-gray-800 text-yellow-400 border border-gray-700"
-                            >
-                                {darkMode ? '☀️' : '🌙'}
-                            </button>
-                        </header>
+            init() {
+                this.checkLoginStatus();
+                this.render();
+            }
 
-                        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 mb-6 shadow-2xl">
-                            <p className="text-gray-400 mb-2">Gesamtbilanz</p>
-                            <h2 className="text-5xl font-extrabold text-green-400">1.250,00 €</h2>
-                        </div>
+            get t() {
+                return translations[this.language];
+            }
 
-                        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 h-64 shadow-xl">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <LineChart data={data}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                                    <XAxis dataKey="name" stroke="#9CA3AF" />
-                                    <YAxis stroke="#9CA3AF" />
-                                    <Tooltip 
-                                        contentStyle={{ backgroundColor: '#111827', border: '1px solid #374151', borderRadius: '8px' }}
-                                    />
-                                    <Line type="monotone" dataKey="balance" stroke="#3b82f6" strokeWidth={3} dot={{ fill: '#3b82f6' }} />
-                                </LineChart>
-                            </ResponsiveContainer>
+            checkLoginStatus() {
+                const user = localStorage.getItem('current_user');
+                if (user) {
+                    this.currentUser = user;
+                    this.isLoggedIn = true;
+                    this.loadUserData(user);
+                }
+            }
+
+            loadUserData(user) {
+                const entriesData = localStorage.getItem(`entries_${user}`);
+                if (entriesData) {
+                    this.entries = JSON.parse(entriesData);
+                }
+
+                const categoriesData = localStorage.getItem(`categories_${user}`);
+                if (categoriesData) {
+                    this.categories = JSON.parse(categoriesData);
+                }
+
+                const settingsData = localStorage.getItem(`settings_${user}`);
+                if (settingsData) {
+                    const settings = JSON.parse(settingsData);
+                    this.darkMode = settings.darkMode ?? true;
+                    this.language = settings.language ?? 'de';
+                }
+            }
+
+            saveSettings() {
+                if (this.currentUser) {
+                    localStorage.setItem(`settings_${this.currentUser}`, JSON.stringify({
+                        darkMode: this.darkMode,
+                        language: this.language
+                    }));
+                }
+            }
+
+            handleLogin(e) {
+                e.preventDefault();
+                this.loading = true;
+                this.render();
+
+                setTimeout(() => {
+                    const userKey = `user_${this.username}`;
+                    const storedPassword = localStorage.getItem(userKey);
+
+                    if (!storedPassword) {
+                        localStorage.setItem(userKey, this.password);
+                        localStorage.setItem('current_user', this.username);
+                        this.currentUser = this.username;
+                        this.isLoggedIn = true;
+                        this.entries = [];
+                        this.categories = [];
+                    } else if (storedPassword === this.password) {
+                        localStorage.setItem('current_user', this.username);
+                        this.currentUser = this.username;
+                        this.isLoggedIn = true;
+                        this.loadUserData(this.username);
+                    } else {
+                        alert('Falsches Passwort!');
+                        this.loading = false;
+                        this.render();
+                        return;
+                    }
+
+                    this.loading = false;
+                    this.render();
+                }, 500);
+            }
+
+            handleLogout() {
+                localStorage.removeItem('current_user');
+                this.isLoggedIn = false;
+                this.currentUser = '';
+                this.entries = [];
+                this.categories = [];
+                this.username = '';
+                this.password = '';
+                this.menuOpen = false;
+                this.currentPage = 'main';
+                this.render();
+            }
+
+            handleAddCategory(e) {
+                e.preventDefault();
+                if (!this.newCategoryName.trim()) return;
+
+                this.categories.push(this.newCategoryName.trim());
+                localStorage.setItem(`categories_${this.currentUser}`, JSON.stringify(this.categories));
+                
+                this.newCategoryName = '';
+                this.showCategoryModal = false;
+                this.render();
+            }
+
+            handleDeleteCategory(catToDelete) {
+                this.categories = this.categories.filter(c => c !== catToDelete);
+                localStorage.setItem(`categories_${this.currentUser}`, JSON.stringify(this.categories));
+                this.render();
+            }
+
+            handleAddEntry(e) {
+                e.preventDefault();
+                const newEntry = {
+                    id: Date.now(),
+                    amount: this.type === 'expense' ? -Math.abs(parseFloat(this.amount)) : Math.abs(parseFloat(this.amount)),
+                    description: this.description,
+                    category: this.category,
+                    type: this.type,
+                    date: new Date().toLocaleDateString(this.language === 'de' ? 'de-DE' : this.language === 'fr' ? 'fr-FR' : 'en-US'),
+                    timestamp: Date.now()
+                };
+
+                this.entries.push(newEntry);
+                localStorage.setItem(`entries_${this.currentUser}`, JSON.stringify(this.entries));
+
+                this.amount = '';
+                this.description = '';
+                this.showAddModal = false;
+                this.render();
+            }
+
+            getTotalBalance() {
+                return this.entries.reduce((sum, entry) => sum + entry.amount, 0);
+            }
+
+            getChartData() {
+                return this.entries.map((entry, index) => {
+                    const runningTotal = this.entries.slice(0, index + 1).reduce((sum, e) => sum + e.amount, 0);
+                    return {
+                        date: entry.date,
+                        balance: runningTotal
+                    };
+                });
+            }
+
+            getCategoryStats() {
+                const stats = {};
+                this.entries.forEach(entry => {
+                    if (!stats[entry.category]) {
+                        stats[entry.category] = { total: 0, count: 0 };
+                    }
+                    stats[entry.category].total += entry.amount;
+                    stats[entry.category].count += 1;
+                });
+                return stats;
+            }
+
+            getFilteredEntries() {
+                return this.selectedCategory 
+                    ? this.entries.filter(e => e.category === this.selectedCategory)
+                    : this.entries;
+            }
+
+            renderChart() {
+                setTimeout(() => {
+                    const canvas = document.getElementById('balanceChart');
+                    if (!canvas) return;
+
+                    if (this.chart) {
+                        this.chart.destroy();
+                    }
+
+                    const chartData = this.getChartData();
+                    const ctx = canvas.getContext('2d');
+
+                    this.chart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: chartData.map(d => d.date),
+                            datasets: [{
+                                label: this.t.totalBalance,
+                                data: chartData.map(d => d.balance),
+                                borderColor: '#3b82f6',
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                borderWidth: 3,
+                                tension: 0.4,
+                                pointBackgroundColor: chartData.map(d => d.balance >= 0 ? '#10b981' : '#ef4444'),
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 2,
+                                pointRadius: 5,
+                                pointHoverRadius: 8
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    backgroundColor: this.darkMode ? '#111827' : '#ffffff',
+                                    titleColor: this.darkMode ? '#fff' : '#000',
+                                    bodyColor: this.darkMode ? '#fff' : '#000',
+                                    borderColor: this.darkMode ? '#374151' : '#a855f7',
+                                    borderWidth: 1,
+                                    padding: 12,
+                                    displayColors: false,
+                                    callbacks: {
+                                        label: (context) => `${context.parsed.y.toFixed(2)} €`
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    grid: {
+                                        color: this.darkMode ? '#1f2937' : '#e5e7eb'
+                                    },
+                                    ticks: {
+                                        color: this.darkMode ? '#6b7280' : '#6b7280',
+                                        callback: (value) => `${value} €`
+                                    }
+                                },
+                                x: {
+                                    grid: {
+                                        color: this.darkMode ? '#1f2937' : '#e5e7eb'
+                                    },
+                                    ticks: {
+                                        color: this.darkMode ? '#6b7280' : '#6b7280'
+                                    }
+                                }
+                            },
+                            animation: {
+                                duration: 1000,
+                                easing: 'easeInOutQuart'
+                            }
+                        }
+                    });
+                }, 100);
+            }
+
+            render() {
+                const app = document.getElementById('app');
+                
+                if (!this.isLoggedIn) {
+                    app.innerHTML = this.renderLogin();
+                } else if (this.currentPage === 'settings') {
+                    app.innerHTML = this.renderSettings();
+                } else {
+                    app.innerHTML = this.renderMain();
+                    if (this.getChartData().length > 0) {
+                        this.renderChart();
+                    }
+                }
+
+                this.attachEventListeners();
+            }
+
+            renderLogin() {
+                return `
+                    <div class="min-h-screen flex items-center justify-center transition-all duration-500 ${this.darkMode ? 'bg-gray-950' : 'bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50'}">
+                        <div class="w-full max-w-md p-8 rounded-2xl backdrop-blur-custom shadow-2xl transform transition-all duration-500 hover-lift animate-scale-in ${this.darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}">
+                            <div class="text-center mb-8 animate-fade-in">
+                                <h1 class="text-4xl font-bold mb-2 animate-pulse-slow ${this.darkMode ? 'text-white' : 'bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent'}">
+                                    Phone Repair
+                                </h1>
+                                <p class="${this.darkMode ? 'text-gray-400' : 'text-gray-600'}">Business Tracker</p>
+                            </div>
+                            
+                            <div class="space-y-6">
+                                <input
+                                    type="text"
+                                    id="username"
+                                    placeholder="${this.t.username}"
+                                    value="${this.username}"
+                                    class="w-full px-4 py-3 rounded-xl input-focus outline-none stagger-item ${this.darkMode ? 'bg-gray-800 text-white placeholder-gray-500' : 'bg-white/50 text-gray-900 placeholder-gray-500'}"
+                                />
+                                
+                                <input
+                                    type="password"
+                                    id="password"
+                                    placeholder="${this.t.password}"
+                                    value="${this.password}"
+                                    class="w-full px-4 py-3 rounded-xl input-focus outline-none stagger-item ${this.darkMode ? 'bg-gray-800 text-white placeholder-gray-500' : 'bg-white/50 text-gray-900 placeholder-gray-500'}"
+                                />
+                                
+                                <button
+                                    id="loginBtn"
+                                    class="w-full py-3 rounded-xl font-semibold transition-all duration-300 transform hover-grow button-press ripple stagger-item ${this.darkMode ? 'bg-blue-600 hover:bg-blue-700 text-white animate-glow' : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white gradient-animate'} ${this.loading ? 'opacity-50 cursor-not-allowed' : ''}"
+                                    ${this.loading ? 'disabled' : ''}
+                                >
+                                    ${this.loading ? this.t.loading : this.t.login}
+                                </button>
+                            </div>
                         </div>
                         
-                        <div className="mt-8 text-center text-gray-500 text-sm">
-                            Status: System bereit ✓ (Kein White Screen mehr)
-                        </div>
+                        <button
+                            id="themeToggle"
+                            class="fixed top-8 right-8 p-3 rounded-full transition-all duration-300 hover-grow shadow-lg animate-fade-in ${this.darkMode ? 'bg-gray-800 text-yellow-400' : 'bg-white text-gray-900'}"
+                        >
+                            ${this.darkMode ? '☀️' : '🌙'}
+                        </button>
                     </div>
-                </div>
-            );
-        }
+                `;
+            }
 
-        // Rendern der App
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
-</body>
-</html>
+            renderSettings() {
+                return `
+                    <div class="min-h-screen transition-all duration-500 ${this.darkMode ? 'bg-gray-950' : 'bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50'}">
+                        ${this.renderNav()}
+                        ${this.menuOpen ? this.renderMenu() : ''}
+                        
+                        <main class="max-w-3xl mx-auto px-6 py-8">
+                            <div class="p-8 rounded-2xl backdrop-blur-custom shadow-2xl mb-6 hover-lift animate-fade-in ${this.darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}">
+                                <h2 class="text-xl font-semibold mb-6 ${this.darkMode ? 'text-white' : 'text-gray-900'}">${this.t.theme}</h2>
+                                
+                                <div class="flex items-center justify-between">
+                                    <span class="${this.darkMode ? 'text-gray-300' : 'text-gray-700'}">${this.darkMode ? this.t.darkMode : this.t.lightMode}</span>
+                                    
+                                    <button id="darkModeToggle" class="relative w-16 h-8 rounded-full transition-all duration-300 hover-grow ${this.darkMode ? 'bg-blue-600' : 'bg-gray-300'}">
+                                        <div class="absolute top-1 left-1 w-6 h-6 rounded-full bg-white transition-transform duration-300 ${this.darkMode ? 'translate-x-8' : 'translate-x-0'} flex items-center justify-center">
+                                            ${this.darkMode ? '🌙' : '☀️'}
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="p-8 rounded-2xl backdrop-blur-custom shadow-2xl hover-lift animate-fade-in ${this.darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}" style="animation-delay: 0.1s">
+                                <h2 class="text-xl font-semibold mb-6 ${this.darkMode ? 'text-white' : 'text-gray-900'}">${this.t.language}</h2>
+                                
+                                <div class="space-y-4">
+                                    ${['de', 'en', 'fr'].map((lang, idx) => `
+                                        <button
+                                            data-lang="${lang}"
+                                            class="w-full px-4 py-3 rounded-xl font-semibold transition-all duration-300 hover-grow button-press ripple stagger-item ${
+                                                this.language === lang
+                                                    ? this.darkMode ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white'
+                                                    : this.darkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                            }"
+                                        >
+                                            ${lang === 'de' ? 'Deutsch' : lang === 'en' ? 'English' : 'Français'}
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </main>
+                    </div>
+                `;
+            }
+
+            renderMain() {
+                const totalBalance = this.getTotalBalance();
+                const categoryStats = this.getCategoryStats();
+                const filteredEntries = this.getFilteredEntries();
+
+                return `
+                    <div class="min-h-screen transition-all duration-500 ${this.darkMode ? 'bg-gray-950' : 'bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50'}">
+                        ${this.renderNav()}
+                        ${this.menuOpen ? this.renderMenu() : ''}
+                        
+                        <main class="max-w-7xl mx-auto px-6 py-8">
+                            <div class="p-8 rounded-2xl backdrop-blur-custom shadow-2xl mb-8 transform transition-all duration-500 hover-lift animate-fade-in ${this.darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h2 class="text-lg ${this.darkMode ? 'text-gray-400' : 'text-gray-600'}">${this.t.totalBalance}</h2>
+                                    <div class="animate-bounce">
+                                        ${totalBalance >= 0 ? '📈' : '📉'}
+                                    </div>
+                                </div>
+                                
+                                <p class="text-5xl font-bold mb-2 transition-all duration-500 ${totalBalance >= 0 ? 'text-green-500' : 'text-red-500'}">
+                                    ${totalBalance.toFixed(2)} €
+                                </p>
+                                
+                                <p class="text-sm ${this.darkMode ? 'text-gray-400' : 'text-gray-600'}">
+                                    ${this.entries.length} ${this.t.entries}
+                                </p>
+                            </div>
+
+                            ${this.getChartData().length > 0 ? `
+                                <div class="p-8 rounded-2xl backdrop-blur-custom shadow-2xl mb-8 transform transition-all duration-500 hover-lift animate-fade-in ${this.darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}" style="animation-delay: 0.1s">
+                                    <h2 class="text-xl font-semibold mb-6 ${this.darkMode ? 'text-white' : 'text-gray-900'}">${this.t.history}</h2>
+                                    <div style="height: 300px;">
+                                        <canvas id="balanceChart"></canvas>
+                                    </div>
+                                </div>
+                            ` : ''}
+
+                            <div class="p-8 rounded-2xl backdrop-blur-custom shadow-2xl mb-8 animate-fade-in ${this.darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}" style="animation-delay: 0.2s">
+                                <div class="flex justify-between items-center mb-6">
+                                    <h2 class="text-xl font-semibold ${this.darkMode ? 'text-white' : 'text-gray-900'}">${this.t.categories}</h2>
+                                    <button
+                                        id="newCategoryBtn"
+                                        class="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-all duration-300 transform hover-grow button-press ripple"
+                                    >
+                                        ➕ ${this.t.newCategory}
+                                    </button>
+                                </div>
+                                
+                                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                    ${this.categories.map((cat, idx) => `
+                                        <div class="relative group stagger-item">
+                                            <button
+                                                data-category="${cat}"
+                                                class="w-full p-4 rounded-xl transition-all duration-300 hover-lift button-press ${
+                                                    this.selectedCategory === cat 
+                                                        ? this.darkMode ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white'
+                                                        : this.darkMode ? 'bg-gray-800 text-gray-300' : 'bg-white text-gray-900'
+                                                }"
+                                            >
+                                                <div class="text-sm mb-1">${cat}</div>
+                                                ${categoryStats[
