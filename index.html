@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phone Repair Business Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -67,15 +67,14 @@
     <div id="app"></div>
 
     <script>
-        // Supabase Konfiguration
+        // --- SUPABASE KONFIGURATION ---
         const SUPABASE_URL = 'https://jpwnhsblrmizqwvwnfsb.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impwd25oc2Jscm1penF3dnduZnNiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5OTE0NTYsImV4cCI6MjA4MzU2NzQ1Nn0.03F1ppRXNf9upk3tI4W84EQH8pNMmQCdbEPxsNixcuY';
-        
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const translations = {
             de: {
-                login: 'Anmelden', username: 'Email', password: 'Passwort', loading: 'Lädt...',
+                login: 'Anmelden / Registrieren', username: 'E-Mail', password: 'Passwort', loading: 'Lädt...',
                 logout: 'Abmelden', totalBalance: 'Gesamtbilanz', entries: 'Einträge', history: 'Verlauf',
                 categories: 'Kategorien', addEntry: 'Eintrag', newEntry: 'Neuer Eintrag',
                 income: 'Einnahme', expense: 'Ausgabe', category: 'Kategorie', amount: 'Betrag',
@@ -84,11 +83,10 @@
                 settings: 'Einstellungen', language: 'Sprache', theme: 'Design',
                 darkMode: 'Dark Mode', lightMode: 'Light Mode', mainPage: 'Hauptseite',
                 newCategory: 'Neue Kategorie', categoryName: 'Kategoriename',
-                addCategory: 'Kategorie hinzufügen', deleteCategory: 'Löschen',
-                register: 'Registrieren', noAccount: 'Noch kein Account?', haveAccount: 'Bereits registriert?'
+                addCategory: 'Kategorie hinzufügen', deleteCategory: 'Löschen'
             },
             en: {
-                login: 'Login', username: 'Email', password: 'Password', loading: 'Loading...',
+                login: 'Login / Register', username: 'E-Mail', password: 'Password', loading: 'Loading...',
                 logout: 'Logout', totalBalance: 'Total Balance', entries: 'Entries', history: 'History',
                 categories: 'Categories', addEntry: 'Entry', newEntry: 'New Entry',
                 income: 'Income', expense: 'Expense', category: 'Category', amount: 'Amount',
@@ -97,11 +95,10 @@
                 settings: 'Settings', language: 'Language', theme: 'Theme',
                 darkMode: 'Dark Mode', lightMode: 'Light Mode', mainPage: 'Main Page',
                 newCategory: 'New Category', categoryName: 'Category Name',
-                addCategory: 'Add Category', deleteCategory: 'Delete',
-                register: 'Register', noAccount: 'No account yet?', haveAccount: 'Already registered?'
+                addCategory: 'Add Category', deleteCategory: 'Delete'
             },
             fr: {
-                login: 'Connexion', username: 'Email', password: 'Mot de passe', loading: 'Chargement...',
+                login: 'Connexion', username: 'E-Mail', password: 'Mot de passe', loading: 'Chargement...',
                 logout: 'Déconnexion', totalBalance: 'Solde Total', entries: 'Entrées', history: 'Historique',
                 categories: 'Catégories', addEntry: 'Entrée', newEntry: 'Nouvelle Entrée',
                 income: 'Revenu', expense: 'Dépense', category: 'Catégorie', amount: 'Montant',
@@ -110,8 +107,7 @@
                 settings: 'Paramètres', language: 'Langue', theme: 'Thème',
                 darkMode: 'Mode Sombre', lightMode: 'Mode Clair', mainPage: 'Page Principale',
                 newCategory: 'Nouvelle Catégorie', categoryName: 'Nom de la catégorie',
-                addCategory: 'Ajouter une catégorie', deleteCategory: 'Supprimer',
-                register: 'S\'inscrire', noAccount: 'Pas encore de compte?', haveAccount: 'Déjà inscrit?'
+                addCategory: 'Ajouter une catégorie', deleteCategory: 'Supprimer'
             }
         };
 
@@ -121,7 +117,6 @@
                     darkMode: true,
                     language: 'de',
                     isLoggedIn: false,
-                    isRegistering: false,
                     username: '',
                     password: '',
                     entries: [],
@@ -135,7 +130,6 @@
                     type: 'income',
                     loading: false,
                     currentUser: '',
-                    userId: null,
                     selectedCategory: null,
                     menuOpen: false,
                     currentPage: 'main',
@@ -147,156 +141,51 @@
             get t() { return translations[this.state.language]; }
 
             async init() {
-                await this.checkAuth();
-                this.render();
-            }
-
-            async checkAuth() {
-                const { data: { session } } = await supabase.auth.getSession();
+                // Prüfen ob User bereits eingeloggt ist (Supabase Session)
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                
                 if (session) {
-                    this.state.isLoggedIn = true;
-                    this.state.userId = session.user.id;
                     this.state.currentUser = session.user.email;
-                    await this.loadUserData();
-                }
-            }
-
-            async loadUserData() {
-                const { data: settings } = await supabase
-                    .from('settings')
-                    .select('*')
-                    .eq('user_id', this.state.userId)
-                    .single();
-                
-                if (settings) {
-                    this.state.darkMode = settings.dark_mode ?? true;
-                    this.state.language = settings.language ?? 'de';
-                }
-
-                const { data: categories } = await supabase
-                    .from('categories')
-                    .select('name')
-                    .eq('user_id', this.state.userId);
-                
-                if (categories) {
-                    this.state.categories = categories.map(c => c.name);
-                }
-
-                const { data: entries } = await supabase
-                    .from('entries')
-                    .select('*')
-                    .eq('user_id', this.state.userId)
-                    .order('timestamp', { ascending: true });
-                
-                if (entries) {
-                    this.state.entries = entries;
-                }
-            }
-
-            async saveSettings() {
-                if (!this.state.userId) return;
-                
-                await supabase
-                    .from('settings')
-                    .upsert({
-                        user_id: this.state.userId,
-                        dark_mode: this.state.darkMode,
-                        language: this.state.language
-                    });
-            }
-
-            async handleAuth(isLogin) {
-                this.state.loading = true;
-                this.render();
-
-                try {
-                    if (isLogin) {
-                        const { data, error } = await supabase.auth.signInWithPassword({
-                            email: this.state.username,
-                            password: this.state.password
-                        });
-
-                        if (error) throw error;
-
-                        this.state.isLoggedIn = true;
-                        this.state.userId = data.user.id;
-                        this.state.currentUser = data.user.email;
-                        await this.loadUserData();
-                    } else {
-                        const { data, error } = await supabase.auth.signUp({
-                            email: this.state.username,
-                            password: this.state.password
-                        });
-
-                        if (error) throw error;
-
-                        if (data.user) {
-                            this.state.userId = data.user.id;
-                            await supabase.from('settings').insert({
-                                user_id: data.user.id,
-                                dark_mode: true,
-                                language: 'de'
-                            });
-                        }
-
-                        alert('Account erstellt! Bitte melde dich jetzt an.');
-                        this.state.isRegistering = false;
+                    this.state.isLoggedIn = true;
+                    await this.loadUserData(session.user.id);
+                } else {
+                    // Falls Einstellungen im LocalStorage waren, laden wir zumindest Theme/Sprache
+                    const localSettings = localStorage.getItem('app_settings');
+                    if (localSettings) {
+                        const s = JSON.parse(localSettings);
+                        this.state.darkMode = s.darkMode ?? true;
+                        this.state.language = s.language ?? 'de';
                     }
-                } catch (error) {
-                    alert(error.message);
                 }
-
-                this.state.loading = false;
                 this.render();
             }
 
-            async handleLogout() {
-                await supabase.auth.signOut();
-                this.state.isLoggedIn = false;
-                this.state.currentUser = '';
-                this.state.userId = null;
-                this.state.entries = [];
-                this.state.categories = [];
-                this.state.menuOpen = false;
-                this.render();
-            }
-
-            async addCategory(name) {
-                const { error } = await supabase
-                    .from('categories')
-                    .insert({
-                        user_id: this.state.userId,
-                        name: name
-                    });
-
-                if (!error) {
-                    this.state.categories.push(name);
-                }
-            }
-
-            async deleteCategory(name) {
-                await supabase
-                    .from('categories')
-                    .delete()
-                    .eq('user_id', this.state.userId)
-                    .eq('name', name);
-
-                this.state.categories = this.state.categories.filter(c => c !== name);
-            }
-
-            async addEntry(entry) {
-                const { data, error } = await supabase
+            async loadUserData(userId) {
+                this.state.loading = true;
+                // Daten aus der Cloud laden
+                const { data: entries } = await supabaseClient
                     .from('entries')
-                    .insert({
-                        ...entry,
-                        user_id: this.state.userId
-                    })
-                    .select()
-                    .single();
+                    .select('*')
+                    .eq('user_id', userId)
+                    .order('created_at', { ascending: true });
 
-                if (!error && data) {
-                    this.state.entries.push(data);
-                }
+                const { data: categories } = await supabaseClient
+                    .from('categories')
+                    .select('*')
+                    .eq('user_id', userId);
+
+                if (entries) this.state.entries = entries;
+                if (categories) this.state.categories = categories.map(c => c.name);
+                
+                this.state.loading = false;
+            }
+
+            saveSettings() {
+                // Einstellungen bleiben lokal, damit User nicht jedes mal beim Ausloggen resettet wird
+                localStorage.setItem('app_settings', JSON.stringify({
+                    darkMode: this.state.darkMode,
+                    language: this.state.language
+                }));
             }
 
             render() {
@@ -313,7 +202,7 @@
             }
 
             renderLogin() {
-                const { darkMode, isRegistering } = this.state;
+                const { darkMode } = this.state;
                 return `
                     <div class="min-h-screen flex items-center justify-center ${darkMode ? 'bg-gray-950' : 'bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50'}">
                         <div class="w-full max-w-md p-8 rounded-2xl shadow-2xl hover-lift animate-scale-in ${darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}">
@@ -321,7 +210,7 @@
                                 <h1 class="text-4xl font-bold mb-2 animate-pulse-slow ${darkMode ? 'text-white' : 'bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent'}">
                                     Phone Repair
                                 </h1>
-                                <p class="${darkMode ? 'text-gray-400' : 'text-gray-600'}">Business Tracker</p>
+                                <p class="${darkMode ? 'text-gray-400' : 'text-gray-600'}">Cloud Business Tracker</p>
                             </div>
                             
                             <div class="space-y-6">
@@ -331,12 +220,8 @@
                                 <input type="password" id="password" placeholder="${this.t.password}" 
                                     class="w-full px-4 py-3 rounded-xl input-focus outline-none stagger-item ${darkMode ? 'bg-gray-800 text-white placeholder-gray-500' : 'bg-white text-gray-900 placeholder-gray-500'}" />
                                 
-                                <button id="authBtn" class="w-full py-3 rounded-xl font-semibold button-press stagger-item ${darkMode ? 'bg-blue-600 hover:bg-blue-700 text-white animate-glow' : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'}">
-                                    ${this.state.loading ? this.t.loading : (isRegistering ? this.t.register : this.t.login)}
-                                </button>
-
-                                <button id="toggleAuth" class="w-full text-sm ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}">
-                                    ${isRegistering ? this.t.haveAccount : this.t.noAccount}
+                                <button id="loginBtn" class="w-full py-3 rounded-xl font-semibold button-press stagger-item ${darkMode ? 'bg-blue-600 hover:bg-blue-700 text-white animate-glow' : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'}">
+                                    ${this.state.loading ? this.t.loading : this.t.login}
                                 </button>
                             </div>
                         </div>
@@ -486,9 +371,7 @@
                                                     <p class="font-medium ${darkMode ? 'text-white' : 'text-gray-900'}">${e.description}</p>
                                                     <p class="text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}">${e.date}</p>
                                                 </div>
-                                                <p class="text-xl font-bold ${parseFloat(e.amount) >= 0 ? 'text-green-500' : 'text-red-500'}">
-                                                    ${parseFloat(e.amount) >= 0 ? '+' : ''}${parseFloat(e.amount).toFixed(2)} €
-                                                </p>
+                                                <p class="text-xl font-bold ${e.amount >= 0 ? 'text-green-500' : 'text-red-500'}">${e.amount >= 0 ? '+' : ''}${e.amount.toFixed(2)} €</p>
                                             </div>
                                         </div>
                                     `).join('')}
@@ -559,12 +442,12 @@
             }
 
             getTotalBalance() {
-                return this.state.entries.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
+                return this.state.entries.reduce((sum, e) => sum + e.amount, 0);
             }
 
             getChartData() {
                 return this.state.entries.map((entry, index) => {
-                    const runningTotal = this.state.entries.slice(0, index + 1).reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
+                    const runningTotal = this.state.entries.slice(0, index + 1).reduce((sum, e) => sum + e.amount, 0);
                     return { date: entry.date, balance: runningTotal };
                 });
             }
@@ -575,7 +458,7 @@
                     if (!stats[entry.category]) {
                         stats[entry.category] = { total: 0, count: 0 };
                     }
-                    stats[entry.category].total += parseFloat(entry.amount || 0);
+                    stats[entry.category].total += entry.amount;
                     stats[entry.category].count += 1;
                 });
                 return stats;
@@ -650,64 +533,95 @@
             }
 
             attachEvents() {
-                const authBtn = document.getElementById('authBtn');
-                const toggleAuth = document.getElementById('toggleAuth');
+                // Login Handler (CLOUD)
+                const loginBtn = document.getElementById('loginBtn');
                 const username = document.getElementById('username');
                 const password = document.getElementById('password');
                 
-                if (authBtn && username && password) {
-                    authBtn.onclick = () => {
-                        this.state.username = username.value;
-                        this.state.password = password.value;
-                        this.handleAuth(!this.state.isRegistering);
-                    };
-                }
+                if (loginBtn) {
+                    loginBtn.onclick = async () => {
+                        this.state.loading = true;
+                        this.render();
+                        
+                        const email = username.value;
+                        const pass = password.value;
 
-                if (toggleAuth) {
-                    toggleAuth.onclick = () => {
-                        this.state.isRegistering = !this.state.isRegistering;
+                        // 1. Versuch: Einloggen
+                        let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: pass });
+                        
+                        if (error) {
+                            // 2. Versuch: Registrieren, falls User nicht existiert
+                            let { data: upData, error: upError } = await supabaseClient.auth.signUp({ email, password: pass });
+                            if (upError) {
+                                alert("Fehler: " + upError.message);
+                            } else {
+                                alert("Account erstellt! Bitte erneut einloggen.");
+                            }
+                        } else {
+                            // Erfolg: Seite neu laden um Daten zu holen
+                            location.reload();
+                        }
+                        
+                        this.state.loading = false;
                         this.render();
                     };
                 }
 
+                // Theme Toggle
                 const themeToggle = document.getElementById('themeToggle');
                 if (themeToggle) {
                     themeToggle.onclick = () => {
                         this.state.darkMode = !this.state.darkMode;
+                        this.saveSettings();
                         this.render();
                     };
                 }
 
+                // Dark Mode Toggle
                 const darkModeToggle = document.getElementById('darkModeToggle');
                 if (darkModeToggle) {
-                    darkModeToggle.onclick = async () => {
+                    darkModeToggle.onclick = () => {
                         this.state.darkMode = !this.state.darkMode;
-                        await this.saveSettings();
+                        this.saveSettings();
                         this.render();
                     };
                 }
 
+                // Language buttons
                 document.querySelectorAll('[data-lang]').forEach(btn => {
-                    btn.onclick = async () => {
+                    btn.onclick = () => {
                         this.state.language = btn.dataset.lang;
-                        await this.saveSettings();
+                        this.saveSettings();
                         this.render();
                     };
                 });
 
+                // Menu
                 const menuToggle = document.getElementById('menuToggle');
                 const menuClose = document.getElementById('menuClose');
                 if (menuToggle) menuToggle.onclick = () => { this.state.menuOpen = true; this.render(); };
                 if (menuClose) menuClose.onclick = () => { this.state.menuOpen = false; this.render(); };
 
+                // Navigation
                 const navMain = document.getElementById('navMain');
                 const navSettings = document.getElementById('navSettings');
                 const logoutBtn = document.getElementById('logoutBtn');
                 
                 if (navMain) navMain.onclick = () => { this.state.currentPage = 'main'; this.state.menuOpen = false; this.render(); };
                 if (navSettings) navSettings.onclick = () => { this.state.currentPage = 'settings'; this.state.menuOpen = false; this.render(); };
-                if (logoutBtn) logoutBtn.onclick = () => this.handleLogout();
+                if (logoutBtn) {
+                    logoutBtn.onclick = async () => {
+                        await supabaseClient.auth.signOut();
+                        this.state.isLoggedIn = false;
+                        this.state.currentUser = '';
+                        this.state.entries = [];
+                        this.state.categories = [];
+                        this.state.menuOpen = false;
+                        location.reload();
+                    };
+                }
 
+                // Categories
                 const newCatBtn = document.getElementById('newCatBtn');
                 if (newCatBtn) newCatBtn.onclick = () => { this.state.showCategoryModal = true; this.render(); };
 
@@ -718,10 +632,28 @@
                 const newCatName = document.getElementById('newCatName');
                 if (saveCat && newCatName) {
                     saveCat.onclick = async () => {
-                        if (newCatName.value.trim()) {
-                            await this.addCategory(newCatName.value.trim());
+                        if (newCatName.value.trim() && this.state.user) {
+                            // CLOUD SAVE
+                            await supabaseClient.from('categories').insert([{ 
+                                name: newCatName.value.trim(), 
+                                user_id: this.state.user?.id 
+                            }]);
+                            
+                            // Reload Data
+                            const { data: { user } } = await supabaseClient.auth.getUser();
+                            if(user) await this.loadUserData(user.id);
+
                             this.state.showCategoryModal = false;
                             this.render();
+                        } else if (newCatName.value.trim()) {
+                            // Fallback falls User Session verloren hat, reload
+                             const { data: { user } } = await supabaseClient.auth.getUser();
+                             if(user) {
+                                 await supabaseClient.from('categories').insert([{ name: newCatName.value.trim(), user_id: user.id }]);
+                                 await this.loadUserData(user.id);
+                             }
+                             this.state.showCategoryModal = false;
+                             this.render();
                         }
                     };
                 }
@@ -737,7 +669,14 @@
                 document.querySelectorAll('[data-delcat]').forEach(btn => {
                     btn.onclick = async (e) => {
                         e.stopPropagation();
-                        await this.deleteCategory(btn.dataset.delcat);
+                        // CLOUD DELETE
+                        const catName = btn.dataset.delcat;
+                        await supabaseClient.from('categories').delete().eq('name', catName);
+                        
+                        // Reload
+                        const { data: { user } } = await supabaseClient.auth.getUser();
+                        if(user) await this.loadUserData(user.id);
+                        
                         this.render();
                     };
                 });
@@ -745,6 +684,7 @@
                 const clearFilter = document.getElementById('clearFilter');
                 if (clearFilter) clearFilter.onclick = () => { this.state.selectedCategory = null; this.render(); };
 
+                // Entries
                 const newEntryBtn = document.getElementById('newEntryBtn');
                 if (newEntryBtn && !newEntryBtn.disabled) {
                     newEntryBtn.onclick = () => {
@@ -771,17 +711,21 @@
                     saveEntry.onclick = async () => {
                         if (!entryAmount.value || !entryDesc.value) return;
                         
+                        const { data: { user } } = await supabaseClient.auth.getUser();
+
+                        // CLOUD SAVE ENTRY
                         const newEntry = {
-                            id: Date.now(),
+                            user_id: user.id,
                             amount: this.state.type === 'expense' ? -Math.abs(parseFloat(entryAmount.value)) : Math.abs(parseFloat(entryAmount.value)),
                             description: entryDesc.value,
                             category: entryCat.value,
                             type: this.state.type,
                             date: new Date().toLocaleDateString(this.state.language === 'de' ? 'de-DE' : this.state.language === 'fr' ? 'fr-FR' : 'en-US'),
-                            timestamp: Date.now()
                         };
 
-                        await this.addEntry(newEntry);
+                        await supabaseClient.from('entries').insert([newEntry]);
+                        
+                        await this.loadUserData(user.id);
                         this.state.showAddModal = false;
                         this.render();
                     };
@@ -789,6 +733,7 @@
             }
         }
 
+        // Start App
         new App();
     </script>
 </body>
