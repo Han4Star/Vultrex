@@ -644,20 +644,37 @@
                 const newCatName = document.getElementById('newCatName');
                 if (saveCat && newCatName && !saveCat.disabled) {
                     saveCat.onclick = async () => {
-                        if (!newCatName.value.trim()) return;
+                        const catName = newCatName.value.trim();
+                        if (!catName) return;
+                        
+                        // Prüfe ob Kategorie bereits existiert
+                        if (this.state.categories.includes(catName)) {
+                            alert('Diese Kategorie existiert bereits!');
+                            return;
+                        }
                         
                         this.state.isSaving = true;
                         this.render();
                         
-                        await supabaseClient.from('categories').insert([{ 
-                            name: newCatName.value.trim(), 
+                        const { error } = await supabaseClient.from('categories').insert([{ 
+                            name: catName, 
                             user_id: this.state.userId 
                         }]);
                         
-                        await this.loadUserData(this.state.userId);
+                        if (error) {
+                            console.error('Error saving category:', error);
+                            alert('Fehler beim Speichern der Kategorie');
+                            this.state.isSaving = false;
+                            this.render();
+                            return;
+                        }
+                        
+                        // Füge Kategorie sofort zum State hinzu
+                        this.state.categories.push(catName);
                         
                         this.state.isSaving = false;
                         this.state.showCategoryModal = false;
+                        this.state.newCategoryName = '';
                         this.render();
                     };
                 }
