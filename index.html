@@ -126,17 +126,6 @@
                     this.state.userId = session.user.id;
                     this.state.isLoggedIn = true;
                     await this.loadUserData(session.user.id);
-                    
-                    // Auto-invite zu Discord Server (nur beim ersten Login)
-                    const { data: settings } = await supabaseClient
-                        .from('settings')
-                        .select('discord_invited')
-                        .eq('user_id', session.user.id)
-                        .single();
-                    
-                    if (!settings || !settings.discord_invited) {
-                        await this.inviteToDiscord(session.user.id);
-                    }
                 } else {
                     const localSettings = localStorage.getItem('app_settings');
                     if (localSettings) {
@@ -148,65 +137,28 @@
                 this.render();
             }
 
-            async inviteToDiscord(userId) {
-                try {
-                    await fetch(`${SUPABASE_URL}/functions/v1/discord-invite`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-                        },
-                        body: JSON.stringify({ user_id: userId })
-                    });
-                    
-                    // Markiere als eingeladen
-                    await supabaseClient.from('settings').upsert({
-                        user_id: userId,
-                        discord_invited: true
-                    });
-                } catch (error) {
-                    console.log('Discord invite error:', error);
-                }
-            }
-
             async loadUserData(userId) {
                 this.state.loading = true;
                 
-                try {
-                    const { data: entries, error: entriesError } = await supabaseClient
-                        .from('entries')
-                        .select('*')
-                        .eq('user_id', userId)
-                        .order('timestamp', { ascending: true });
-
-                    const { data: categories, error: categoriesError } = await supabaseClient
-                        .from('categories')
-                        .select('*')
-                        .eq('user_id', userId);
-
-                    const { data: settings } = await supabaseClient
-                        .from('settings')
-                        .select('*')
-                        .eq('user_id', userId)
-                        .single();
-
-                    if (entries) this.state.entries = entries;
-                    
-                    if (categories && !categoriesError) {
-                        this.state.categories = categories.map(c => c.name);
-                    } else {
-                        // Falls Datenbank nicht verfügbar, nutze lokalen Speicher
-                        console.log('Lade Kategorien aus lokalem Speicher');
-                        this.loadCategoriesFromLocal();
+                // Lade alles aus localStorage
+                const storageKey = 'phone_repair_data_' + userId;
+                const savedData = localStorage.getItem(storageKey);
+                
+                if (savedData) {
+                    try {
+                        const data = JSON.parse(savedData);
+                        this.state.entries = data.entries || [];
+                        this.state.categories = data.categories || [];
+                        this.state.darkMode = data.darkMode ?? true;
+                        this.state.language = data.language ?? 'de';
+                    } catch (e) {
+                        console.error('Fehler beim Laden:', e);
+                        this.state.entries = [];
+                        this.state.categories = [];
                     }
-                    
-                    if (settings) {
-                        this.state.darkMode = settings.dark_mode ?? true;
-                        this.state.language = settings.language ?? 'de';
-                    }
-                } catch (error) {
-                    console.error('Fehler beim Laden:', error);
-                    this.loadCategoriesFromLocal();
+                } else {
+                    this.state.entries = [];
+                    this.state.categories = [];
                 }
                 
                 this.state.loading = false;
@@ -218,24 +170,19 @@
                     language: this.state.language
                 }));
                 
-                if (this.state.userId) {
-                    supabaseClient.from('settings').upsert({
-                        user_id: this.state.userId,
-                        dark_mode: this.state.darkMode,
-                        language: this.state.language
-                    });
-                }
+                this.saveAllData();
             }
 
-            saveCategoriesToLocal() {
-                localStorage.setItem('categories_' + this.state.userId, JSON.stringify(this.state.categories));
-            }
-
-            loadCategoriesFromLocal() {
-                const saved = localStorage.getItem('categories_' + this.state.userId);
-                if (saved) {
-                    this.state.categories = JSON.parse(saved);
-                }
+            saveAllData() {
+                if (!this.state.userId) return;
+                
+                const storageKey = 'phone_repair_data_' + this.state.userId;
+                localStorage.setItem(storageKey, JSON.stringify({
+                    entries: this.state.entries,
+                    categories: this.state.categories,
+                    darkMode: this.state.darkMode,
+                    language: this.state.language
+                }));
             }
 
             async loginWithDiscord() {
@@ -671,7 +618,6 @@
                         const catName = newCatName.value.trim();
                         if (!catName) return;
                         
-                        // Prüfe ob Kategorie bereits existiert
                         if (this.state.categories.includes(catName)) {
                             alert('Diese Kategorie existiert bereits!');
                             return;
@@ -680,46 +626,13 @@
                         this.state.isSaving = true;
                         this.render();
                         
-                        try {
-                            // Versuche erst die Tabelle zu erstellen (falls sie nicht existiert)
-                            const { data, error } = await supabaseClient.from('categories').insert([{ 
-                                name: catName, 
-                                user_id: this.state.userId 
-                            }]).select();
-                            
-                            if (error) {
-                                console.error('Supabase Error:', error);
-                                
-                                // Falls Tabelle nicht existiert, nutze lokalen Speicher
-                                if (error.code === '42P01' || error.message.includes('does not exist')) {
-                                    console.log('Tabelle existiert nicht, nutze lokalen Speicher');
-                                    this.state.categories.push(catName);
-                                    this.saveCategoriesToLocal();
-                                    this.state.isSaving = false;
-                                    this.state.showCategoryModal = false;
-                                    this.render();
-                                    return;
-                                }
-                                
-                                alert('Fehler beim Speichern: ' + error.message);
-                                this.state.isSaving = false;
-                                this.render();
-                                return;
-                            }
-                            
-                            // Füge Kategorie sofort zum State hinzu
-                            this.state.categories.push(catName);
-                            
-                            this.state.isSaving = false;
-                            this.state.showCategoryModal = false;
-                            this.state.newCategoryName = '';
-                            this.render();
-                        } catch (err) {
-                            console.error('Catch Error:', err);
-                            alert('Fehler: ' + err.message);
-                            this.state.isSaving = false;
-                            this.render();
-                        }
+                        // Füge Kategorie hinzu
+                        this.state.categories.push(catName);
+                        this.saveAllData();
+                        
+                        this.state.isSaving = false;
+                        this.state.showCategoryModal = false;
+                        this.render();
                     };
                 }
 
@@ -735,13 +648,16 @@
                     btn.onclick = async (e) => {
                         e.stopPropagation();
                         
+                        const catName = btn.dataset.delcat;
+                        
+                        if (!confirm(`Kategorie "${catName}" wirklich löschen?`)) return;
+                        
                         this.state.isSaving = true;
                         this.render();
                         
-                        const catName = btn.dataset.delcat;
-                        await supabaseClient.from('categories').delete().eq('name', catName).eq('user_id', this.state.userId);
-                        
-                        await this.loadUserData(this.state.userId);
+                        // Entferne Kategorie
+                        this.state.categories = this.state.categories.filter(c => c !== catName);
+                        this.saveAllData();
                         
                         this.state.isSaving = false;
                         this.render();
@@ -795,9 +711,8 @@
                             timestamp: Date.now()
                         };
 
-                        await supabaseClient.from('entries').insert([newEntry]);
-                        
-                        await this.loadUserData(this.state.userId);
+                        this.state.entries.push(newEntry);
+                        this.saveAllData();
                         
                         this.state.isSaving = false;
                         this.state.showAddModal = false;
