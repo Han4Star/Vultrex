@@ -3,333 +3,766 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Handy-Reparatur Dashboard</title>
-    <!-- Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <title>Phone Repair Business Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-
-        .glass-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 1.5rem;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        
+        @keyframes slideInLeft {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(0); }
         }
-
-        .btn-device {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        
+        @keyframes scaleIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
-
-        .btn-device:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
-
-        .modal {
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-            display: none;
+        
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(59, 130, 246, 0.8); }
         }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .loader {
-            border-top-color: #3b82f6;
-            animation: spinner 1.5s linear infinite;
-        }
-
-        @keyframes spinner {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .positive { color: #10b981; }
-        .negative { color: #ef4444; }
+        
+        .animate-fade-in { animation: fadeIn 0.5s ease-out; }
+        .animate-slide-in-left { animation: slideInLeft 0.4s ease-out; }
+        .animate-scale-in { animation: scaleIn 0.3s ease-out; }
+        .animate-pulse-slow { animation: pulse 2s ease-in-out infinite; }
+        .animate-glow { animation: glow 2s ease-in-out infinite; }
+        
+        .hover-lift { transition: all 0.3s ease; }
+        .hover-lift:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        
+        .hover-grow { transition: all 0.3s ease; }
+        .hover-grow:hover { transform: scale(1.05); }
+        
+        .button-press:active { transform: scale(0.95); }
+        
+        .input-focus { transition: all 0.3s ease; }
+        .input-focus:focus { transform: scale(1.02); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3); }
+        
+        .stagger-item { opacity: 0; animation: fadeIn 0.5s ease-out forwards; }
+        .stagger-item:nth-child(1) { animation-delay: 0.1s; }
+        .stagger-item:nth-child(2) { animation-delay: 0.2s; }
+        .stagger-item:nth-child(3) { animation-delay: 0.3s; }
+        .stagger-item:nth-child(4) { animation-delay: 0.4s; }
+        .stagger-item:nth-child(5) { animation-delay: 0.5s; }
+        .stagger-item:nth-child(6) { animation-delay: 0.6s; }
+        .stagger-item:nth-child(7) { animation-delay: 0.7s; }
+        .stagger-item:nth-child(8) { animation-delay: 0.8s; }
     </style>
 </head>
-<body class="p-4 md:p-8">
-
-    <div id="loading-overlay" class="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center">
-        <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mb-4"></div>
-        <p class="text-gray-600 font-medium">Daten werden geladen...</p>
-    </div>
-
-    <div class="max-w-6xl mx-auto">
-        <!-- Header / Total Balance -->
-        <header class="text-center mb-10">
-            <h1 class="text-gray-500 uppercase tracking-widest text-sm font-bold mb-2">Finanz-Dashboard</h1>
-            <div class="glass-card inline-block px-10 py-6">
-                <p class="text-gray-600 text-lg">Gesamt-Endstand</p>
-                <div class="text-5xl md:text-6xl font-black text-blue-600" id="total-balance">0,00 €</div>
-            </div>
-        </header>
-
-        <!-- Charts Section -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-            <div class="lg:col-span-2 glass-card p-6">
-                <h2 class="text-xl font-bold mb-4 text-gray-800">Kumulierter Verlauf</h2>
-                <div class="h-64">
-                    <canvas id="mainChart"></canvas>
-                </div>
-            </div>
-            <div class="glass-card p-6 flex flex-col justify-center items-center text-center">
-                <h2 class="text-xl font-bold mb-2 text-gray-800">Statistik</h2>
-                <div class="w-full space-y-4">
-                    <div class="bg-green-50 p-4 rounded-xl">
-                        <p class="text-green-600 text-xs font-bold uppercase">Einnahmen</p>
-                        <p id="total-income" class="text-2xl font-bold text-green-700">0 €</p>
-                    </div>
-                    <div class="bg-red-50 p-4 rounded-xl">
-                        <p class="text-red-600 text-xs font-bold uppercase">Ausgaben</p>
-                        <p id="total-expense" class="text-2xl font-bold text-red-700">0 €</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Devices Grid -->
-        <h2 class="text-2xl font-bold mb-6 text-gray-800 border-l-4 border-blue-500 pl-4">Geräte & Kategorien</h2>
-        <div id="device-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            <!-- Buttons will be injected here -->
-        </div>
-    </div>
-
-    <!-- Details Modal -->
-    <div id="modal" class="modal fixed inset-0 bg-black bg-opacity-50 z-40 items-center justify-center p-4">
-        <div class="glass-card w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
-            <div class="p-6 border-b flex justify-between items-center bg-gray-50">
-                <h3 id="modal-title" class="text-xl font-bold text-gray-800">Details</h3>
-                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-            <div class="p-6 overflow-y-auto">
-                <table class="w-full text-left">
-                    <thead class="text-xs uppercase text-gray-500 font-bold border-b">
-                        <tr>
-                            <th class="pb-2">Datum</th>
-                            <th class="pb-2">Kategorie</th>
-                            <th class="pb-2 text-right">Preis</th>
-                        </tr>
-                    </thead>
-                    <tbody id="modal-body" class="text-sm divide-y">
-                        <!-- Rows injected here -->
-                    </tbody>
-                </table>
-            </div>
-            <div class="p-4 bg-gray-50 text-right border-t">
-                <button onclick="closeModal()" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition">Schließen</button>
-            </div>
-        </div>
-    </div>
+<body>
+    <div id="app"></div>
 
     <script>
-        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQHxjp7PpL1exuPsh_iHbg6bjJsFXe98jALeYFJfOVqEKjjHH0IBLXIebKTbn5vKSrLBgLWm4WGpKts/pub?output=csv';
-        
-        let rawData = [];
-        let deviceGroups = {};
-        let myChart = null;
+        const translations = {
+            de: {
+                login: 'Anmelden', username: 'Benutzername', password: 'Passwort', loading: 'Lädt...',
+                logout: 'Abmelden', totalBalance: 'Gesamtbilanz', entries: 'Einträge', history: 'Verlauf',
+                categories: 'Kategorien', addEntry: 'Eintrag', newEntry: 'Neuer Eintrag',
+                income: 'Einnahme', expense: 'Ausgabe', category: 'Kategorie', amount: 'Betrag',
+                description: 'Beschreibung', cancel: 'Abbrechen', save: 'Speichern',
+                noEntries: 'Keine Einträge vorhanden', showAll: 'Alle anzeigen',
+                settings: 'Einstellungen', language: 'Sprache', theme: 'Design',
+                darkMode: 'Dark Mode', lightMode: 'Light Mode', mainPage: 'Hauptseite',
+                phoneModel: 'Handy Modell', repairType: 'Reparaturart', price: 'Preis',
+                selectPhone: 'Handy wählen', selectRepair: 'Reparatur wählen'
+            },
+            en: {
+                login: 'Login', username: 'Username', password: 'Password', loading: 'Loading...',
+                logout: 'Logout', totalBalance: 'Total Balance', entries: 'Entries', history: 'History',
+                categories: 'Categories', addEntry: 'Entry', newEntry: 'New Entry',
+                income: 'Income', expense: 'Expense', category: 'Category', amount: 'Amount',
+                description: 'Description', cancel: 'Cancel', save: 'Save',
+                noEntries: 'No entries available', showAll: 'Show all',
+                settings: 'Settings', language: 'Language', theme: 'Theme',
+                darkMode: 'Dark Mode', lightMode: 'Light Mode', mainPage: 'Main Page',
+                phoneModel: 'Phone Model', repairType: 'Repair Type', price: 'Price',
+                selectPhone: 'Select Phone', selectRepair: 'Select Repair'
+            },
+            fr: {
+                login: 'Connexion', username: 'Nom d\'utilisateur', password: 'Mot de passe', loading: 'Chargement...',
+                logout: 'Déconnexion', totalBalance: 'Solde Total', entries: 'Entrées', history: 'Historique',
+                categories: 'Catégories', addEntry: 'Entrée', newEntry: 'Nouvelle Entrée',
+                income: 'Revenu', expense: 'Dépense', category: 'Catégorie', amount: 'Montant',
+                description: 'Description', cancel: 'Annuler', save: 'Enregistrer',
+                noEntries: 'Aucune entrée disponible', showAll: 'Tout afficher',
+                settings: 'Paramètres', language: 'Langue', theme: 'Thème',
+                darkMode: 'Mode Sombre', lightMode: 'Mode Clair', mainPage: 'Page Principale',
+                phoneModel: 'Modèle de téléphone', repairType: 'Type de réparation', price: 'Prix',
+                selectPhone: 'Sélectionner téléphone', selectRepair: 'Sélectionner réparation'
+            }
+        };
 
-        // Initialize App
-        window.addEventListener('DOMContentLoaded', () => {
-            fetchData();
-        });
+        class App {
+            constructor() {
+                this.state = {
+                    darkMode: true,
+                    language: 'de',
+                    isLoggedIn: false,
+                    username: '',
+                    password: '',
+                    entries: [],
+                    phoneModels: [],
+                    repairTypes: [],
+                    priceData: {},
+                    showAddModal: false,
+                    selectedPhone: '',
+                    selectedRepair: '',
+                    customAmount: '',
+                    description: '',
+                    type: 'income',
+                    loading: false,
+                    dataLoading: true,
+                    currentUser: '',
+                    selectedCategory: null,
+                    menuOpen: false,
+                    currentPage: 'main',
+                    chart: null
+                };
+                this.init();
+            }
 
-        async function fetchData() {
-            Papa.parse(CSV_URL, {
-                download: true,
-                header: true,
-                dynamicTyping: true,
-                complete: function(results) {
-                    processData(results.data);
-                    document.getElementById('loading-overlay').style.display = 'none';
-                },
-                error: function(err) {
-                    console.error("Fehler beim Laden der CSV:", err);
-                    alert("Daten konnten nicht geladen werden.");
+            get t() { return translations[this.state.language]; }
+
+            async init() {
+                const user = localStorage.getItem('current_user');
+                if (user) {
+                    this.state.currentUser = user;
+                    this.state.isLoggedIn = true;
+                    this.loadUserData(user);
                 }
-            });
-        }
+                await this.loadGoogleSheetData();
+                this.render();
+            }
 
-        function processData(data) {
-            // Filter invalid rows
-            rawData = data.filter(row => row['Zeitstempel'] && row['Welches Handy?']);
-            
-            let total = 0;
-            let income = 0;
-            let expense = 0;
-            deviceGroups = {};
-
-            // Sorting by date for chart
-            const sortedData = [...rawData].sort((a, b) => new Date(a['Zeitstempel']) - new Date(b['Zeitstempel']));
-
-            const chartLabels = [];
-            const chartValues = [];
-            let runningTotal = 0;
-
-            rawData.forEach(row => {
-                const price = parseFloat(String(row['Preis']).replace(',', '.')) || 0;
-                total += price;
-                if(price > 0) income += price;
-                else expense += Math.abs(price);
-
-                const device = row['Welches Handy?'];
-                if (!deviceGroups[device]) deviceGroups[device] = [];
-                deviceGroups[device].push(row);
-            });
-
-            sortedData.forEach(row => {
-                const price = parseFloat(String(row['Preis']).replace(',', '.')) || 0;
-                runningTotal += price;
-                chartLabels.push(new Date(row['Zeitstempel']).toLocaleDateString('de-DE'));
-                chartValues.push(runningTotal);
-            });
-
-            animateValue("total-balance", 0, total, 1500);
-            document.getElementById('total-income').innerText = income.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
-            document.getElementById('total-expense').innerText = expense.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
-
-            renderButtons();
-            renderChart(chartLabels, chartValues);
-        }
-
-        function renderButtons() {
-            const grid = document.getElementById('device-grid');
-            grid.innerHTML = '';
-
-            Object.keys(deviceGroups).sort().forEach(deviceName => {
-                const transactions = deviceGroups[deviceName];
-                const deviceBalance = transactions.reduce((sum, row) => sum + (parseFloat(String(row['Preis']).replace(',', '.')) || 0), 0);
-                
-                const btn = document.createElement('button');
-                btn.className = 'btn-device glass-card p-5 text-left border border-transparent hover:border-blue-300';
-                btn.onclick = () => showDetails(deviceName);
-                
-                btn.innerHTML = `
-                    <div class="text-xs font-bold text-gray-400 uppercase mb-1 truncate">${deviceName}</div>
-                    <div class="text-xl font-bold ${deviceBalance >= 0 ? 'text-green-600' : 'text-red-600'}">
-                        ${deviceBalance.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
-                    </div>
-                    <div class="text-xs text-gray-500 mt-2">${transactions.length} Transaktion(en)</div>
-                `;
-                grid.appendChild(btn);
-            });
-        }
-
-        function renderChart(labels, values) {
-            const ctx = document.getElementById('mainChart').getContext('2d');
-            
-            if (myChart) myChart.destroy();
-
-            myChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Kontostand Verlauf (€)',
-                        data: values,
-                        borderColor: '#3b82f6',
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                        fill: true,
-                        tension: 0.4,
-                        pointRadius: 2,
-                        borderWidth: 3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: false,
-                            grid: { color: '#e5e7eb' }
+            async loadGoogleSheetData() {
+                try {
+                    const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQHxjp7PpL1exuPsh_iHbg6bjJsFXe98jALeYFJfOVqEKjjHH0IBLXIebKTbn5vKSrLBgLWm4WGpKts/pub?gid=1552836807&single=true&output=csv';
+                    
+                    const response = await fetch(url);
+                    const csvText = await response.text();
+                    
+                    Papa.parse(csvText, {
+                        header: true,
+                        skipEmptyLines: true,
+                        dynamicTyping: true,
+                        complete: (results) => {
+                            const data = results.data;
+                            
+                            // Extract phone models (first column headers after first row)
+                            const headers = Object.keys(data[0]).filter(h => h.trim() !== '');
+                            this.state.phoneModels = headers.slice(1); // Skip first column (repair types)
+                            
+                            // Extract repair types (first column)
+                            this.state.repairTypes = data.map(row => row[headers[0]]).filter(Boolean);
+                            
+                            // Build price lookup object
+                            this.state.priceData = {};
+                            data.forEach(row => {
+                                const repairType = row[headers[0]];
+                                if (repairType) {
+                                    this.state.priceData[repairType] = {};
+                                    headers.slice(1).forEach(phone => {
+                                        const price = row[phone];
+                                        if (price !== undefined && price !== null && price !== '') {
+                                            this.state.priceData[repairType][phone] = parseFloat(price);
+                                        }
+                                    });
+                                }
+                            });
+                            
+                            this.state.dataLoading = false;
+                            this.render();
                         },
-                        x: {
-                            grid: { display: false }
+                        error: (error) => {
+                            console.error('Error parsing CSV:', error);
+                            this.state.dataLoading = false;
+                            this.render();
                         }
-                    }
-                }
-            });
-        }
-
-        function showDetails(deviceName) {
-            const transactions = deviceGroups[deviceName];
-            const modal = document.getElementById('modal');
-            const title = document.getElementById('modal-title');
-            const body = document.getElementById('modal-body');
-
-            title.innerText = deviceName;
-            body.innerHTML = '';
-
-            transactions.sort((a,b) => new Date(b['Zeitstempel']) - new Date(a['Zeitstempel'])).forEach(tr => {
-                const price = parseFloat(String(tr['Preis']).replace(',', '.')) || 0;
-                const row = document.createElement('tr');
-                row.className = 'hover:bg-gray-50';
-                row.innerHTML = `
-                    <td class="py-3 text-gray-600">${new Date(tr['Zeitstempel']).toLocaleDateString('de-DE')}</td>
-                    <td class="py-3 font-medium text-gray-800">${tr['Kategorie']}</td>
-                    <td class="py-3 text-right font-bold ${price >= 0 ? 'positive' : 'negative'}">
-                        ${price.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
-                    </td>
-                `;
-                body.appendChild(row);
-            });
-
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeModal() {
-            document.getElementById('modal').classList.remove('active');
-            document.body.style.overflow = 'auto';
-        }
-
-        function animateValue(id, start, end, duration) {
-            const obj = document.getElementById(id);
-            const range = end - start;
-            let current = start;
-            const increment = end > start ? 1 : -1;
-            const stepTime = Math.abs(Math.floor(duration / (range || 1)));
-            
-            // Limit speed for large numbers
-            const startTime = performance.now();
-            
-            function update(currentTime) {
-                const elapsed = currentTime - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-                const value = start + (range * progress);
-                
-                obj.innerHTML = value.toLocaleString('de-DE', { 
-                    style: 'currency', 
-                    currency: 'EUR',
-                    minimumFractionDigits: 2 
-                });
-
-                if (progress < 1) {
-                    requestAnimationFrame(update);
+                    });
+                } catch (error) {
+                    console.error('Error loading data:', error);
+                    this.state.dataLoading = false;
+                    this.render();
                 }
             }
-            
-            requestAnimationFrame(update);
+
+            loadUserData(user) {
+                const entries = localStorage.getItem(`entries_${user}`);
+                const settings = localStorage.getItem(`settings_${user}`);
+                
+                if (entries) this.state.entries = JSON.parse(entries);
+                if (settings) {
+                    const s = JSON.parse(settings);
+                    this.state.darkMode = s.darkMode ?? true;
+                    this.state.language = s.language ?? 'de';
+                }
+            }
+
+            saveSettings() {
+                if (this.state.currentUser) {
+                    localStorage.setItem(`settings_${this.state.currentUser}`, JSON.stringify({
+                        darkMode: this.state.darkMode,
+                        language: this.state.language
+                    }));
+                }
+            }
+
+            getPrice() {
+                const { selectedPhone, selectedRepair, priceData } = this.state;
+                if (selectedRepair && selectedPhone && priceData[selectedRepair]) {
+                    return priceData[selectedRepair][selectedPhone] || 0;
+                }
+                return 0;
+            }
+
+            render() {
+                const app = document.getElementById('app');
+                if (this.state.dataLoading) {
+                    app.innerHTML = this.renderLoading();
+                } else if (!this.state.isLoggedIn) {
+                    app.innerHTML = this.renderLogin();
+                } else if (this.state.currentPage === 'settings') {
+                    app.innerHTML = this.renderSettings();
+                } else {
+                    app.innerHTML = this.renderMain();
+                    if (this.getChartData().length > 0) this.renderChart();
+                }
+                this.attachEvents();
+            }
+
+            renderLoading() {
+                const { darkMode } = this.state;
+                return `
+                    <div class="min-h-screen flex items-center justify-center ${darkMode ? 'bg-gray-950' : 'bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50'}">
+                        <div class="text-center">
+                            <div class="animate-pulse-slow text-6xl mb-4">📱</div>
+                            <p class="text-xl ${darkMode ? 'text-white' : 'text-gray-900'}">Lade Preisdaten...</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            renderLogin() {
+                const { darkMode } = this.state;
+                return `
+                    <div class="min-h-screen flex items-center justify-center ${darkMode ? 'bg-gray-950' : 'bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50'}">
+                        <div class="w-full max-w-md p-8 rounded-2xl shadow-2xl hover-lift animate-scale-in ${darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}">
+                            <div class="text-center mb-8">
+                                <h1 class="text-4xl font-bold mb-2 animate-pulse-slow ${darkMode ? 'text-white' : 'bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent'}">
+                                    Phone Repair
+                                </h1>
+                                <p class="${darkMode ? 'text-gray-400' : 'text-gray-600'}">Business Tracker</p>
+                            </div>
+                            
+                            <div class="space-y-6">
+                                <input type="text" id="username" placeholder="${this.t.username}" 
+                                    class="w-full px-4 py-3 rounded-xl input-focus outline-none stagger-item ${darkMode ? 'bg-gray-800 text-white placeholder-gray-500' : 'bg-white text-gray-900 placeholder-gray-500'}" />
+                                
+                                <input type="password" id="password" placeholder="${this.t.password}" 
+                                    class="w-full px-4 py-3 rounded-xl input-focus outline-none stagger-item ${darkMode ? 'bg-gray-800 text-white placeholder-gray-500' : 'bg-white text-gray-900 placeholder-gray-500'}" />
+                                
+                                <button id="loginBtn" class="w-full py-3 rounded-xl font-semibold button-press stagger-item ${darkMode ? 'bg-blue-600 hover:bg-blue-700 text-white animate-glow' : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'}">
+                                    ${this.state.loading ? this.t.loading : this.t.login}
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <button id="themeToggle" class="fixed top-8 right-8 p-3 rounded-full hover-grow shadow-lg ${darkMode ? 'bg-gray-800 text-yellow-400' : 'bg-white text-gray-900'}">
+                            ${darkMode ? '☀️' : '🌙'}
+                        </button>
+                    </div>
+                `;
+            }
+
+            renderSettings() {
+                const { darkMode, language } = this.state;
+                return `
+                    <div class="min-h-screen ${darkMode ? 'bg-gray-950' : 'bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50'}">
+                        ${this.renderNav()}
+                        ${this.state.menuOpen ? this.renderMenu() : ''}
+                        
+                        <main class="max-w-3xl mx-auto px-6 py-8">
+                            <div class="p-8 rounded-2xl shadow-2xl mb-6 hover-lift animate-fade-in ${darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}">
+                                <h2 class="text-xl font-semibold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}">${this.t.theme}</h2>
+                                <div class="flex items-center justify-between">
+                                    <span class="${darkMode ? 'text-gray-300' : 'text-gray-700'}">${darkMode ? this.t.darkMode : this.t.lightMode}</span>
+                                    <button id="darkModeToggle" class="relative w-16 h-8 rounded-full hover-grow ${darkMode ? 'bg-blue-600' : 'bg-gray-300'}">
+                                        <div class="absolute top-1 left-1 w-6 h-6 rounded-full bg-white transition-transform duration-300 ${darkMode ? 'translate-x-8' : ''} flex items-center justify-center text-sm">
+                                            ${darkMode ? '🌙' : '☀️'}
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="p-8 rounded-2xl shadow-2xl hover-lift animate-fade-in ${darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}">
+                                <h2 class="text-xl font-semibold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}">${this.t.language}</h2>
+                                <div class="space-y-4">
+                                    ${['de', 'en', 'fr'].map(lang => `
+                                        <button data-lang="${lang}" class="w-full px-4 py-3 rounded-xl font-semibold hover-grow button-press ${language === lang ? (darkMode ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white') : (darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-700')}">
+                                            ${lang === 'de' ? 'Deutsch' : lang === 'en' ? 'English' : 'Français'}
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </main>
+                    </div>
+                `;
+            }
+
+            renderNav() {
+                const { darkMode, currentUser } = this.state;
+                return `
+                    <nav class="border-b ${darkMode ? 'bg-gray-900/90 border-gray-800' : 'bg-white/70 border-purple-200'}">
+                        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+                            <div class="flex items-center gap-4">
+                                <button id="menuToggle" class="p-2 rounded-lg hover-grow ${darkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-900'}">☰</button>
+                                <h1 class="text-2xl font-bold ${darkMode ? 'text-white' : 'bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent'}">Phone Repair Tracker</h1>
+                            </div>
+                            <span class="${darkMode ? 'text-gray-300' : 'text-gray-700'}">${currentUser}</span>
+                        </div>
+                    </nav>
+                `;
+            }
+
+            renderMenu() {
+                const { darkMode, currentPage } = this.state;
+                return `
+                    <div class="fixed top-0 left-0 w-64 h-full z-50 animate-slide-in-left shadow-2xl ${darkMode ? 'bg-gray-900 border-r border-gray-800' : 'bg-white border-r border-gray-200'}">
+                        <div class="p-6">
+                            <button id="menuClose" class="mb-6 p-2 rounded-lg ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600'}">✕</button>
+                            <div class="space-y-4">
+                                <button id="navMain" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg ${currentPage === 'main' ? (darkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-900') : (darkMode ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-700 hover:bg-gray-100')}">
+                                    🏠 ${this.t.mainPage}
+                                </button>
+                                <button id="navSettings" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg ${currentPage === 'settings' ? (darkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-900') : (darkMode ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-700 hover:bg-gray-100')}">
+                                    ⚙️ ${this.t.settings}
+                                </button>
+                                <button id="logoutBtn" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg ${darkMode ? 'text-red-400 hover:bg-gray-800' : 'text-red-600 hover:bg-gray-100'}">
+                                    🚪 ${this.t.logout}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            renderMain() {
+                const { darkMode, phoneModels, repairTypes } = this.state;
+                const total = this.getTotalBalance();
+                const stats = this.getCategoryStats();
+                const filtered = this.getFilteredEntries();
+
+                return `
+                    <div class="min-h-screen ${darkMode ? 'bg-gray-950' : 'bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50'}">
+                        ${this.renderNav()}
+                        ${this.state.menuOpen ? this.renderMenu() : ''}
+                        
+                        <main class="max-w-7xl mx-auto px-6 py-8">
+                            <div class="p-8 rounded-2xl shadow-2xl mb-8 hover-lift animate-fade-in ${darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h2 class="text-lg ${darkMode ? 'text-gray-400' : 'text-gray-600'}">${this.t.totalBalance}</h2>
+                                    <div class="animate-bounce">${total >= 0 ? '📈' : '📉'}</div>
+                                </div>
+                                <p class="text-5xl font-bold mb-2 ${total >= 0 ? 'text-green-500' : 'text-red-500'}">${total.toFixed(2)} €</p>
+                                <p class="text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}">${this.state.entries.length} ${this.t.entries}</p>
+                            </div>
+
+                            ${this.getChartData().length > 0 ? `
+                                <div class="p-8 rounded-2xl shadow-2xl mb-8 hover-lift animate-fade-in ${darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}">
+                                    <h2 class="text-xl font-semibold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}">${this.t.history}</h2>
+                                    <div style="height: 300px;"><canvas id="chart"></canvas></div>
+                                </div>
+                            ` : ''}
+
+                            <div class="p-8 rounded-2xl shadow-2xl mb-8 ${darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}">
+                                <div class="flex justify-between items-center mb-6">
+                                    <h2 class="text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}">${this.t.phoneModel}</h2>
+                                </div>
+                                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                    ${phoneModels.map(phone => `
+                                        <button data-phone="${phone}" class="p-4 rounded-xl hover-lift button-press ${this.state.selectedCategory === phone ? (darkMode ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white') : (darkMode ? 'bg-gray-800 text-gray-300' : 'bg-white text-gray-900')}">
+                                            <div class="text-sm mb-1">${phone}</div>
+                                            ${stats[phone] ? `
+                                                <div class="text-lg font-bold ${stats[phone].total >= 0 ? 'text-green-500' : 'text-red-500'}">${stats[phone].total >= 0 ? '+' : ''}${stats[phone].total.toFixed(2)} €</div>
+                                                <div class="text-xs opacity-75">${stats[phone].count} ${this.t.entries}</div>
+                                            ` : ''}
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            <div class="p-8 rounded-2xl shadow-2xl ${darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}">
+                                <div class="flex justify-between items-center mb-6">
+                                    <h2 class="text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}">${this.state.selectedCategory ? `${this.state.selectedCategory} - ${this.t.history}` : this.t.history}</h2>
+                                    ${this.state.selectedCategory ? `<button id="clearFilter" class="text-sm px-3 py-1 rounded-lg ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-200 text-gray-700'}">${this.t.showAll}</button>` : ''}
+                                    <button id="newEntryBtn" class="px-4 py-2 rounded-xl font-semibold hover-grow button-press bg-blue-600 hover:bg-blue-700 text-white">➕ ${this.t.addEntry}</button>
+                                </div>
+                                <div class="space-y-3">
+                                    ${filtered.length === 0 ? `<p class="text-center py-8 ${darkMode ? 'text-gray-400' : 'text-gray-600'}">${this.t.noEntries}</p>` : filtered.slice().reverse().map(e => `
+                                        <div class="p-4 rounded-xl hover-lift cursor-pointer ${darkMode ? 'bg-gray-800' : 'bg-white/50'}">
+                                            <div class="flex justify-between items-start">
+                                                <div class="flex-1">
+                                                    <div class="flex items-center gap-2 mb-1">
+                                                        <span class="text-xs px-2 py-1 rounded ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'}">${e.phoneModel}</span>
+                                                        <span class="text-xs px-2 py-1 rounded ${darkMode ? 'bg-blue-900 text-blue-300' : 'bg-blue-100 text-blue-700'}">${e.repairType}</span>
+                                                    </div>
+                                                    <p class="font-medium ${darkMode ? 'text-white' : 'text-gray-900'}">${e.description}</p>
+                                                    <p class="text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}">${e.date}</p>
+                                                </div>
+                                                <p class="text-xl font-bold ${e.amount >= 0 ? 'text-green-500' : 'text-red-500'}">${e.amount >= 0 ? '+' : ''}${e.amount.toFixed(2)} €</p>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </main>
+
+                        ${this.state.showAddModal ? this.renderAddModal() : ''}
+                    </div>
+                `;
+            }
+
+            renderAddModal() {
+                const { darkMode, type, phoneModels, repairTypes, selectedPhone, selectedRepair } = this.state;
+                const currentPrice = this.getPrice();
+
+                return `
+                    <div class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-fade-in">
+                        <div class="w-full max-w-md p-8 rounded-2xl shadow-2xl animate-scale-in ${darkMode ? 'bg-gray-900 border border-gray-800' : 'bg-white border border-purple-200'}">
+                            <h2 class="text-2xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}">${this.t.newEntry}</h2>
+                            <div class="space-y-6">
+                                <div>
+                                    <div class="text-sm mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}">Typ</div>
+                                    <div class="flex gap-3">
+                                        <button id="typeIncome" class="flex-1 py-3 rounded-xl font-semibold button-press ${type === 'income' ? 'bg-green-600 text-white' : (darkMode ? 'bg-gray-800 text-gray-400' : 'bg-gray-200 text-gray-600')}">${this.t.income}</button>
+                                        <button id="typeExpense" class="flex-1 py-3 rounded-xl font-semibold button-press ${type === 'expense' ? 'bg-red-600 text-white' : (darkMode ? 'bg-gray-800 text-gray-400' : 'bg-gray-200 text-gray-600')}">${this.t.expense}</button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="text-sm mb-2 block ${darkMode ? 'text-gray-400' : 'text-gray-600'}">${this.t.phoneModel}</label>
+                                    <select id="phoneSelect" class="w-full px-4 py-3 rounded-xl outline-none ${darkMode ? 'bg-gray-800 text-white' : 'bg-gray-50 text-gray-900'}">
+                                        <option value="">${this.t.selectPhone}</option>
+                                        ${phoneModels.map(p => `<option value="${p}" ${selectedPhone === p ? 'selected' : ''}>${p}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-sm mb-2 block ${darkMode ? 'text-gray-400' : 'text-gray-600'}">${this.t.repairType}</label>
+                                    <select id="repairSelect" class="w-full px-4 py-3 rounded-xl outline-none ${darkMode ? 'bg-gray-800 text-white' : 'bg-gray-50 text-gray-900'}">
+                                        <option value="">${this.t.selectRepair}</option>
+                                        ${repairTypes.map(r => `<option value="${r}" ${selectedRepair === r ? 'selected' : ''}>${r}</option>`).join('')}
+                                    </select>
+                                </div>
+                                ${currentPrice > 0 ? `
+                                    <div class="p-4 rounded-xl ${darkMode ? 'bg-blue-900/30 border border-blue-800' : 'bg-blue-50 border border-blue-200'}">
+                                        <div class="text-sm ${darkMode ? 'text-blue-300' : 'text-blue-700'} mb-1">${this.t.price}</div>
+                                        <div class="text-2xl font-bold ${darkMode ? 'text-blue-400' : 'text-blue-600'}">${currentPrice.toFixed(2)} €</div>
+                                    </div>
+                                ` : ''}
+                                <div>
+                                    <label class="text-sm mb-2 block ${darkMode ? 'text-gray-400' : 'text-gray-600'}">${this.t.amount} (€) ${currentPrice > 0 ? '(optional - überschreibt Preis)' : ''}</label>
+                                    <input type="number" step="0.01" id="entryAmount" placeholder="${currentPrice > 0 ? currentPrice.toFixed(2) : '0.00'}" class="w-full px-4 py-3 rounded-xl input-focus outline-none ${darkMode ? 'bg-gray-800 text-white placeholder-gray-500' : 'bg-gray-50 text-gray-900 placeholder-gray-500'}" />
+                                </div>
+                                <div>
+                                    <label class="text-sm mb-2 block ${darkMode ? 'text-gray-400' : 'text-gray-600'}">${this.t.description}</label>
+                                    <input type="text" id="entryDesc" placeholder="z.B. iPhone 12 Display Reparatur" class="w-full px-4 py-3 rounded-xl input-focus outline-none ${darkMode ? 'bg-gray-800 text-white placeholder-gray-500' : 'bg-gray-50 text-gray-900 placeholder-gray-500'}" />
+                                </div>
+                                <div class="flex gap-3 pt-4">
+                                    <button id="cancelEntry" class="flex-1 py-3 rounded-xl font-semibold button-press ${darkMode ? 'bg-gray-800 text-white' : 'bg-gray-200 text-gray-900'}">${this.t.cancel}</button>
+                                    <button id="saveEntry" class="flex-1 py-3 rounded-xl font-semibold bg-blue-600 hover:bg-blue-700 text-white button-press">${this.t.save}</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            getTotalBalance() {
+                return this.state.entries.reduce((sum, e) => sum + e.amount, 0);
+            }
+
+            getChartData() {
+                return this.state.entries.map((entry, index) => {
+                    const runningTotal = this.state.entries.slice(0, index + 1).reduce((sum, e) => sum + e.amount, 0);
+                    return { date: entry.date, balance: runningTotal };
+                });
+            }
+
+            getCategoryStats() {
+                const stats = {};
+                this.state.entries.forEach(entry => {
+                    const cat = entry.phoneModel;
+                    if (!stats[cat]) {
+                        stats[cat] = { total: 0, count: 0 };
+                    }
+                    stats[cat].total += entry.amount;
+                    stats[cat].count += 1;
+                });
+                return stats;
+            }
+
+            getFilteredEntries() {
+                return this.state.selectedCategory 
+                    ? this.state.entries.filter(e => e.phoneModel === this.state.selectedCategory)
+                    : this.state.entries;
+            }
+
+            renderChart() {
+                setTimeout(() => {
+                    const canvas = document.getElementById('chart');
+                    if (!canvas) return;
+                    if (this.state.chart) this.state.chart.destroy();
+
+                    const data = this.getChartData();
+                    const ctx = canvas.getContext('2d');
+
+                    this.state.chart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: data.map(d => d.date),
+                            datasets: [{
+                                label: this.t.totalBalance,
+                                data: data.map(d => d.balance),
+                                borderColor: '#3b82f6',
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                borderWidth: 3,
+                                tension: 0.4,
+                                pointBackgroundColor: data.map(d => d.balance >= 0 ? '#10b981' : '#ef4444'),
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 2,
+                                pointRadius: 5,
+                                pointHoverRadius: 8
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    backgroundColor: this.state.darkMode ? '#111827' : '#ffffff',
+                                    titleColor: this.state.darkMode ? '#fff' : '#000',
+                                    bodyColor: this.state.darkMode ? '#fff' : '#000',
+                                    borderColor: this.state.darkMode ? '#374151' : '#a855f7',
+                                    borderWidth: 1,
+                                    padding: 12,
+                                    displayColors: false,
+                                    callbacks: { label: (ctx) => `${ctx.parsed.y.toFixed(2)} €` }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    grid: { color: this.state.darkMode ? '#1f2937' : '#e5e7eb' },
+                                    ticks: {
+                                        color: this.state.darkMode ? '#6b7280' : '#6b7280',
+                                        callback: (val) => `${val} €`
+                                    }
+                                },
+                                x: {
+                                    grid: { color: this.state.darkMode ? '#1f2937' : '#e5e7eb' },
+                                    ticks: { color: this.state.darkMode ? '#6b7280' : '#6b7280' }
+                                }
+                            },
+                            animation: { duration: 1000, easing: 'easeInOutQuart' }
+                        }
+                    });
+                }, 100);
+            }
+
+            attachEvents() {
+                // Login
+                const loginBtn = document.getElementById('loginBtn');
+                const username = document.getElementById('username');
+                const password = document.getElementById('password');
+                
+                if (loginBtn) {
+                    loginBtn.onclick = () => {
+                        this.state.username = username.value;
+                        this.state.password = password.value;
+                        this.state.loading = true;
+                        this.render();
+                        
+                        setTimeout(() => {
+                            const userKey = `user_${this.state.username}`;
+                            const stored = localStorage.getItem(userKey);
+                            
+                            if (!stored) {
+                                localStorage.setItem(userKey, this.state.password);
+                                localStorage.setItem('current_user', this.state.username);
+                                this.state.currentUser = this.state.username;
+                                this.state.isLoggedIn = true;
+                            } else if (stored === this.state.password) {
+                                localStorage.setItem('current_user', this.state.username);
+                                this.state.currentUser = this.state.username;
+                                this.state.isLoggedIn = true;
+                                this.loadUserData(this.state.username);
+                            } else {
+                                alert('Falsches Passwort!');
+                            }
+                            
+                            this.state.loading = false;
+                            this.render();
+                        }, 500);
+                    };
+                }
+
+                // Theme Toggle
+                const themeToggle = document.getElementById('themeToggle');
+                if (themeToggle) {
+                    themeToggle.onclick = () => {
+                        this.state.darkMode = !this.state.darkMode;
+                        this.saveSettings();
+                        this.render();
+                    };
+                }
+
+                // Dark Mode Toggle
+                const darkModeToggle = document.getElementById('darkModeToggle');
+                if (darkModeToggle) {
+                    darkModeToggle.onclick = () => {
+                        this.state.darkMode = !this.state.darkMode;
+                        this.saveSettings();
+                        this.render();
+                    };
+                }
+
+                // Language buttons
+                document.querySelectorAll('[data-lang]').forEach(btn => {
+                    btn.onclick = () => {
+                        this.state.language = btn.dataset.lang;
+                        this.saveSettings();
+                        this.render();
+                    };
+                });
+
+                // Menu
+                const menuToggle = document.getElementById('menuToggle');
+                const menuClose = document.getElementById('menuClose');
+                if (menuToggle) menuToggle.onclick = () => { this.state.menuOpen = true; this.render(); };
+                if (menuClose) menuClose.onclick = () => { this.state.menuOpen = false; this.render(); };
+
+                // Navigation
+                const navMain = document.getElementById('navMain');
+                const navSettings = document.getElementById('navSettings');
+                const logoutBtn = document.getElementById('logoutBtn');
+                
+                if (navMain) navMain.onclick = () => { this.state.currentPage = 'main'; this.state.menuOpen = false; this.render(); };
+                if (navSettings) navSettings.onclick = () => { this.state.currentPage = 'settings'; this.state.menuOpen = false; this.render(); };
+                if (logoutBtn) {
+                    logoutBtn.onclick = () => {
+                        localStorage.removeItem('current_user');
+                        this.state.isLoggedIn = false;
+                        this.state.currentUser = '';
+                        this.state.entries = [];
+                        this.state.menuOpen = false;
+                        this.render();
+                    };
+                }
+
+                // Phone filter
+                document.querySelectorAll('[data-phone]').forEach(btn => {
+                    btn.onclick = () => {
+                        const phone = btn.dataset.phone;
+                        this.state.selectedCategory = this.state.selectedCategory === phone ? null : phone;
+                        this.render();
+                    };
+                });
+
+                const clearFilter = document.getElementById('clearFilter');
+                if (clearFilter) clearFilter.onclick = () => { this.state.selectedCategory = null; this.render(); };
+
+                // Entries
+                const newEntryBtn = document.getElementById('newEntryBtn');
+                if (newEntryBtn) {
+                    newEntryBtn.onclick = () => {
+                        this.state.selectedPhone = this.state.phoneModels[0] || '';
+                        this.state.selectedRepair = this.state.repairTypes[0] || '';
+                        this.state.showAddModal = true;
+                        this.render();
+                    };
+                }
+
+                const typeIncome = document.getElementById('typeIncome');
+                const typeExpense = document.getElementById('typeExpense');
+                if (typeIncome) typeIncome.onclick = () => { this.state.type = 'income'; this.render(); };
+                if (typeExpense) typeExpense.onclick = () => { this.state.type = 'expense'; this.render(); };
+
+                const phoneSelect = document.getElementById('phoneSelect');
+                const repairSelect = document.getElementById('repairSelect');
+                
+                if (phoneSelect) {
+                    phoneSelect.onchange = () => {
+                        this.state.selectedPhone = phoneSelect.value;
+                        this.render();
+                    };
+                }
+                
+                if (repairSelect) {
+                    repairSelect.onchange = () => {
+                        this.state.selectedRepair = repairSelect.value;
+                        this.render();
+                    };
+                }
+
+                const cancelEntry = document.getElementById('cancelEntry');
+                if (cancelEntry) cancelEntry.onclick = () => { this.state.showAddModal = false; this.render(); };
+
+                const saveEntry = document.getElementById('saveEntry');
+                const entryAmount = document.getElementById('entryAmount');
+                const entryDesc = document.getElementById('entryDesc');
+                
+                if (saveEntry && entryDesc) {
+                    saveEntry.onclick = () => {
+                        if (!this.state.selectedPhone || !this.state.selectedRepair || !entryDesc.value) {
+                            alert('Bitte alle Felder ausfüllen!');
+                            return;
+                        }
+                        
+                        // Use custom amount if provided, otherwise use price from sheet
+                        const finalAmount = entryAmount && entryAmount.value 
+                            ? parseFloat(entryAmount.value) 
+                            : this.getPrice();
+                        
+                        if (finalAmount === 0) {
+                            alert('Bitte Betrag eingeben!');
+                            return;
+                        }
+                        
+                        const newEntry = {
+                            id: Date.now(),
+                            amount: this.state.type === 'expense' ? -Math.abs(finalAmount) : Math.abs(finalAmount),
+                            description: entryDesc.value,
+                            phoneModel: this.state.selectedPhone,
+                            repairType: this.state.selectedRepair,
+                            type: this.state.type,
+                            date: new Date().toLocaleDateString(this.state.language === 'de' ? 'de-DE' : this.state.language === 'fr' ? 'fr-FR' : 'en-US'),
+                            timestamp: Date.now()
+                        };
+
+                        this.state.entries.push(newEntry);
+                        localStorage.setItem(`entries_${this.state.currentUser}`, JSON.stringify(this.state.entries));
+                        this.state.showAddModal = false;
+                        this.render();
+                    };
+                }
+            }
         }
 
-        // Close modal on outside click
-        window.onclick = function(event) {
-            const modal = document.getElementById('modal');
-            if (event.target == modal) closeModal();
-        }
+        // Start App
+        new App();
     </script>
 </body>
 </html>
-
