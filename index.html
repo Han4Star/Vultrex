@@ -71,38 +71,41 @@
             de: {
                 login: 'Anmelden', username: 'Benutzername', password: 'Passwort', loading: 'Lädt...',
                 logout: 'Abmelden', totalBalance: 'Gesamtbilanz', entries: 'Einträge', history: 'Verlauf',
-                categories: 'Kategorien', addEntry: 'Eintrag', newEntry: 'Neuer Eintrag',
+                categories: 'Handy Modelle', addEntry: 'Eintrag', newEntry: 'Neuer Eintrag',
                 income: 'Einnahme', expense: 'Ausgabe', category: 'Kategorie', amount: 'Betrag',
                 description: 'Beschreibung', cancel: 'Abbrechen', save: 'Speichern',
                 noEntries: 'Keine Einträge vorhanden', showAll: 'Alle anzeigen',
                 settings: 'Einstellungen', language: 'Sprache', theme: 'Design',
                 darkMode: 'Dark Mode', lightMode: 'Light Mode', mainPage: 'Hauptseite',
                 phoneModel: 'Handy Modell', repairType: 'Reparaturart', price: 'Preis',
-                selectPhone: 'Handy wählen', selectRepair: 'Reparatur wählen'
+                selectPhone: 'Handy wählen', selectRepair: 'Reparatur wählen',
+                repairOptions: 'Reparatur Optionen', backToModels: 'Zurück zu Modellen'
             },
             en: {
                 login: 'Login', username: 'Username', password: 'Password', loading: 'Loading...',
                 logout: 'Logout', totalBalance: 'Total Balance', entries: 'Entries', history: 'History',
-                categories: 'Categories', addEntry: 'Entry', newEntry: 'New Entry',
+                categories: 'Phone Models', addEntry: 'Entry', newEntry: 'New Entry',
                 income: 'Income', expense: 'Expense', category: 'Category', amount: 'Amount',
                 description: 'Description', cancel: 'Cancel', save: 'Save',
                 noEntries: 'No entries available', showAll: 'Show all',
                 settings: 'Settings', language: 'Language', theme: 'Theme',
                 darkMode: 'Dark Mode', lightMode: 'Light Mode', mainPage: 'Main Page',
                 phoneModel: 'Phone Model', repairType: 'Repair Type', price: 'Price',
-                selectPhone: 'Select Phone', selectRepair: 'Select Repair'
+                selectPhone: 'Select Phone', selectRepair: 'Select Repair',
+                repairOptions: 'Repair Options', backToModels: 'Back to Models'
             },
             fr: {
                 login: 'Connexion', username: 'Nom d\'utilisateur', password: 'Mot de passe', loading: 'Chargement...',
                 logout: 'Déconnexion', totalBalance: 'Solde Total', entries: 'Entrées', history: 'Historique',
-                categories: 'Catégories', addEntry: 'Entrée', newEntry: 'Nouvelle Entrée',
+                categories: 'Modèles de téléphone', addEntry: 'Entrée', newEntry: 'Nouvelle Entrée',
                 income: 'Revenu', expense: 'Dépense', category: 'Catégorie', amount: 'Montant',
                 description: 'Description', cancel: 'Annuler', save: 'Enregistrer',
                 noEntries: 'Aucune entrée disponible', showAll: 'Tout afficher',
                 settings: 'Paramètres', language: 'Langue', theme: 'Thème',
                 darkMode: 'Mode Sombre', lightMode: 'Mode Clair', mainPage: 'Page Principale',
                 phoneModel: 'Modèle de téléphone', repairType: 'Type de réparation', price: 'Prix',
-                selectPhone: 'Sélectionner téléphone', selectRepair: 'Sélectionner réparation'
+                selectPhone: 'Sélectionner téléphone', selectRepair: 'Sélectionner réparation',
+                repairOptions: 'Options de réparation', backToModels: 'Retour aux modèles'
             }
         };
 
@@ -127,7 +130,7 @@
                     loading: false,
                     dataLoading: true,
                     currentUser: '',
-                    selectedCategory: null,
+                    selectedPhoneModel: null,
                     menuOpen: false,
                     currentPage: 'main',
                     chart: null
@@ -162,23 +165,26 @@
                         complete: (results) => {
                             const data = results.data;
                             
-                            // Extract phone models (first column headers after first row)
+                            // Extract phone models (column headers, skip first column)
                             const headers = Object.keys(data[0]).filter(h => h.trim() !== '');
-                            this.state.phoneModels = headers.slice(1); // Skip first column (repair types)
+                            this.state.phoneModels = headers.slice(1);
                             
-                            // Extract repair types (first column)
+                            // Extract repair types (first column values)
                             this.state.repairTypes = data.map(row => row[headers[0]]).filter(Boolean);
                             
-                            // Build price lookup object
+                            // Build price lookup: priceData[phoneModel][repairType] = price
                             this.state.priceData = {};
+                            this.state.phoneModels.forEach(phone => {
+                                this.state.priceData[phone] = {};
+                            });
+                            
                             data.forEach(row => {
                                 const repairType = row[headers[0]];
                                 if (repairType) {
-                                    this.state.priceData[repairType] = {};
                                     headers.slice(1).forEach(phone => {
                                         const price = row[phone];
                                         if (price !== undefined && price !== null && price !== '') {
-                                            this.state.priceData[repairType][phone] = parseFloat(price);
+                                            this.state.priceData[phone][repairType] = parseFloat(price);
                                         }
                                     });
                                 }
@@ -221,12 +227,12 @@
                 }
             }
 
-            getPrice() {
-                const { selectedPhone, selectedRepair, priceData } = this.state;
-                if (selectedRepair && selectedPhone && priceData[selectedRepair]) {
-                    return priceData[selectedRepair][selectedPhone] || 0;
-                }
-                return 0;
+            getRepairsForPhone(phoneModel) {
+                if (!this.state.priceData[phoneModel]) return [];
+                return Object.entries(this.state.priceData[phoneModel]).map(([repair, price]) => ({
+                    repair,
+                    price
+                }));
             }
 
             render() {
@@ -361,9 +367,8 @@
             }
 
             renderMain() {
-                const { darkMode, phoneModels, repairTypes } = this.state;
+                const { darkMode, selectedPhoneModel, phoneModels } = this.state;
                 const total = this.getTotalBalance();
-                const stats = this.getCategoryStats();
                 const filtered = this.getFilteredEntries();
 
                 return `
@@ -390,30 +395,64 @@
 
                             <div class="p-8 rounded-2xl shadow-2xl mb-8 ${darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}">
                                 <div class="flex justify-between items-center mb-6">
-                                    <h2 class="text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}">${this.t.phoneModel}</h2>
-                                </div>
-                                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                                    ${phoneModels.map(phone => `
-                                        <button data-phone="${phone}" class="p-4 rounded-xl hover-lift button-press ${this.state.selectedCategory === phone ? (darkMode ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white') : (darkMode ? 'bg-gray-800 text-gray-300' : 'bg-white text-gray-900')}">
-                                            <div class="text-sm mb-1">${phone}</div>
-                                            ${stats[phone] ? `
-                                                <div class="text-lg font-bold ${stats[phone].total >= 0 ? 'text-green-500' : 'text-red-500'}">${stats[phone].total >= 0 ? '+' : ''}${stats[phone].total.toFixed(2)} €</div>
-                                                <div class="text-xs opacity-75">${stats[phone].count} ${this.t.entries}</div>
-                                            ` : ''}
+                                    <h2 class="text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}">
+                                        ${selectedPhoneModel ? `${selectedPhoneModel} - ${this.t.repairOptions}` : this.t.categories}
+                                    </h2>
+                                    ${selectedPhoneModel ? `
+                                        <button id="backToModels" class="px-4 py-2 rounded-xl ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-200 text-gray-700'} hover-grow button-press">
+                                            ← ${this.t.backToModels}
                                         </button>
-                                    `).join('')}
+                                    ` : ''}
                                 </div>
+                                
+                                ${!selectedPhoneModel ? `
+                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        ${phoneModels.map(phone => {
+                                            const phoneEntries = this.state.entries.filter(e => e.phoneModel === phone);
+                                            const phoneTotal = phoneEntries.reduce((sum, e) => sum + e.amount, 0);
+                                            return `
+                                                <button data-phone="${phone}" class="p-6 rounded-xl hover-lift button-press text-left ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-white text-gray-900'}">
+                                                    <div class="text-lg font-semibold mb-2">${phone}</div>
+                                                    ${phoneEntries.length > 0 ? `
+                                                        <div class="text-2xl font-bold ${phoneTotal >= 0 ? 'text-green-500' : 'text-red-500'} mb-1">
+                                                            ${phoneTotal >= 0 ? '+' : ''}${phoneTotal.toFixed(2)} €
+                                                        </div>
+                                                        <div class="text-sm opacity-75">${phoneEntries.length} ${this.t.entries}</div>
+                                                    ` : `
+                                                        <div class="text-sm opacity-75">Keine Einträge</div>
+                                                    `}
+                                                </button>
+                                            `;
+                                        }).join('')}
+                                    </div>
+                                ` : `
+                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        ${this.getRepairsForPhone(selectedPhoneModel).map(({repair, price}) => `
+                                            <button data-repair="${repair}" data-price="${price}" class="p-6 rounded-xl hover-lift button-press text-left ${darkMode ? 'bg-gray-800 hover:bg-gray-700 text-gray-300' : 'bg-white hover:bg-gray-50 text-gray-900'}">
+                                                <div class="text-lg font-semibold mb-2">${repair}</div>
+                                                <div class="text-2xl font-bold text-blue-500">${price.toFixed(2)} €</div>
+                                            </button>
+                                        `).join('')}
+                                    </div>
+                                `}
                             </div>
 
                             <div class="p-8 rounded-2xl shadow-2xl ${darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}">
                                 <div class="flex justify-between items-center mb-6">
-                                    <h2 class="text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}">${this.state.selectedCategory ? `${this.state.selectedCategory} - ${this.t.history}` : this.t.history}</h2>
-                                    ${this.state.selectedCategory ? `<button id="clearFilter" class="text-sm px-3 py-1 rounded-lg ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-200 text-gray-700'}">${this.t.showAll}</button>` : ''}
-                                    <button id="newEntryBtn" class="px-4 py-2 rounded-xl font-semibold hover-grow button-press bg-blue-600 hover:bg-blue-700 text-white">➕ ${this.t.addEntry}</button>
+                                    <h2 class="text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}">
+                                        ${selectedPhoneModel ? `${selectedPhoneModel} - ${this.t.history}` : this.t.history}
+                                    </h2>
+                                    ${selectedPhoneModel ? `
+                                        <button id="clearFilter" class="text-sm px-3 py-1 rounded-lg ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-200 text-gray-700'}">
+                                            ${this.t.showAll}
+                                        </button>
+                                    ` : ''}
                                 </div>
                                 <div class="space-y-3">
-                                    ${filtered.length === 0 ? `<p class="text-center py-8 ${darkMode ? 'text-gray-400' : 'text-gray-600'}">${this.t.noEntries}</p>` : filtered.slice().reverse().map(e => `
-                                        <div class="p-4 rounded-xl hover-lift cursor-pointer ${darkMode ? 'bg-gray-800' : 'bg-white/50'}">
+                                    ${filtered.length === 0 ? `
+                                        <p class="text-center py-8 ${darkMode ? 'text-gray-400' : 'text-gray-600'}">${this.t.noEntries}</p>
+                                    ` : filtered.slice().reverse().map(e => `
+                                        <div class="p-4 rounded-xl hover-lift ${darkMode ? 'bg-gray-800' : 'bg-white/50'}">
                                             <div class="flex justify-between items-start">
                                                 <div class="flex-1">
                                                     <div class="flex items-center gap-2 mb-1">
@@ -437,8 +476,7 @@
             }
 
             renderAddModal() {
-                const { darkMode, type, phoneModels, repairTypes, selectedPhone, selectedRepair } = this.state;
-                const currentPrice = this.getPrice();
+                const { darkMode, type, phoneModels } = this.state;
 
                 return `
                     <div class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-fade-in">
@@ -456,25 +494,18 @@
                                     <label class="text-sm mb-2 block ${darkMode ? 'text-gray-400' : 'text-gray-600'}">${this.t.phoneModel}</label>
                                     <select id="phoneSelect" class="w-full px-4 py-3 rounded-xl outline-none ${darkMode ? 'bg-gray-800 text-white' : 'bg-gray-50 text-gray-900'}">
                                         <option value="">${this.t.selectPhone}</option>
-                                        ${phoneModels.map(p => `<option value="${p}" ${selectedPhone === p ? 'selected' : ''}>${p}</option>`).join('')}
+                                        ${phoneModels.map(p => `<option value="${p}">${p}</option>`).join('')}
                                     </select>
                                 </div>
-                                <div>
+                                <div id="repairSelectContainer" style="display: none;">
                                     <label class="text-sm mb-2 block ${darkMode ? 'text-gray-400' : 'text-gray-600'}">${this.t.repairType}</label>
                                     <select id="repairSelect" class="w-full px-4 py-3 rounded-xl outline-none ${darkMode ? 'bg-gray-800 text-white' : 'bg-gray-50 text-gray-900'}">
                                         <option value="">${this.t.selectRepair}</option>
-                                        ${repairTypes.map(r => `<option value="${r}" ${selectedRepair === r ? 'selected' : ''}>${r}</option>`).join('')}
                                     </select>
                                 </div>
-                                ${currentPrice > 0 ? `
-                                    <div class="p-4 rounded-xl ${darkMode ? 'bg-blue-900/30 border border-blue-800' : 'bg-blue-50 border border-blue-200'}">
-                                        <div class="text-sm ${darkMode ? 'text-blue-300' : 'text-blue-700'} mb-1">${this.t.price}</div>
-                                        <div class="text-2xl font-bold ${darkMode ? 'text-blue-400' : 'text-blue-600'}">${currentPrice.toFixed(2)} €</div>
-                                    </div>
-                                ` : ''}
-                                <div>
-                                    <label class="text-sm mb-2 block ${darkMode ? 'text-gray-400' : 'text-gray-600'}">${this.t.amount} (€) ${currentPrice > 0 ? '(optional - überschreibt Preis)' : ''}</label>
-                                    <input type="number" step="0.01" id="entryAmount" placeholder="${currentPrice > 0 ? currentPrice.toFixed(2) : '0.00'}" class="w-full px-4 py-3 rounded-xl input-focus outline-none ${darkMode ? 'bg-gray-800 text-white placeholder-gray-500' : 'bg-gray-50 text-gray-900 placeholder-gray-500'}" />
+                                <div id="priceDisplay" style="display: none;" class="p-4 rounded-xl ${darkMode ? 'bg-blue-900/30 border border-blue-800' : 'bg-blue-50 border border-blue-200'}">
+                                    <div class="text-sm ${darkMode ? 'text-blue-300' : 'text-blue-700'} mb-1">${this.t.price}</div>
+                                    <div id="priceValue" class="text-2xl font-bold ${darkMode ? 'text-blue-400' : 'text-blue-600'}">0.00 €</div>
                                 </div>
                                 <div>
                                     <label class="text-sm mb-2 block ${darkMode ? 'text-gray-400' : 'text-gray-600'}">${this.t.description}</label>
@@ -495,28 +526,16 @@
             }
 
             getChartData() {
-                return this.state.entries.map((entry, index) => {
-                    const runningTotal = this.state.entries.slice(0, index + 1).reduce((sum, e) => sum + e.amount, 0);
+                const sortedEntries = [...this.state.entries].sort((a, b) => a.timestamp - b.timestamp);
+                return sortedEntries.map((entry, index) => {
+                    const runningTotal = sortedEntries.slice(0, index + 1).reduce((sum, e) => sum + e.amount, 0);
                     return { date: entry.date, balance: runningTotal };
                 });
             }
 
-            getCategoryStats() {
-                const stats = {};
-                this.state.entries.forEach(entry => {
-                    const cat = entry.phoneModel;
-                    if (!stats[cat]) {
-                        stats[cat] = { total: 0, count: 0 };
-                    }
-                    stats[cat].total += entry.amount;
-                    stats[cat].count += 1;
-                });
-                return stats;
-            }
-
             getFilteredEntries() {
-                return this.state.selectedCategory 
-                    ? this.state.entries.filter(e => e.phoneModel === this.state.selectedCategory)
+                return this.state.selectedPhoneModel 
+                    ? this.state.entries.filter(e => e.phoneModel === this.state.selectedPhoneModel)
                     : this.state.entries;
             }
 
@@ -544,7 +563,8 @@
                                 pointBorderColor: '#fff',
                                 pointBorderWidth: 2,
                                 pointRadius: 5,
-                                pointHoverRadius: 8
+                                pointHoverRadius: 8,
+                                fill: true
                             }]
                         },
                         options: {
@@ -560,7 +580,9 @@
                                     borderWidth: 1,
                                     padding: 12,
                                     displayColors: false,
-                                    callbacks: { label: (ctx) => `${ctx.parsed.y.toFixed(2)} €` }
+                                    callbacks: { 
+                                        label: (ctx) => `Bilanz: ${ctx.parsed.y.toFixed(2)} €` 
+                                    }
                                 }
                             },
                             scales: {
@@ -672,81 +694,122 @@
                     };
                 }
 
-                // Phone filter
+                // Phone model selection (main view)
                 document.querySelectorAll('[data-phone]').forEach(btn => {
                     btn.onclick = () => {
-                        const phone = btn.dataset.phone;
-                        this.state.selectedCategory = this.state.selectedCategory === phone ? null : phone;
+                        this.state.selectedPhoneModel = btn.dataset.phone;
                         this.render();
                     };
                 });
 
-                const clearFilter = document.getElementById('clearFilter');
-                if (clearFilter) clearFilter.onclick = () => { this.state.selectedCategory = null; this.render(); };
-
-                // Entries
-                const newEntryBtn = document.getElementById('newEntryBtn');
-                if (newEntryBtn) {
-                    newEntryBtn.onclick = () => {
-                        this.state.selectedPhone = this.state.phoneModels[0] || '';
-                        this.state.selectedRepair = this.state.repairTypes[0] || '';
-                        this.state.showAddModal = true;
+                // Back to models
+                const backToModels = document.getElementById('backToModels');
+                if (backToModels) {
+                    backToModels.onclick = () => {
+                        this.state.selectedPhoneModel = null;
                         this.render();
                     };
                 }
 
+                // Clear filter
+                const clearFilter = document.getElementById('clearFilter');
+                if (clearFilter) {
+                    clearFilter.onclick = () => { 
+                        this.state.selectedPhoneModel = null; 
+                        this.render(); 
+                    };
+                }
+
+                // Repair selection buttons (when phone is selected)
+                document.querySelectorAll('[data-repair]').forEach(btn => {
+                    btn.onclick = () => {
+                        const repair = btn.dataset.repair;
+                        const price = parseFloat(btn.dataset.price);
+                        
+                        // Open modal with pre-filled data
+                        this.state.selectedPhone = this.state.selectedPhoneModel;
+                        this.state.selectedRepair = repair;
+                        this.state.customAmount = price;
+                        this.state.showAddModal = true;
+                        this.render();
+                    };
+                });
+
+                // Modal - Type selection
                 const typeIncome = document.getElementById('typeIncome');
                 const typeExpense = document.getElementById('typeExpense');
                 if (typeIncome) typeIncome.onclick = () => { this.state.type = 'income'; this.render(); };
                 if (typeExpense) typeExpense.onclick = () => { this.state.type = 'expense'; this.render(); };
 
+                // Modal - Phone selection
                 const phoneSelect = document.getElementById('phoneSelect');
-                const repairSelect = document.getElementById('repairSelect');
-                
                 if (phoneSelect) {
+                    // Pre-select if coming from repair button
+                    if (this.state.selectedPhone) {
+                        phoneSelect.value = this.state.selectedPhone;
+                        this.updateRepairOptions();
+                    }
+                    
                     phoneSelect.onchange = () => {
                         this.state.selectedPhone = phoneSelect.value;
-                        this.render();
+                        this.updateRepairOptions();
                     };
                 }
-                
+
+                // Modal - Repair selection
+                const repairSelect = document.getElementById('repairSelect');
                 if (repairSelect) {
+                    // Pre-select if coming from repair button
+                    if (this.state.selectedRepair) {
+                        repairSelect.value = this.state.selectedRepair;
+                        this.updatePrice();
+                    }
+                    
                     repairSelect.onchange = () => {
                         this.state.selectedRepair = repairSelect.value;
-                        this.render();
+                        this.updatePrice();
                     };
                 }
 
+                // Modal - Cancel
                 const cancelEntry = document.getElementById('cancelEntry');
-                if (cancelEntry) cancelEntry.onclick = () => { this.state.showAddModal = false; this.render(); };
+                if (cancelEntry) {
+                    cancelEntry.onclick = () => { 
+                        this.state.showAddModal = false;
+                        this.state.selectedPhone = '';
+                        this.state.selectedRepair = '';
+                        this.state.customAmount = '';
+                        this.render(); 
+                    };
+                }
 
+                // Modal - Save
                 const saveEntry = document.getElementById('saveEntry');
-                const entryAmount = document.getElementById('entryAmount');
                 const entryDesc = document.getElementById('entryDesc');
                 
                 if (saveEntry && entryDesc) {
                     saveEntry.onclick = () => {
-                        if (!this.state.selectedPhone || !this.state.selectedRepair || !entryDesc.value) {
+                        const phoneSelect = document.getElementById('phoneSelect');
+                        const repairSelect = document.getElementById('repairSelect');
+                        
+                        if (!phoneSelect.value || !repairSelect.value || !entryDesc.value) {
                             alert('Bitte alle Felder ausfüllen!');
                             return;
                         }
                         
-                        // Use custom amount if provided, otherwise use price from sheet
-                        const finalAmount = entryAmount && entryAmount.value 
-                            ? parseFloat(entryAmount.value) 
-                            : this.getPrice();
+                        const price = this.state.priceData[phoneSelect.value][repairSelect.value] || 0;
                         
-                        if (finalAmount === 0) {
-                            alert('Bitte Betrag eingeben!');
+                        if (price === 0) {
+                            alert('Preis nicht gefunden!');
                             return;
                         }
                         
                         const newEntry = {
                             id: Date.now(),
-                            amount: this.state.type === 'expense' ? -Math.abs(finalAmount) : Math.abs(finalAmount),
+                            amount: this.state.type === 'expense' ? -Math.abs(price) : Math.abs(price),
                             description: entryDesc.value,
-                            phoneModel: this.state.selectedPhone,
-                            repairType: this.state.selectedRepair,
+                            phoneModel: phoneSelect.value,
+                            repairType: repairSelect.value,
                             type: this.state.type,
                             date: new Date().toLocaleDateString(this.state.language === 'de' ? 'de-DE' : this.state.language === 'fr' ? 'fr-FR' : 'en-US'),
                             timestamp: Date.now()
@@ -755,8 +818,53 @@
                         this.state.entries.push(newEntry);
                         localStorage.setItem(`entries_${this.state.currentUser}`, JSON.stringify(this.state.entries));
                         this.state.showAddModal = false;
+                        this.state.selectedPhone = '';
+                        this.state.selectedRepair = '';
+                        this.state.customAmount = '';
                         this.render();
                     };
+                }
+            }
+
+            updateRepairOptions() {
+                const phoneSelect = document.getElementById('phoneSelect');
+                const repairSelect = document.getElementById('repairSelect');
+                const repairContainer = document.getElementById('repairSelectContainer');
+                
+                if (!phoneSelect || !repairSelect || !repairContainer) return;
+                
+                if (phoneSelect.value) {
+                    repairContainer.style.display = 'block';
+                    const repairs = this.getRepairsForPhone(phoneSelect.value);
+                    
+                    repairSelect.innerHTML = `<option value="">${this.t.selectRepair}</option>` +
+                        repairs.map(({repair}) => `<option value="${repair}">${repair}</option>`).join('');
+                    
+                    // If repair was pre-selected, select it
+                    if (this.state.selectedRepair) {
+                        repairSelect.value = this.state.selectedRepair;
+                        this.updatePrice();
+                    }
+                } else {
+                    repairContainer.style.display = 'none';
+                    document.getElementById('priceDisplay').style.display = 'none';
+                }
+            }
+
+            updatePrice() {
+                const phoneSelect = document.getElementById('phoneSelect');
+                const repairSelect = document.getElementById('repairSelect');
+                const priceDisplay = document.getElementById('priceDisplay');
+                const priceValue = document.getElementById('priceValue');
+                
+                if (!phoneSelect || !repairSelect || !priceDisplay || !priceValue) return;
+                
+                if (phoneSelect.value && repairSelect.value) {
+                    const price = this.state.priceData[phoneSelect.value][repairSelect.value] || 0;
+                    priceValue.textContent = `${price.toFixed(2)} €`;
+                    priceDisplay.style.display = 'block';
+                } else {
+                    priceDisplay.style.display = 'none';
                 }
             }
         }
