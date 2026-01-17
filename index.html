@@ -283,10 +283,10 @@
                 skipEmptyLines: true,
                 complete: function(results) {
                     allData = results.data.map(row => ({
-                        datum: row.Datum || row.datum,
-                        kategorie: row['Kategorie/Produkt'] || row.Kategorie || row.kategorie,
-                        preis: parseFloat(row.Preis || row.preis || 0)
-                    })).filter(row => row.datum && row.kategorie);
+    datum: row['Zeitstempel'],               // statt row.Datum
+    kategorie: row['Welches Handy?'],        // statt row['Kategorie/Produkt']
+    preis: parseFloat(row['Preis'] || 0)
+})).filter(row => row.datum && row.kategorie);
 
                     document.getElementById('loading').style.display = 'none';
                     displayData();
