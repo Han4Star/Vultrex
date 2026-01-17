@@ -1,134 +1,535 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Handy-Reparaturen Dashboard</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<style>
-  body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
-  h1 { text-align: center; }
-  #endstand { font-size: 2em; margin: 20px 0; text-align: center; }
-  .categories { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 20px; }
-  .category-btn { padding: 10px 15px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; }
-  .category-btn:hover { background: #2980b9; }
-  #popup { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-           background: white; border: 2px solid #333; padding: 20px; z-index: 1000; max-height: 70%; overflow-y: auto; width: 90%; max-width: 500px; }
-  #popup h2 { margin-top: 0; }
-  #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-             background: rgba(0,0,0,0.5); z-index: 999; }
-  table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-  table, th, td { border: 1px solid #ccc; }
-  th, td { padding: 8px; text-align: left; }
-  .income { color: green; }
-  .expense { color: red; }
-  canvas { background: white; border: 1px solid #ccc; border-radius: 5px; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Handy-Reparatur Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .total-balance {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .total-balance h2 {
+            color: white;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .total-balance .amount {
+            color: white;
+            font-size: 3em;
+            font-weight: bold;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .category-btn {
+            padding: 20px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .category-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        .chart-container {
+            margin-top: 40px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.7);
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            z-index: 1001;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .popup.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .popup h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #f5576c;
+            border: none;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5em;
+            line-height: 1;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: #e74c60;
+            transform: rotate(90deg);
+        }
+
+        .transaction {
+            padding: 15px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .transaction:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .transaction-info {
+            flex: 1;
+        }
+
+        .transaction-date {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .transaction-category {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .transaction-price {
+            font-size: 1.3em;
+            font-weight: bold;
+            padding: 5px 15px;
+            border-radius: 8px;
+        }
+
+        .positive {
+            color: #28a745;
+            background: rgba(40, 167, 69, 0.1);
+        }
+
+        .negative {
+            color: #dc3545;
+            background: rgba(220, 53, 69, 0.1);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2em;
+            color: #667eea;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes countUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .total-balance .amount {
+                font-size: 2em;
+            }
+
+            .categories {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+
+            .category-btn {
+                padding: 15px;
+                font-size: 1em;
+            }
+        }
+    </style>
 </head>
 <body>
+    <div class="container">
+        <h1>📱 Handy-Reparatur Dashboard</h1>
+        
+        <div class="total-balance">
+            <h2>Gesamt-Endstand</h2>
+            <div class="amount" id="totalAmount">0,00 €</div>
+        </div>
 
-<h1>Handy-Reparaturen Dashboard</h1>
-<div id="endstand">Gesamt: 0 €</div>
+        <div id="loading" class="loading">Lade Daten...</div>
+        
+        <div class="categories" id="categories"></div>
 
-<div class="categories" id="categories"></div>
+        <div class="chart-container">
+            <canvas id="myChart"></canvas>
+        </div>
+    </div>
 
-<canvas id="chart" width="400" height="200"></canvas>
+    <div class="overlay" id="overlay"></div>
+    <div class="popup" id="popup">
+        <button class="close-btn" onclick="closePopup()">×</button>
+        <h2 id="popupTitle"></h2>
+        <div id="popupContent"></div>
+    </div>
 
-<div id="overlay"></div>
-<div id="popup">
-  <h2 id="popup-title"></h2>
-  <table id="popup-table">
-    <thead><tr><th>Datum</th><th>Kategorie</th><th>Betrag</th></tr></thead>
-    <tbody></tbody>
-  </table>
-  <button onclick="closePopup()">Schließen</button>
-</div>
+    <script>
+        // HIER DIE CSV-URL EINTRAGEN
+        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/DEINE_SHEET_ID/pub?output=csv';
+        
+        let allData = [];
+        let chart = null;
 
-<script>
-// ==== CONFIG ====
-// Dein Google Sheet CSV Link (veröffentlicht)
-const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQHхjp7PpL1еxuPsh_іНbg6bjJsFХе98jALeYFJfOVqEKjjНHOIBLXlebKTbn5vKSrLBgLWm4WGpKts/pub?output=csv'; // <-- Hier deinen veröffentlichten Google Sheet CSV Link einfügen
+        // CSV laden und verarbeiten
+        function loadData() {
+            Papa.parse(CSV_URL, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    allData = results.data.map(row => ({
+                        datum: row.Datum || row.datum,
+                        kategorie: row['Kategorie/Produkt'] || row.Kategorie || row.kategorie,
+                        preis: parseFloat(row.Preis || row.preis || 0)
+                    })).filter(row => row.datum && row.kategorie);
 
-// ==== GLOBALS ====
-let transactions = [];
+                    document.getElementById('loading').style.display = 'none';
+                    displayData();
+                },
+                error: function(error) {
+                    document.getElementById('loading').innerHTML = 
+                        '⚠️ Fehler beim Laden der Daten. Bitte CSV-URL überprüfen.';
+                }
+            });
+        }
 
-// ==== FETCH DATA ====
-async function loadData() {
-    const res = await fetch(sheetUrl);
-    const text = await res.text();
-    parseCSV(text);
-    renderDashboard();
-    renderChart();
-}
+        // Daten anzeigen
+        function displayData() {
+            calculateTotal();
+            createCategoryButtons();
+            createChart();
+        }
 
-// ==== CSV PARSER ====
-function parseCSV(csvText) {
-    const lines = csvText.trim().split('\n');
-    const headers = lines[0].split(',');
-    transactions = lines.slice(1).map(line => {
-        const cols = line.split(',');
-        let obj = {};
-        headers.forEach((h, i) => { obj[h.trim()] = cols[i]; });
-        // Preis als Zahl
-        obj.Preis = parseFloat(obj.Preis) || 0;
-        return obj;
-    });
-}
+        // Gesamtsumme berechnen und animiert anzeigen
+        function calculateTotal() {
+            const total = allData.reduce((sum, row) => sum + row.preis, 0);
+            animateNumber(total);
+        }
 
-// ==== DASHBOARD ====
-function renderDashboard() {
-    const endstand = transactions.reduce((sum, t) => sum + t.Preis, 0);
-    document.getElementById('endstand').innerText = `Gesamt: ${endstand.toFixed(2)} €`;
+        // Zahl animiert hochzählen
+        function animateNumber(target) {
+            const element = document.getElementById('totalAmount');
+            const duration = 2000;
+            const steps = 60;
+            const increment = target / steps;
+            let current = 0;
+            let step = 0;
 
-    // Kategorien / Produkte als Buttons
-    const categoryDiv = document.getElementById('categories');
-    categoryDiv.innerHTML = '';
-    const products = [...new Set(transactions.map(t => t.Kategorie))];
-    products.forEach(prod => {
-        const btn = document.createElement('button');
-        btn.className = 'category-btn';
-        btn.innerText = prod;
-        btn.onclick = () => showPopup(prod);
-        categoryDiv.appendChild(btn);
-    });
-}
+            const timer = setInterval(() => {
+                step++;
+                current += increment;
+                
+                if (step >= steps) {
+                    current = target;
+                    clearInterval(timer);
+                }
 
-// ==== POPUP ====
-function showPopup(product) {
-    document.getElementById('popup-title').innerText = product;
-    const tbody = document.querySelector('#popup-table tbody');
-    tbody.innerHTML = '';
-    transactions.filter(t => t.Kategorie === product).forEach(t => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${t.Datum || '-'}</td>
-                        <td>${t.Kategorie}</td>
-                        <td class="${t.Preis >= 0 ? 'income' : 'expense'}">${t.Preis.toFixed(2)} €</td>`;
-        tbody.appendChild(tr);
-    });
-    document.getElementById('overlay').style.display = 'block';
-    document.getElementById('popup').style.display = 'block';
-}
+                const formatted = current.toLocaleString('de-DE', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+                element.textContent = formatted + ' €';
+                element.style.animation = 'countUp 0.5s ease';
+            }, duration / steps);
+        }
 
-function closePopup() {
-    document.getElementById('popup').style.display = 'none';
-    document.getElementById('overlay').style.display = 'none';
-}
+        // Kategorie-Buttons erstellen
+        function createCategoryButtons() {
+            const categories = [...new Set(allData.map(row => row.kategorie))];
+            const container = document.getElementById('categories');
+            container.innerHTML = '';
 
-// ==== CHART.JS ====
-function renderChart() {
-    const ctx = document.getElementById('chart').getContext('2d');
-    const labels = transactions.map((t,i) => t.Datum || `T${i+1}`);
-    const data = transactions.map(t => t.Preis);
-    new Chart(ctx, {
-        type: 'line',
-        data: { labels: labels, datasets: [{ label: 'Preis (€)', data: data, borderColor: 'blue', backgroundColor: 'rgba(0,0,255,0.2)' }] },
-        options: { responsive: true, plugins: { legend: { display: true } }, scales: { y: { beginAtZero: true } } }
-    });
-}
+            const colors = [
+                'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+                'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+                'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
+                'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)'
+            ];
 
-// ==== INIT ====
-loadData();
-</script>
+            categories.forEach((cat, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'category-btn';
+                btn.textContent = cat;
+                btn.style.background = colors[index % colors.length];
+                btn.onclick = () => showPopup(cat);
+                container.appendChild(btn);
+            });
+        }
 
+        // Pop-up anzeigen
+        function showPopup(category) {
+            const filtered = allData.filter(row => row.kategorie === category);
+            const popup = document.getElementById('popup');
+            const overlay = document.getElementById('overlay');
+            
+            document.getElementById('popupTitle').textContent = category;
+            
+            let html = '';
+            filtered.forEach(row => {
+                const priceClass = row.preis >= 0 ? 'positive' : 'negative';
+                const priceText = row.preis.toLocaleString('de-DE', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+                
+                html += `
+                    <div class="transaction">
+                        <div class="transaction-info">
+                            <div class="transaction-date">${row.datum}</div>
+                            <div class="transaction-category">${row.kategorie}</div>
+                        </div>
+                        <div class="transaction-price ${priceClass}">${priceText} €</div>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('popupContent').innerHTML = html;
+            overlay.style.display = 'block';
+            popup.style.display = 'block';
+            
+            setTimeout(() => popup.classList.add('show'), 10);
+        }
+
+        // Pop-up schließen
+        function closePopup() {
+            const popup = document.getElementById('popup');
+            const overlay = document.getElementById('overlay');
+            
+            popup.classList.remove('show');
+            setTimeout(() => {
+                popup.style.display = 'none';
+                overlay.style.display = 'none';
+            }, 300);
+        }
+
+        // Diagramm erstellen
+        function createChart() {
+            const ctx = document.getElementById('myChart').getContext('2d');
+            
+            // Daten nach Datum sortieren
+            const sortedData = [...allData].sort((a, b) => 
+                new Date(a.datum.split('.').reverse().join('-')) - 
+                new Date(b.datum.split('.').reverse().join('-'))
+            );
+
+            // Kumulierte Summe berechnen
+            let cumulative = 0;
+            const chartData = sortedData.map(row => {
+                cumulative += row.preis;
+                return {
+                    x: row.datum,
+                    y: cumulative
+                };
+            });
+
+            if (chart) {
+                chart.destroy();
+            }
+
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: 'Kumulierter Umsatz (€)',
+                        data: chartData,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 5,
+                        pointHoverRadius: 8,
+                        pointBackgroundColor: '#667eea',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeInOutQuart'
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: {
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            padding: 12,
+                            titleFont: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                size: 13
+                            },
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Gesamt: ' + context.parsed.y.toLocaleString('de-DE', {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2
+                                    }) + ' €';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Datum',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Preis (€)',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString('de-DE') + ' €';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Overlay-Klick zum Schließen
+        document.getElementById('overlay').addEventListener('click', closePopup);
+
+        // Daten beim Laden initialisieren
+        loadData();
+
+        // Optional: Automatisches Neuladen alle 5 Minuten
+        setInterval(loadData, 300000);
+    </script>
 </body>
 </html>
