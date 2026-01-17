@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Handy-Reparatur Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -18,7 +18,6 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
-            color: #333;
         }
 
         .container {
@@ -26,16 +25,21 @@
             margin: 0 auto;
             background: white;
             border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         h1 {
             text-align: center;
-            color: #667eea;
+            color: #333;
             margin-bottom: 30px;
             font-size: 2.5em;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
         }
 
         .total-balance {
@@ -58,32 +62,32 @@
             color: white;
             font-size: 3em;
             font-weight: bold;
-            text-shadow: 2px 2px 8px rgba(0,0,0,0.2);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
         }
 
-        .categories {
+        .buttons-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             gap: 15px;
             margin-bottom: 40px;
         }
 
         .category-btn {
             padding: 20px;
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             border: none;
             border-radius: 12px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             color: white;
-            font-size: 1.1em;
+            font-size: 1em;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
         .category-btn:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
         }
 
         .chart-container {
@@ -91,10 +95,10 @@
             padding: 20px;
             background: #f8f9fa;
             border-radius: 15px;
-            box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
 
-        .overlay {
+        .modal {
             display: none;
             position: fixed;
             top: 0;
@@ -103,127 +107,98 @@
             height: 100%;
             background: rgba(0,0,0,0.7);
             z-index: 1000;
-            animation: fadeIn 0.3s ease;
+            animation: modalFadeIn 0.3s ease;
         }
 
-        .popup {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(0.7);
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            position: relative;
             background: white;
-            border-radius: 20px;
+            margin: 50px auto;
             padding: 30px;
-            max-width: 600px;
             width: 90%;
+            max-width: 600px;
             max-height: 80vh;
             overflow-y: auto;
-            z-index: 1001;
+            border-radius: 15px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-            opacity: 0;
-            transition: all 0.3s ease;
+            animation: modalSlideIn 0.3s ease;
         }
 
-        .popup.show {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
-        }
-
-        .popup h2 {
-            color: #667eea;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 3px solid #667eea;
+        @keyframes modalSlideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
         .close-btn {
             position: absolute;
             top: 15px;
-            right: 15px;
-            background: #f5576c;
-            border: none;
-            color: white;
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
+            right: 20px;
+            font-size: 30px;
+            font-weight: bold;
+            color: #999;
             cursor: pointer;
-            font-size: 1.5em;
-            line-height: 1;
-            transition: all 0.3s ease;
+            transition: color 0.3s;
         }
 
         .close-btn:hover {
-            background: #e74c60;
-            transform: rotate(90deg);
+            color: #333;
         }
 
         .transaction {
             padding: 15px;
-            margin-bottom: 10px;
-            background: #f8f9fa;
+            margin: 10px 0;
             border-radius: 10px;
+            background: #f8f9fa;
             border-left: 4px solid #667eea;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.3s ease;
+            transition: transform 0.2s;
         }
 
         .transaction:hover {
             transform: translateX(5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-
-        .transaction-info {
-            flex: 1;
         }
 
         .transaction-date {
-            color: #666;
             font-size: 0.9em;
+            color: #666;
             margin-bottom: 5px;
         }
 
         .transaction-category {
             font-weight: 600;
             color: #333;
+            margin-bottom: 5px;
         }
 
         .transaction-price {
-            font-size: 1.3em;
+            font-size: 1.2em;
             font-weight: bold;
-            padding: 5px 15px;
-            border-radius: 8px;
         }
 
-        .positive {
+        .price-positive {
             color: #28a745;
-            background: rgba(40, 167, 69, 0.1);
         }
 
-        .negative {
+        .price-negative {
             color: #dc3545;
-            background: rgba(220, 53, 69, 0.1);
         }
 
         .loading {
             text-align: center;
             padding: 40px;
-            font-size: 1.2em;
+            font-size: 1.5em;
             color: #667eea;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes countUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
         @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
             h1 {
                 font-size: 1.8em;
             }
@@ -232,13 +207,8 @@
                 font-size: 2em;
             }
 
-            .categories {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            }
-
-            .category-btn {
-                padding: 15px;
-                font-size: 1em;
+            .buttons-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -252,284 +222,233 @@
             <div class="amount" id="totalAmount">0,00 €</div>
         </div>
 
-        <div id="loading" class="loading">Lade Daten...</div>
+        <div class="loading" id="loading">Lade Daten...</div>
         
-        <div class="categories" id="categories"></div>
-
-        <div class="chart-container">
+        <div class="buttons-grid" id="buttonsGrid" style="display:none;"></div>
+        
+        <div class="chart-container" style="display:none;" id="chartContainer">
             <canvas id="myChart"></canvas>
         </div>
     </div>
 
-    <div class="overlay" id="overlay"></div>
-    <div class="popup" id="popup">
-        <button class="close-btn" onclick="closePopup()">×</button>
-        <h2 id="popupTitle"></h2>
-        <div id="popupContent"></div>
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <span class="close-btn" id="closeBtn">&times;</span>
+            <h2 id="modalTitle"></h2>
+            <div id="modalBody"></div>
+        </div>
     </div>
 
     <script>
-        // HIER DIE CSV-URL EINTRAGEN
         const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQHxjp7PpL1exuPsh_iHbg6bjJsFXe98jALeYFJfOVqEKjjHH0IBLXIebKTbn5vKSrLBgLWm4WGpKts/pub?output=csv';
-        
         let allData = [];
         let chart = null;
 
-        // CSV laden und verarbeiten
-        function loadData() {
-            Papa.parse(CSV_URL, {
-                download: true,
-                header: true,
-                skipEmptyLines: true,
-                complete: function(results) {
-                    allData = results.data.map(row => ({
-    datum: row['Zeitstempel'],               // statt row.Datum
-    kategorie: row['Welches Handy?'],        // statt row['Kategorie/Produkt']
-    preis: parseFloat(row['Preis'] || 0)
-})).filter(row => row.datum && row.kategorie);
+        Papa.parse(CSV_URL, {
+            download: true,
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+                allData = results.data;
+                processData();
+            },
+            error: function(error) {
+                document.getElementById('loading').innerHTML = '❌ Fehler beim Laden der Daten';
+                console.error(error);
+            }
+        });
 
-                    document.getElementById('loading').style.display = 'none';
-                    displayData();
-                },
-                error: function(error) {
-                    document.getElementById('loading').innerHTML = 
-                        '⚠️ Fehler beim Laden der Daten. Bitte CSV-URL überprüfen.';
+        function processData() {
+            let total = 0;
+            const categories = {};
+            const timeData = [];
+
+            allData.forEach(row => {
+                const preis = parseFloat(row['Preis']) || 0;
+                const kategorie = row['Kategorie'] || 'Unbekannt';
+                const handy = row['Welches Handy?'] || 'Unbekannt';
+                const datum = row['Zeitstempel'] || '';
+
+                total += preis;
+
+                const key = `${kategorie} - ${handy}`;
+                if (!categories[key]) {
+                    categories[key] = [];
+                }
+                categories[key].push({
+                    datum: datum,
+                    kategorie: kategorie,
+                    handy: handy,
+                    preis: preis
+                });
+
+                if (datum) {
+                    timeData.push({
+                        datum: new Date(datum),
+                        preis: preis
+                    });
                 }
             });
+
+            animateTotal(total);
+            createButtons(categories);
+            createChart(timeData);
+
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('buttonsGrid').style.display = 'grid';
+            document.getElementById('chartContainer').style.display = 'block';
         }
 
-        // Daten anzeigen
-        function displayData() {
-            calculateTotal();
-            createCategoryButtons();
-            createChart();
-        }
-
-        // Gesamtsumme berechnen und animiert anzeigen
-        function calculateTotal() {
-            const total = allData.reduce((sum, row) => sum + row.preis, 0);
-            animateNumber(total);
-        }
-
-        // Zahl animiert hochzählen
-        function animateNumber(target) {
+        function animateTotal(finalAmount) {
             const element = document.getElementById('totalAmount');
             const duration = 2000;
             const steps = 60;
-            const increment = target / steps;
+            const increment = finalAmount / steps;
             let current = 0;
             let step = 0;
 
             const timer = setInterval(() => {
                 step++;
                 current += increment;
-                
                 if (step >= steps) {
-                    current = target;
+                    current = finalAmount;
                     clearInterval(timer);
                 }
-
-                const formatted = current.toLocaleString('de-DE', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                });
-                element.textContent = formatted + ' €';
-                element.style.animation = 'countUp 0.5s ease';
+                element.textContent = current.toFixed(2).replace('.', ',') + ' €';
             }, duration / steps);
         }
 
-        // Kategorie-Buttons erstellen
-        function createCategoryButtons() {
-            const categories = [...new Set(allData.map(row => row.kategorie))];
-            const container = document.getElementById('categories');
-            container.innerHTML = '';
+        function createButtons(categories) {
+            const grid = document.getElementById('buttonsGrid');
+            grid.innerHTML = '';
 
-            const colors = [
-                'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-                'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-                'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-                'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-                'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
-                'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)'
-            ];
-
-            categories.forEach((cat, index) => {
+            Object.keys(categories).sort().forEach(key => {
                 const btn = document.createElement('button');
                 btn.className = 'category-btn';
-                btn.textContent = cat;
-                btn.style.background = colors[index % colors.length];
-                btn.onclick = () => showPopup(cat);
-                container.appendChild(btn);
+                btn.textContent = key;
+                btn.onclick = () => showModal(key, categories[key]);
+                grid.appendChild(btn);
             });
         }
 
-        // Pop-up anzeigen
-        function showPopup(category) {
-            const filtered = allData.filter(row => row.kategorie === category);
-            const popup = document.getElementById('popup');
-            const overlay = document.getElementById('overlay');
-            
-            document.getElementById('popupTitle').textContent = category;
-            
-            let html = '';
-            filtered.forEach(row => {
-                const priceClass = row.preis >= 0 ? 'positive' : 'negative';
-                const priceText = row.preis.toLocaleString('de-DE', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                });
+        function showModal(title, transactions) {
+            const modal = document.getElementById('modal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+
+            modalTitle.textContent = title;
+            modalBody.innerHTML = '';
+
+            transactions.forEach(t => {
+                const div = document.createElement('div');
+                div.className = 'transaction';
                 
-                html += `
-                    <div class="transaction">
-                        <div class="transaction-info">
-                            <div class="transaction-date">${row.datum}</div>
-                            <div class="transaction-category">${row.kategorie}</div>
-                        </div>
-                        <div class="transaction-price ${priceClass}">${priceText} €</div>
+                const priceClass = t.preis >= 0 ? 'price-positive' : 'price-negative';
+                const priceSign = t.preis >= 0 ? '+' : '';
+                
+                div.innerHTML = `
+                    <div class="transaction-date">${t.datum}</div>
+                    <div class="transaction-category">${t.kategorie}</div>
+                    <div class="transaction-price ${priceClass}">
+                        ${priceSign}${t.preis.toFixed(2).replace('.', ',')} €
                     </div>
                 `;
+                modalBody.appendChild(div);
             });
-            
-            document.getElementById('popupContent').innerHTML = html;
-            overlay.style.display = 'block';
-            popup.style.display = 'block';
-            
-            setTimeout(() => popup.classList.add('show'), 10);
+
+            modal.style.display = 'block';
         }
 
-        // Pop-up schließen
-        function closePopup() {
-            const popup = document.getElementById('popup');
-            const overlay = document.getElementById('overlay');
-            
-            popup.classList.remove('show');
-            setTimeout(() => {
-                popup.style.display = 'none';
-                overlay.style.display = 'none';
-            }, 300);
-        }
+        document.getElementById('closeBtn').onclick = function() {
+            document.getElementById('modal').style.display = 'none';
+        };
 
-        // Diagramm erstellen
-        function createChart() {
-            const ctx = document.getElementById('myChart').getContext('2d');
-            
-            // Daten nach Datum sortieren
-            const sortedData = [...allData].sort((a, b) => 
-                new Date(a.datum.split('.').reverse().join('-')) - 
-                new Date(b.datum.split('.').reverse().join('-'))
-            );
+        window.onclick = function(event) {
+            const modal = document.getElementById('modal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        };
 
-            // Kumulierte Summe berechnen
+        function createChart(timeData) {
+            timeData.sort((a, b) => a.datum - b.datum);
+
             let cumulative = 0;
-            const chartData = sortedData.map(row => {
-                cumulative += row.preis;
+            const chartData = timeData.map(d => {
+                cumulative += d.preis;
                 return {
-                    x: row.datum,
+                    x: d.datum,
                     y: cumulative
                 };
             });
 
-            if (chart) {
-                chart.destroy();
-            }
-
+            const ctx = document.getElementById('myChart').getContext('2d');
             chart = new Chart(ctx, {
                 type: 'line',
                 data: {
                     datasets: [{
-                        label: 'Kumulierter Umsatz (€)',
+                        label: 'Kumulierte Einnahmen (€)',
                         data: chartData,
                         borderColor: '#667eea',
                         backgroundColor: 'rgba(102, 126, 234, 0.1)',
                         borderWidth: 3,
                         fill: true,
                         tension: 0.4,
-                        pointRadius: 5,
-                        pointHoverRadius: 8,
-                        pointBackgroundColor: '#667eea',
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2
+                        pointRadius: 4,
+                        pointHoverRadius: 6
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: true,
-                    animation: {
-                        duration: 2000,
-                        easing: 'easeInOutQuart'
-                    },
                     plugins: {
                         legend: {
                             display: true,
-                            labels: {
-                                font: {
-                                    size: 14,
-                                    weight: 'bold'
-                                }
-                            }
+                            position: 'top'
                         },
                         tooltip: {
-                            backgroundColor: 'rgba(0,0,0,0.8)',
-                            padding: 12,
-                            titleFont: {
-                                size: 14,
-                                weight: 'bold'
-                            },
-                            bodyFont: {
-                                size: 13
-                            },
+                            mode: 'index',
+                            intersect: false,
                             callbacks: {
                                 label: function(context) {
-                                    return 'Gesamt: ' + context.parsed.y.toLocaleString('de-DE', {
-                                        minimumFractionDigits: 2,
-                                        maximumFractionDigits: 2
-                                    }) + ' €';
+                                    return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + ' €';
                                 }
                             }
                         }
                     },
                     scales: {
                         x: {
-                            title: {
-                                display: true,
-                                text: 'Datum',
-                                font: {
-                                    size: 14,
-                                    weight: 'bold'
+                            type: 'time',
+                            time: {
+                                unit: 'day',
+                                displayFormats: {
+                                    day: 'DD.MM.YYYY'
                                 }
                             },
-                            grid: {
-                                display: false
+                            title: {
+                                display: true,
+                                text: 'Datum'
                             }
                         },
                         y: {
                             title: {
                                 display: true,
-                                text: 'Preis (€)',
-                                font: {
-                                    size: 14,
-                                    weight: 'bold'
-                                }
+                                text: 'Betrag (€)'
                             },
                             ticks: {
                                 callback: function(value) {
-                                    return value.toLocaleString('de-DE') + ' €';
+                                    return value.toFixed(2) + ' €';
                                 }
                             }
                         }
+                    },
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeInOutQuart'
                     }
                 }
             });
         }
-
-        // Overlay-Klick zum Schließen
-        document.getElementById('overlay').addEventListener('click', closePopup);
-
-        // Daten beim Laden initialisieren
-        loadData();
-
-        // Optional: Automatisches Neuladen alle 5 Minuten
-        setInterval(loadData, 300000);
     </script>
 </body>
 </html>
