@@ -79,7 +79,8 @@
                 darkMode: 'Dark Mode', lightMode: 'Light Mode', mainPage: 'Hauptseite',
                 phoneModel: 'Handy Modell', repairType: 'Reparaturart', price: 'Preis',
                 selectPhone: 'Handy wählen', selectRepair: 'Reparatur wählen',
-                repairOptions: 'Reparatur Optionen', backToModels: 'Zurück zu Modellen'
+                repairOptions: 'Reparatur Optionen', backToModels: 'Zurück zu Modellen',
+                noData: 'Keine Daten verfügbar'
             },
             en: {
                 login: 'Login', username: 'Username', password: 'Password', loading: 'Loading...',
@@ -92,7 +93,8 @@
                 darkMode: 'Dark Mode', lightMode: 'Light Mode', mainPage: 'Main Page',
                 phoneModel: 'Phone Model', repairType: 'Repair Type', price: 'Price',
                 selectPhone: 'Select Phone', selectRepair: 'Select Repair',
-                repairOptions: 'Repair Options', backToModels: 'Back to Models'
+                repairOptions: 'Repair Options', backToModels: 'Back to Models',
+                noData: 'No data available'
             },
             fr: {
                 login: 'Connexion', username: 'Nom d\'utilisateur', password: 'Mot de passe', loading: 'Chargement...',
@@ -105,7 +107,8 @@
                 darkMode: 'Mode Sombre', lightMode: 'Mode Clair', mainPage: 'Page Principale',
                 phoneModel: 'Modèle de téléphone', repairType: 'Type de réparation', price: 'Prix',
                 selectPhone: 'Sélectionner téléphone', selectRepair: 'Sélectionner réparation',
-                repairOptions: 'Options de réparation', backToModels: 'Retour aux modèles'
+                repairOptions: 'Options de réparation', backToModels: 'Retour aux modèles',
+                noData: 'Aucune donnée disponible'
             }
         };
 
@@ -119,13 +122,12 @@
                     password: '',
                     entries: [],
                     phoneModels: [],
-                    repairTypes: [],
-                    priceData: {},
+                    phoneData: {},
                     showAddModal: false,
                     selectedPhone: '',
                     selectedRepair: '',
-                    customAmount: '',
-                    description: '',
+                    selectedPrice: 0,
+                    customDescription: '',
                     type: 'income',
                     loading: false,
                     dataLoading: true,
@@ -159,36 +161,57 @@
                     const csvText = await response.text();
                     
                     Papa.parse(csvText, {
-                        header: true,
+                        header: false,
                         skipEmptyLines: true,
-                        dynamicTyping: true,
                         complete: (results) => {
-                            const data = results.data;
+                            const rows = results.data;
                             
-                            // Extract phone models (column headers, skip first column)
-                            const headers = Object.keys(data[0]).filter(h => h.trim() !== '');
-                            this.state.phoneModels = headers.slice(1);
+                            if (rows.length === 0) {
+                                this.state.dataLoading = false;
+                                this.render();
+                                return;
+                            }
+
+                            // Get headers (first row)
+                            const headers = rows[0];
+                            const lastColumnIndex = headers.length - 1;
                             
-                            // Extract repair types (first column values)
-                            this.state.repairTypes = data.map(row => row[headers[0]]).filter(Boolean);
+                            // phoneData structure: { "iPhone XS": [{ description: "Display", price: 120 }, ...] }
+                            this.state.phoneData = {};
                             
-                            // Build price lookup: priceData[phoneModel][repairType] = price
-                            this.state.priceData = {};
-                            this.state.phoneModels.forEach(phone => {
-                                this.state.priceData[phone] = {};
-                            });
-                            
-                            data.forEach(row => {
-                                const repairType = row[headers[0]];
-                                if (repairType) {
-                                    headers.slice(1).forEach(phone => {
-                                        const price = row[phone];
-                                        if (price !== undefined && price !== null && price !== '') {
-                                            this.state.priceData[phone][repairType] = parseFloat(price);
-                                        }
+                            // Process data rows (skip header)
+                            for (let i = 1; i < rows.length; i++) {
+                                const row = rows[i];
+                                
+                                // Last column contains phone model
+                                const phoneModel = row[lastColumnIndex];
+                                
+                                if (!phoneModel || phoneModel.trim() === '') continue;
+                                
+                                // Initialize array for this phone model if not exists
+                                if (!this.state.phoneData[phoneModel]) {
+                                    this.state.phoneData[phoneModel] = [];
+                                }
+                                
+                                // Extract description and price from previous columns
+                                // Assuming format: [..., description, price, phoneModel]
+                                const description = row[lastColumnIndex - 2] || '';
+                                const priceStr = row[lastColumnIndex - 1] || '0';
+                                const price = parseFloat(priceStr.toString().replace(',', '.')) || 0;
+                                
+                                if (description && price > 0) {
+                                    this.state.phoneData[phoneModel].push({
+                                        description: description.trim(),
+                                        price: price
                                     });
                                 }
-                            });
+                            }
+                            
+                            // Get unique phone models
+                            this.state.phoneModels = Object.keys(this.state.phoneData).sort();
+                            
+                            console.log('Loaded phone models:', this.state.phoneModels);
+                            console.log('Phone data:', this.state.phoneData);
                             
                             this.state.dataLoading = false;
                             this.render();
@@ -228,11 +251,7 @@
             }
 
             getRepairsForPhone(phoneModel) {
-                if (!this.state.priceData[phoneModel]) return [];
-                return Object.entries(this.state.priceData[phoneModel]).map(([repair, price]) => ({
-                    repair,
-                    price
-                }));
+                return this.state.phoneData[phoneModel] || [];
             }
 
             render() {
@@ -396,50 +415,6 @@
                             <div class="p-8 rounded-2xl shadow-2xl mb-8 ${darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}">
                                 <div class="flex justify-between items-center mb-6">
                                     <h2 class="text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}">
-                                        ${selectedPhoneModel ? `${selectedPhoneModel} - ${this.t.repairOptions}` : this.t.categories}
-                                    </h2>
-                                    ${selectedPhoneModel ? `
-                                        <button id="backToModels" class="px-4 py-2 rounded-xl ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-200 text-gray-700'} hover-grow button-press">
-                                            ← ${this.t.backToModels}
-                                        </button>
-                                    ` : ''}
-                                </div>
-                                
-                                ${!selectedPhoneModel ? `
-                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        ${phoneModels.map(phone => {
-                                            const phoneEntries = this.state.entries.filter(e => e.phoneModel === phone);
-                                            const phoneTotal = phoneEntries.reduce((sum, e) => sum + e.amount, 0);
-                                            return `
-                                                <button data-phone="${phone}" class="p-6 rounded-xl hover-lift button-press text-left ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-white text-gray-900'}">
-                                                    <div class="text-lg font-semibold mb-2">${phone}</div>
-                                                    ${phoneEntries.length > 0 ? `
-                                                        <div class="text-2xl font-bold ${phoneTotal >= 0 ? 'text-green-500' : 'text-red-500'} mb-1">
-                                                            ${phoneTotal >= 0 ? '+' : ''}${phoneTotal.toFixed(2)} €
-                                                        </div>
-                                                        <div class="text-sm opacity-75">${phoneEntries.length} ${this.t.entries}</div>
-                                                    ` : `
-                                                        <div class="text-sm opacity-75">Keine Einträge</div>
-                                                    `}
-                                                </button>
-                                            `;
-                                        }).join('')}
-                                    </div>
-                                ` : `
-                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        ${this.getRepairsForPhone(selectedPhoneModel).map(({repair, price}) => `
-                                            <button data-repair="${repair}" data-price="${price}" class="p-6 rounded-xl hover-lift button-press text-left ${darkMode ? 'bg-gray-800 hover:bg-gray-700 text-gray-300' : 'bg-white hover:bg-gray-50 text-gray-900'}">
-                                                <div class="text-lg font-semibold mb-2">${repair}</div>
-                                                <div class="text-2xl font-bold text-blue-500">${price.toFixed(2)} €</div>
-                                            </button>
-                                        `).join('')}
-                                    </div>
-                                `}
-                            </div>
-
-                            <div class="p-8 rounded-2xl shadow-2xl ${darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}">
-                                <div class="flex justify-between items-center mb-6">
-                                    <h2 class="text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}">
                                         ${selectedPhoneModel ? `${selectedPhoneModel} - ${this.t.history}` : this.t.history}
                                     </h2>
                                     ${selectedPhoneModel ? `
@@ -476,7 +451,7 @@
             }
 
             renderAddModal() {
-                const { darkMode, type, phoneModels } = this.state;
+                const { darkMode, type, selectedPhone, selectedRepair, selectedPrice } = this.state;
 
                 return `
                     <div class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-fade-in">
@@ -490,27 +465,27 @@
                                         <button id="typeExpense" class="flex-1 py-3 rounded-xl font-semibold button-press ${type === 'expense' ? 'bg-red-600 text-white' : (darkMode ? 'bg-gray-800 text-gray-400' : 'bg-gray-200 text-gray-600')}">${this.t.expense}</button>
                                     </div>
                                 </div>
-                                <div>
-                                    <label class="text-sm mb-2 block ${darkMode ? 'text-gray-400' : 'text-gray-600'}">${this.t.phoneModel}</label>
-                                    <select id="phoneSelect" class="w-full px-4 py-3 rounded-xl outline-none ${darkMode ? 'bg-gray-800 text-white' : 'bg-gray-50 text-gray-900'}">
-                                        <option value="">${this.t.selectPhone}</option>
-                                        ${phoneModels.map(p => `<option value="${p}">${p}</option>`).join('')}
-                                    </select>
+                                
+                                <div class="p-4 rounded-xl ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-gray-50 border border-gray-200'}">
+                                    <div class="text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-2">${this.t.phoneModel}</div>
+                                    <div class="font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}">${selectedPhone}</div>
                                 </div>
-                                <div id="repairSelectContainer" style="display: none;">
-                                    <label class="text-sm mb-2 block ${darkMode ? 'text-gray-400' : 'text-gray-600'}">${this.t.repairType}</label>
-                                    <select id="repairSelect" class="w-full px-4 py-3 rounded-xl outline-none ${darkMode ? 'bg-gray-800 text-white' : 'bg-gray-50 text-gray-900'}">
-                                        <option value="">${this.t.selectRepair}</option>
-                                    </select>
+                                
+                                <div class="p-4 rounded-xl ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-gray-50 border border-gray-200'}">
+                                    <div class="text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-2">${this.t.repairType}</div>
+                                    <div class="font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}">${selectedRepair}</div>
                                 </div>
-                                <div id="priceDisplay" style="display: none;" class="p-4 rounded-xl ${darkMode ? 'bg-blue-900/30 border border-blue-800' : 'bg-blue-50 border border-blue-200'}">
+                                
+                                <div class="p-4 rounded-xl ${darkMode ? 'bg-blue-900/30 border border-blue-800' : 'bg-blue-50 border border-blue-200'}">
                                     <div class="text-sm ${darkMode ? 'text-blue-300' : 'text-blue-700'} mb-1">${this.t.price}</div>
-                                    <div id="priceValue" class="text-2xl font-bold ${darkMode ? 'text-blue-400' : 'text-blue-600'}">0.00 €</div>
+                                    <div class="text-3xl font-bold ${darkMode ? 'text-blue-400' : 'text-blue-600'}">${selectedPrice.toFixed(2)} €</div>
                                 </div>
+                                
                                 <div>
-                                    <label class="text-sm mb-2 block ${darkMode ? 'text-gray-400' : 'text-gray-600'}">${this.t.description}</label>
-                                    <input type="text" id="entryDesc" placeholder="z.B. iPhone 12 Display Reparatur" class="w-full px-4 py-3 rounded-xl input-focus outline-none ${darkMode ? 'bg-gray-800 text-white placeholder-gray-500' : 'bg-gray-50 text-gray-900 placeholder-gray-500'}" />
+                                    <label class="text-sm mb-2 block ${darkMode ? 'text-gray-400' : 'text-gray-600'}">${this.t.description} (optional)</label>
+                                    <input type="text" id="entryDesc" placeholder="z.B. Zusätzliche Notizen..." class="w-full px-4 py-3 rounded-xl input-focus outline-none ${darkMode ? 'bg-gray-800 text-white placeholder-gray-500' : 'bg-gray-50 text-gray-900 placeholder-gray-500'}" />
                                 </div>
+                                
                                 <div class="flex gap-3 pt-4">
                                     <button id="cancelEntry" class="flex-1 py-3 rounded-xl font-semibold button-press ${darkMode ? 'bg-gray-800 text-white' : 'bg-gray-200 text-gray-900'}">${this.t.cancel}</button>
                                     <button id="saveEntry" class="flex-1 py-3 rounded-xl font-semibold bg-blue-600 hover:bg-blue-700 text-white button-press">${this.t.save}</button>
@@ -729,7 +704,7 @@
                         // Open modal with pre-filled data
                         this.state.selectedPhone = this.state.selectedPhoneModel;
                         this.state.selectedRepair = repair;
-                        this.state.customAmount = price;
+                        this.state.selectedPrice = price;
                         this.state.showAddModal = true;
                         this.render();
                     };
@@ -741,36 +716,6 @@
                 if (typeIncome) typeIncome.onclick = () => { this.state.type = 'income'; this.render(); };
                 if (typeExpense) typeExpense.onclick = () => { this.state.type = 'expense'; this.render(); };
 
-                // Modal - Phone selection
-                const phoneSelect = document.getElementById('phoneSelect');
-                if (phoneSelect) {
-                    // Pre-select if coming from repair button
-                    if (this.state.selectedPhone) {
-                        phoneSelect.value = this.state.selectedPhone;
-                        this.updateRepairOptions();
-                    }
-                    
-                    phoneSelect.onchange = () => {
-                        this.state.selectedPhone = phoneSelect.value;
-                        this.updateRepairOptions();
-                    };
-                }
-
-                // Modal - Repair selection
-                const repairSelect = document.getElementById('repairSelect');
-                if (repairSelect) {
-                    // Pre-select if coming from repair button
-                    if (this.state.selectedRepair) {
-                        repairSelect.value = this.state.selectedRepair;
-                        this.updatePrice();
-                    }
-                    
-                    repairSelect.onchange = () => {
-                        this.state.selectedRepair = repairSelect.value;
-                        this.updatePrice();
-                    };
-                }
-
                 // Modal - Cancel
                 const cancelEntry = document.getElementById('cancelEntry');
                 if (cancelEntry) {
@@ -778,7 +723,7 @@
                         this.state.showAddModal = false;
                         this.state.selectedPhone = '';
                         this.state.selectedRepair = '';
-                        this.state.customAmount = '';
+                        this.state.selectedPrice = 0;
                         this.render(); 
                     };
                 }
@@ -787,29 +732,17 @@
                 const saveEntry = document.getElementById('saveEntry');
                 const entryDesc = document.getElementById('entryDesc');
                 
-                if (saveEntry && entryDesc) {
+                if (saveEntry) {
                     saveEntry.onclick = () => {
-                        const phoneSelect = document.getElementById('phoneSelect');
-                        const repairSelect = document.getElementById('repairSelect');
-                        
-                        if (!phoneSelect.value || !repairSelect.value || !entryDesc.value) {
-                            alert('Bitte alle Felder ausfüllen!');
-                            return;
-                        }
-                        
-                        const price = this.state.priceData[phoneSelect.value][repairSelect.value] || 0;
-                        
-                        if (price === 0) {
-                            alert('Preis nicht gefunden!');
-                            return;
-                        }
+                        const description = entryDesc ? entryDesc.value : '';
+                        const displayDescription = description || `${this.state.selectedPhone} - ${this.state.selectedRepair}`;
                         
                         const newEntry = {
                             id: Date.now(),
-                            amount: this.state.type === 'expense' ? -Math.abs(price) : Math.abs(price),
-                            description: entryDesc.value,
-                            phoneModel: phoneSelect.value,
-                            repairType: repairSelect.value,
+                            amount: this.state.type === 'expense' ? -Math.abs(this.state.selectedPrice) : Math.abs(this.state.selectedPrice),
+                            description: displayDescription,
+                            phoneModel: this.state.selectedPhone,
+                            repairType: this.state.selectedRepair,
                             type: this.state.type,
                             date: new Date().toLocaleDateString(this.state.language === 'de' ? 'de-DE' : this.state.language === 'fr' ? 'fr-FR' : 'en-US'),
                             timestamp: Date.now()
@@ -820,51 +753,9 @@
                         this.state.showAddModal = false;
                         this.state.selectedPhone = '';
                         this.state.selectedRepair = '';
-                        this.state.customAmount = '';
+                        this.state.selectedPrice = 0;
                         this.render();
                     };
-                }
-            }
-
-            updateRepairOptions() {
-                const phoneSelect = document.getElementById('phoneSelect');
-                const repairSelect = document.getElementById('repairSelect');
-                const repairContainer = document.getElementById('repairSelectContainer');
-                
-                if (!phoneSelect || !repairSelect || !repairContainer) return;
-                
-                if (phoneSelect.value) {
-                    repairContainer.style.display = 'block';
-                    const repairs = this.getRepairsForPhone(phoneSelect.value);
-                    
-                    repairSelect.innerHTML = `<option value="">${this.t.selectRepair}</option>` +
-                        repairs.map(({repair}) => `<option value="${repair}">${repair}</option>`).join('');
-                    
-                    // If repair was pre-selected, select it
-                    if (this.state.selectedRepair) {
-                        repairSelect.value = this.state.selectedRepair;
-                        this.updatePrice();
-                    }
-                } else {
-                    repairContainer.style.display = 'none';
-                    document.getElementById('priceDisplay').style.display = 'none';
-                }
-            }
-
-            updatePrice() {
-                const phoneSelect = document.getElementById('phoneSelect');
-                const repairSelect = document.getElementById('repairSelect');
-                const priceDisplay = document.getElementById('priceDisplay');
-                const priceValue = document.getElementById('priceValue');
-                
-                if (!phoneSelect || !repairSelect || !priceDisplay || !priceValue) return;
-                
-                if (phoneSelect.value && repairSelect.value) {
-                    const price = this.state.priceData[phoneSelect.value][repairSelect.value] || 0;
-                    priceValue.textContent = `${price.toFixed(2)} €`;
-                    priceDisplay.style.display = 'block';
-                } else {
-                    priceDisplay.style.display = 'none';
                 }
             }
         }
@@ -873,4 +764,60 @@
         new App();
     </script>
 </body>
-</html>
+</html>d ${darkMode ? 'text-white' : 'text-gray-900'}">
+                                        ${selectedPhoneModel ? `${selectedPhoneModel} - ${this.t.repairOptions}` : this.t.categories}
+                                    </h2>
+                                    ${selectedPhoneModel ? `
+                                        <button id="backToModels" class="px-4 py-2 rounded-xl ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-200 text-gray-700'} hover-grow button-press">
+                                            ← ${this.t.backToModels}
+                                        </button>
+                                    ` : ''}
+                                </div>
+                                
+                                ${!selectedPhoneModel ? `
+                                    ${phoneModels.length === 0 ? `
+                                        <p class="text-center py-8 ${darkMode ? 'text-gray-400' : 'text-gray-600'}">${this.t.noData}</p>
+                                    ` : `
+                                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            ${phoneModels.map(phone => {
+                                                const phoneEntries = this.state.entries.filter(e => e.phoneModel === phone);
+                                                const phoneTotal = phoneEntries.reduce((sum, e) => sum + e.amount, 0);
+                                                return `
+                                                    <button data-phone="${phone}" class="p-6 rounded-xl hover-lift button-press text-left ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-white text-gray-900'}">
+                                                        <div class="text-lg font-semibold mb-2">${phone}</div>
+                                                        ${phoneEntries.length > 0 ? `
+                                                            <div class="text-2xl font-bold ${phoneTotal >= 0 ? 'text-green-500' : 'text-red-500'} mb-1">
+                                                                ${phoneTotal >= 0 ? '+' : ''}${phoneTotal.toFixed(2)} €
+                                                            </div>
+                                                            <div class="text-sm opacity-75">${phoneEntries.length} ${this.t.entries}</div>
+                                                        ` : `
+                                                            <div class="text-sm opacity-75">Keine Einträge</div>
+                                                        `}
+                                                    </button>
+                                                `;
+                                            }).join('')}
+                                        </div>
+                                    `}
+                                ` : `
+                                    ${this.getRepairsForPhone(selectedPhoneModel).length === 0 ? `
+                                        <p class="text-center py-8 ${darkMode ? 'text-gray-400' : 'text-gray-600'}">${this.t.noData}</p>
+                                    ` : `
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            ${this.getRepairsForPhone(selectedPhoneModel).map(({description, price}) => `
+                                                <button data-repair="${description}" data-price="${price}" class="p-6 rounded-xl hover-lift button-press text-left ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50'}">
+                                                    <div class="flex justify-between items-start mb-2">
+                                                        <div class="flex-1">
+                                                            <div class="text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'} mb-2">${description}</div>
+                                                        </div>
+                                                        <div class="text-2xl font-bold text-blue-500">${price.toFixed(2)} €</div>
+                                                    </div>
+                                                </button>
+                                            `).join('')}
+                                        </div>
+                                    `}
+                                `}
+                            </div>
+
+                            <div class="p-8 rounded-2xl shadow-2xl ${darkMode ? 'bg-gray-900/90 border border-gray-800' : 'bg-white/70 border border-purple-200'}">
+                                <div class="flex justify-between items-center mb-6">
+                                    <h2 class="text-xl font-semibol
