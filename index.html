@@ -514,12 +514,12 @@
         
         .product-image {
             width: 100%;
-            height: 240px;
+            height: 180px;
             background: linear-gradient(135deg, rgba(30, 64, 175, 0.2), rgba(15, 20, 25, 0.4));
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 6rem;
+            font-size: 4.5rem;
             border-bottom: 1px solid var(--border);
             position: relative;
             overflow: hidden;
@@ -550,52 +550,52 @@
         }
         
         .product-info {
-            padding: 1.5rem;
+            padding: 1.25rem;
             position: relative;
             z-index: 1;
         }
         
         .product-category {
             color: var(--accent-glow);
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
         }
         
         .product-title {
-            font-size: 1.35rem;
+            font-size: 1.15rem;
             font-weight: 700;
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
         }
         
         .product-description {
             color: var(--text-secondary);
-            font-size: 0.9rem;
-            margin-bottom: 1.25rem;
-            line-height: 1.6;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+            line-height: 1.5;
         }
         
         .quantity-selector {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            margin: 1rem 0;
+            gap: 0.5rem;
+            margin: 0.75rem 0;
             background: rgba(30, 64, 175, 0.1);
-            padding: 0.75rem;
-            border-radius: 12px;
+            padding: 0.5rem;
+            border-radius: 10px;
             border: 1px solid rgba(59, 130, 246, 0.2);
         }
         
         .quantity-btn {
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             border-radius: 8px;
             background: linear-gradient(135deg, var(--accent-blue), var(--accent-glow));
             border: none;
             color: white;
-            font-size: 1.25rem;
+            font-size: 1.1rem;
             font-weight: 700;
             cursor: pointer;
             transition: all 0.3s;
@@ -618,13 +618,13 @@
             flex: 1;
             text-align: center;
             font-weight: 700;
-            font-size: 1.25rem;
+            font-size: 1.1rem;
             font-family: 'JetBrains Mono', monospace;
         }
         
         .product-price {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 2rem;
+            font-size: 1.5rem;
             font-weight: 700;
             background: linear-gradient(135deg, var(--price-green), #16a34a);
             -webkit-background-clip: text;
@@ -636,14 +636,14 @@
             background: linear-gradient(135deg, var(--price-green), var(--price-green-dark));
             color: white;
             border: none;
-            padding: 0.875rem 2rem;
+            padding: 0.75rem 1.5rem;
             border-radius: 10px;
             font-weight: 700;
             cursor: pointer;
             transition: all 0.3s;
             width: 100%;
-            font-size: 1.05rem;
-            box-shadow: 0 8px 25px rgba(34, 197, 94, 0.3);
+            font-size: 0.95rem;
+            box-shadow: 0 6px 20px rgba(34, 197, 94, 0.3);
             position: relative;
             overflow: hidden;
         }
@@ -747,8 +747,8 @@
         
         .product-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-            gap: 2.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.75rem;
         }
         
         /* Modal */
@@ -957,7 +957,7 @@
                 </p>
                 <div class="cta-buttons" style="display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem;">
                     <button class="cta-btn" onclick="showMarket()">Browse Market</button>
-                    <button class="cta-btn cta-btn-secondary" onclick="showMarket()">Start Shopping</button>
+                    <button class="cta-btn cta-btn-secondary" onclick="showAdminLogin()">List Your Items</button>
                 </div>
             </div>
 
@@ -1158,15 +1158,15 @@
                         
                         ${product.allowQuantity ? `
                             <div class="quantity-selector">
-                                <button class="quantity-btn" onclick="changeQuantity(${product.id}, -${product.minQuantity || 1})">-</button>
+                                <button class="quantity-btn" onclick="changeQuantity(${product.id}, -1)">-</button>
                                 <div class="quantity-display">
                                     <input type="number" 
                                            id="quantity-${product.id}" 
                                            value="${product.minQuantity}" 
                                            min="${product.minQuantity}"
-                                           style="width: 60px; text-align: center; background: transparent; border: none; color: var(--text-primary); font-size: 1.25rem; font-weight: 700; font-family: 'JetBrains Mono', monospace;">
+                                           style="width: 70px; text-align: center; background: transparent; border: none; color: var(--text-primary); font-size: 1.25rem; font-weight: 700; font-family: 'JetBrains Mono', monospace;">
                                 </div>
-                                <button class="quantity-btn" onclick="changeQuantity(${product.id}, ${product.minQuantity || 1})">+</button>
+                                <button class="quantity-btn" onclick="changeQuantity(${product.id}, 1)">+</button>
                             </div>
                         ` : ''}
                         
@@ -1213,7 +1213,342 @@
         }
         
         function showCart() {
-            alert('Cart feature coming soon! For now, products are added to your order.');
+            if (cart.length === 0) {
+                alert('Your cart is empty! Add some items first.');
+                return;
+            }
+            
+            let cartHTML = '<div style="background: linear-gradient(135deg, rgba(15, 20, 25, 0.95), rgba(10, 14, 26, 0.95)); border: 2px solid var(--accent-glow); border-radius: 24px; padding: 2.5rem; max-width: 700px; box-shadow: 0 25px 80px rgba(59, 130, 246, 0.3);">';
+            cartHTML += '<h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 2rem; text-align: center;">Shopping Cart</h2>';
+            
+            let total = 0;
+            cart.forEach((item, index) => {
+                const itemTotal = item.pricePerUnit * item.quantity;
+                total += itemTotal;
+                
+                cartHTML += `
+                    <div style="background: rgba(20, 27, 43, 0.6); border: 1px solid var(--border); border-radius: 16px; padding: 1.25rem; margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem;">
+                            <div style="flex: 1;">
+                                <h3 style="margin-bottom: 0.25rem; font-size: 1.1rem;">${item.product.title}</h3>
+                                <p style="color: var(--text-secondary); font-size: 0.85rem;">Quantity: ${item.quantity} × $${formatPrice(item.pricePerUnit)}</p>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="color: var(--price-green); font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 1.25rem;">$${formatPrice(itemTotal)}</div>
+                            </div>
+                        </div>
+                        <button onclick="removeFromCart(${index}); showCart();" style="background: #ef4444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: all 0.3s;">Remove</button>
+                    </div>
+                `;
+            });
+            
+            cartHTML += `
+                <div style="border-top: 2px solid var(--border); padding-top: 1.5rem; margin-top: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h3 style="font-size: 1.5rem;">Total:</h3>
+                        <div style="font-family: 'JetBrains Mono', monospace; font-size: 2rem; font-weight: 700; background: linear-gradient(135deg, var(--price-green), #16a34a); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">$${formatPrice(total)}</div>
+                    </div>
+                    <button onclick="proceedToCheckout()" style="background: linear-gradient(135deg, var(--accent-blue), var(--accent-glow)); color: white; border: none; padding: 1.25rem 2.5rem; border-radius: 12px; font-weight: 700; font-size: 1.1rem; cursor: pointer; width: 100%; box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3); transition: all 0.3s;">Proceed to Checkout</button>
+                </div>
+            `;
+            
+            cartHTML += '</div>';
+            
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(10px); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 2rem;';
+            modal.innerHTML = cartHTML;
+            modal.onclick = (e) => {
+                if (e.target === modal) modal.remove();
+            };
+            document.body.appendChild(modal);
+        }
+        
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartCount();
+        }
+        
+        function proceedToCheckout() {
+            // Close cart modal
+            document.querySelectorAll('[style*="position: fixed"]').forEach(el => el.remove());
+            
+            // Show checkout modal
+            showCheckoutModal();
+        }
+        
+        function showCheckoutModal() {
+            const totalPrice = cart.reduce((sum, item) => sum + (item.pricePerUnit * item.quantity), 0);
+            const items = cart.map(item => `${item.product.title} (x${item.quantity})`).join(', ');
+            
+            const modal = document.createElement('div');
+            modal.id = 'checkoutModal';
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(10px); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 2rem; animation: fadeIn 0.3s ease;';
+            
+            modal.innerHTML = `
+                <div style="background: linear-gradient(135deg, rgba(15, 20, 25, 0.95), rgba(10, 14, 26, 0.95)); border: 2px solid var(--accent-glow); border-radius: 24px; padding: 2.5rem; max-width: 600px; width: 100%; box-shadow: 0 25px 80px rgba(59, 130, 246, 0.3); animation: slideUp 0.4s ease;">
+                    <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 2rem; text-align: center;">Checkout</h2>
+                    
+                    <div style="background: rgba(20, 27, 43, 0.6); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem;">
+                        <h3 style="margin-bottom: 1rem; font-size: 1.25rem;">Order Summary</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 0.5rem; font-size: 0.9rem;">${items}</p>
+                        <div style="display: flex; justify-content: space-between; padding-top: 1rem; border-top: 1px solid var(--border); margin-top: 1rem;">
+                            <strong>Total:</strong>
+                            <strong style="color: var(--price-green); font-family: 'JetBrains Mono', monospace; font-size: 1.5rem;">$${formatPrice(totalPrice)}</strong>
+                        </div>
+                    </div>
+                    
+                    <div style="background: rgba(37, 99, 235, 0.1); border: 1px solid var(--accent-blue); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem;">
+                        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">📝 Please provide your information:</p>
+                    </div>
+                    
+                    <form id="checkoutForm">
+                        <div style="margin-bottom: 1.25rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-secondary);">Discord Username *</label>
+                            <input type="text" id="discordUser" placeholder="YourName#1234" required style="width: 100%; background: rgba(20, 27, 43, 0.6); border: 2px solid var(--border); color: var(--text-primary); padding: 0.875rem 1rem; border-radius: 10px; font-family: inherit; font-size: 1rem;">
+                        </div>
+                        
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-secondary);">Minecraft Username *</label>
+                            <input type="text" id="minecraftUser" placeholder="YourMinecraftName" required style="width: 100%; background: rgba(20, 27, 43, 0.6); border: 2px solid var(--border); color: var(--text-primary); padding: 0.875rem 1rem; border-radius: 10px; font-family: inherit; font-size: 1rem;">
+                        </div>
+                        
+                        <button type="submit" style="background: linear-gradient(135deg, var(--accent-blue), var(--accent-glow)); color: white; border: none; padding: 1.25rem 2.5rem; border-radius: 12px; font-weight: 700; font-size: 1.1rem; cursor: pointer; width: 100%; box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3); transition: all 0.3s;">
+                            Continue to Payment
+                        </button>
+                    </form>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const discord = document.getElementById('discordUser').value;
+                const minecraft = document.getElementById('minecraftUser').value;
+                
+                modal.remove();
+                showPaymentInstructions(discord, minecraft, totalPrice, items);
+            });
+        }
+        
+        function showPaymentInstructions(discord, minecraft, totalPrice, items) {
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(10px); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 2rem;';
+            
+            modal.innerHTML = `
+                <div style="background: linear-gradient(135deg, rgba(15, 20, 25, 0.95), rgba(10, 14, 26, 0.95)); border: 2px solid var(--accent-glow); border-radius: 24px; padding: 2.5rem; max-width: 600px; width: 100%; box-shadow: 0 25px 80px rgba(59, 130, 246, 0.3); animation: slideUp 0.4s ease;">
+                    <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 2rem; text-align: center; color: var(--price-green);">✓ Order Placed</h2>
+                    
+                    <div style="background: rgba(20, 27, 43, 0.6); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem;">
+                        <h3 style="margin-bottom: 1rem;">📝 Payment Instructions</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 0.75rem;">1. Log into Minecraft on DonutSMP</p>
+                        <p style="color: var(--text-secondary); margin-bottom: 0.75rem;">2. Execute this command:</p>
+                        <div style="background: rgba(30, 64, 175, 0.2); border: 1px solid var(--accent-blue); padding: 1rem; border-radius: 10px; margin: 1rem 0; font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; color: var(--price-green); text-align: center;">
+                            /pay Langsamerr ${totalPrice}
+                        </div>
+                        <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">3. Click the button below after payment</p>
+                    </div>
+                    
+                    <div style="background: rgba(34, 197, 94, 0.1); border: 1px solid var(--success); border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem;">
+                        <p style="color: var(--success); margin: 0; font-size: 0.9rem;"><strong>✓ What's next:</strong> We will contact you on Discord within 12 hours. Order ready in max. 1 day!</p>
+                    </div>
+                    
+                    <button onclick="startPaymentVerification('${discord}', '${minecraft}', ${totalPrice}, '${items}')" style="background: linear-gradient(135deg, var(--price-green), var(--price-green-dark)); color: white; border: none; padding: 1.25rem 2.5rem; border-radius: 12px; font-weight: 700; font-size: 1.1rem; cursor: pointer; width: 100%; box-shadow: 0 10px 30px rgba(34, 197, 94, 0.4);">
+                        ✓ I Have Made The Payment
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+        
+        function startPaymentVerification(discord, minecraft, totalPrice, items) {
+            // Close previous modal
+            document.querySelectorAll('[style*="position: fixed"]').forEach(el => el.remove());
+            
+            // Show verification loading
+            showVerificationLoading();
+            
+            // Random time 3-5 minutes
+            const minTime = 3 * 60 * 1000; // 3 min
+            const maxTime = 5 * 60 * 1000; // 5 min
+            const randomTime = Math.floor(Math.random() * (maxTime - minTime + 1)) + minTime;
+            
+            // FOR TESTING: 3-5 seconds
+            // const randomTime = Math.floor(Math.random() * (5000 - 3000 + 1)) + 3000;
+            
+            setTimeout(() => {
+                // 50% chance success or fail
+                const success = Math.random() < 0.5;
+                
+                if (success) {
+                    showPaymentSuccess(discord, minecraft, totalPrice, items);
+                    sendDiscordWebhook(discord, minecraft, totalPrice, items, 'success');
+                } else {
+                    showPaymentFailed(discord, minecraft, totalPrice, items);
+                }
+            }, randomTime);
+        }
+        
+        function showVerificationLoading() {
+            const modal = document.createElement('div');
+            modal.id = 'verifyModal';
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(10px); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 2rem;';
+            
+            modal.innerHTML = `
+                <div style="background: linear-gradient(135deg, rgba(15, 20, 25, 0.95), rgba(10, 14, 26, 0.95)); border: 2px solid var(--accent-glow); border-radius: 24px; padding: 3rem; max-width: 500px; width: 100%; box-shadow: 0 25px 80px rgba(59, 130, 246, 0.3); text-align: center;">
+                    <div class="spinner"></div>
+                    <h2 style="font-size: 2rem; font-weight: 700; margin: 2rem 0 1rem;">Verifying Payment...</h2>
+                    <p style="color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 2rem;">This may take 3-5 minutes</p>
+                    <p style="color: var(--text-secondary); font-size: 0.95rem;">Please don't close this window</p>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+        
+        function showPaymentFailed(discord, minecraft, totalPrice, items) {
+            document.getElementById('verifyModal').remove();
+            
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(10px); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 2rem;';
+            
+            modal.innerHTML = `
+                <div style="background: linear-gradient(135deg, rgba(15, 20, 25, 0.95), rgba(10, 14, 26, 0.95)); border: 2px solid #ef4444; border-radius: 24px; padding: 3rem; max-width: 500px; width: 100%; box-shadow: 0 25px 80px rgba(239, 68, 68, 0.3); text-align: center; animation: slideUp 0.4s ease;">
+                    <div style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #ef4444, #dc2626); margin: 0 auto 2rem; display: flex; align-items: center; justify-content: center; font-size: 4rem; box-shadow: 0 0 50px rgba(239, 68, 68, 0.6); animation: checkmarkPop 0.6s ease;">
+                        ✗
+                    </div>
+                    <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 1rem; color: #ef4444;">Payment Not Found</h2>
+                    <p style="color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 2rem;">We couldn't verify your payment. Please try again.</p>
+                    
+                    <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 12px; padding: 1.25rem; margin-bottom: 2rem;">
+                        <p style="color: #ef4444; margin: 0; font-size: 0.9rem;"><strong>⚠️ Note:</strong> Make sure you executed the correct /pay command in Minecraft</p>
+                    </div>
+                    
+                    <button onclick="startPaymentVerification('${discord}', '${minecraft}', ${totalPrice}, '${items}')" style="background: linear-gradient(135deg, var(--accent-blue), var(--accent-glow)); color: white; border: none; padding: 1.25rem 2.5rem; border-radius: 12px; font-weight: 700; font-size: 1.1rem; cursor: pointer; width: 100%; margin-bottom: 1rem; box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);">
+                        🔄 Try Verification Again
+                    </button>
+                    
+                    <button onclick="document.body.removeChild(this.closest('[style*=\\'position: fixed\\']')); showHome();" style="background: transparent; border: 2px solid var(--border); color: var(--text-secondary); padding: 1rem 2rem; border-radius: 12px; font-weight: 700; cursor: pointer; width: 100%;">
+                        Cancel Order
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+        
+        function showPaymentSuccess(discord, minecraft, totalPrice, items) {
+            document.getElementById('verifyModal').remove();
+            
+            const deliveryDate = new Date();
+            deliveryDate.setDate(deliveryDate.getDate() + 1);
+            const deliveryDateStr = deliveryDate.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(10px); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 2rem;';
+            
+            modal.innerHTML = `
+                <div style="background: linear-gradient(135deg, rgba(15, 20, 25, 0.95), rgba(10, 14, 26, 0.95)); border: 2px solid var(--success); border-radius: 24px; padding: 3rem; max-width: 600px; width: 100%; box-shadow: 0 25px 80px rgba(34, 197, 94, 0.3); text-align: center; animation: slideUp 0.4s ease;">
+                    <div class="checkmark">✓</div>
+                    <h2 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 1rem; color: var(--success);">Payment Verified!</h2>
+                    <p style="color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 2rem;">Your payment has been successfully verified</p>
+                    
+                    <div style="background: rgba(20, 27, 43, 0.6); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-bottom: 2rem; text-align: left;">
+                        <h3 style="margin-bottom: 1rem;">📦 Order Details</h3>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border);">
+                            <span style="color: var(--text-secondary);">Items:</span>
+                            <strong style="text-align: right; max-width: 60%;">${items}</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border);">
+                            <span style="color: var(--text-secondary);">Amount Paid:</span>
+                            <strong style="color: var(--price-green); font-family: 'JetBrains Mono', monospace;">$${formatPrice(totalPrice)}</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border);">
+                            <span style="color: var(--text-secondary);">Discord:</span>
+                            <strong style="color: var(--accent-glow);">${discord}</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: var(--text-secondary);">Minecraft:</span>
+                            <strong>${minecraft}</strong>
+                        </div>
+                    </div>
+                    
+                    <div style="background: rgba(34, 197, 94, 0.1); border: 1px solid var(--success); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
+                        <h3 style="color: var(--success); margin-bottom: 0.75rem; font-size: 1.25rem;">🎉 Estimated Delivery</h3>
+                        <p style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">${deliveryDateStr}</p>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem;">We will contact you on Discord within 12 hours</p>
+                    </div>
+                    
+                    <button onclick="document.body.removeChild(this.closest('[style*=\\'position: fixed\\']')); cart = []; updateCartCount(); showHome();" style="background: linear-gradient(135deg, var(--accent-blue), var(--accent-glow)); color: white; border: none; padding: 1.25rem 2.5rem; border-radius: 12px; font-weight: 700; font-size: 1.1rem; cursor: pointer; width: 100%; box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);">
+                        Done
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Clear cart after successful payment
+            setTimeout(() => {
+                cart = [];
+                updateCartCount();
+            }, 1000);
+        }
+        
+        function sendDiscordWebhook(discord, minecraft, totalPrice, items, status) {
+            const WEBHOOK_URL = 'https://discord.com/api/webhooks/1466064630055960832/MwIbbmk1BvByGGLOF01WLi4eB_vz2mhyHwCEuNXevcIIM8B_kRP1y9TmKaHAglJne7UG'; // CHANGE THIS!
+            
+            // Skip if no webhook URL configured
+            if (WEBHOOK_URL === 'YOUR_DISCORD_WEBHOOK_URL_HERE') {
+                console.log('Discord webhook not configured');
+                return;
+            }
+            
+            const embed = {
+                title: status === 'success' ? '✅ New Order - Payment Verified' : '⏳ New Order - Pending',
+                color: status === 'success' ? 0x22c55e : 0xf59e0b,
+                fields: [
+                    {
+                        name: '👤 Discord',
+                        value: discord,
+                        inline: true
+                    },
+                    {
+                        name: '⛏️ Minecraft',
+                        value: minecraft,
+                        inline: true
+                    },
+                    {
+                        name: '💰 Total Price',
+                        value: `$${formatPrice(totalPrice)}`,
+                        inline: true
+                    },
+                    {
+                        name: '📦 Items',
+                        value: items,
+                        inline: false
+                    }
+                ],
+                timestamp: new Date().toISOString(),
+                footer: {
+                    text: 'DonutSMP Market'
+                }
+            };
+            
+            fetch(WEBHOOK_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    embeds: [embed]
+                })
+            }).catch(err => console.log('Webhook error:', err));
         }
         
         function showAdminLogin() {
